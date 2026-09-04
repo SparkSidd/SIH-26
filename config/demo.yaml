@@ -1,0 +1,34 @@
+# Interactive Demonstration Configuration
+
+simulation:
+  timestep: 0.1
+  max_steps: 3000
+  seed: 42
+  realtime_factor: 1.0
+
+demo:
+  phases:
+    - name: "Phase 1: Normal Warehouse Operation"
+      start_step: 0
+      description: "6 AMRs coordinating smoothly via decentralized P2P intent exchange with zero collisions."
+    - name: "Phase 2: Congestion & Choke Points"
+      start_step: 400
+      description: "Demand surge at central intersection; fleet-aware congestion routing and priority escalation."
+    - name: "Phase 3: Dynamic Aisle Blockage"
+      start_step: 800
+      description: "Main aisle blocked by sudden obstacle; robots detect, broadcast, and replan alternative routes."
+    - name: "Phase 4: Hardware Robot Failure"
+      start_step: 1200
+      description: "Robot R3 suffers simulated motor failure; peers detect heartbeat loss and reallocate task dynamically."
+    - name: "Phase 5: Severe Communication Degradation"
+      start_step: 1600
+      description: "30% packet loss + 200ms latency injected; belief age decays, local safety supervisor preserves zero collisions."
+    - name: "Phase 6: Live Performance Evaluation"
+      start_step: 2200
+      description: "Comparative benchmark display: Stop-and-Wait vs. Decentralized Fleet Coordination."
+
+ui:
+  window_width: 1280
+  window_height: 800
+  fps: 30
+  cell_size: 26

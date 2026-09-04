@@ -1,0 +1,15 @@
+{
+  "experiment_id": "EXP_S5_ROBOT_FAILURE_1788477579",
+  "git_commit": "sih2026-v1.0.0-release",
+  "config_version": "1.0.0",
+  "random_seed": 42,
+  "scenario_name": "S5_ROBOT_FAILURE",
+  "warehouse_layout": "corridor_heavy",
+  "robot_count": 6,
+  "algorithm_stack": "PIBT + FleetAwareAllocator + AdaptiveCoordination + SafetySupervisor",
+  "network_conditions": "P2P Mesh with 25ms latency / 5% packet loss",
+  "sensor_conditions": "LiDAR (5m) with Low Noise",
+  "timestamp": "2026-09-04T04:49:39.740816",
+  "software_version": "Python 3.13 / SIH26123 Prototype",
+  "custom_params": {}
+}

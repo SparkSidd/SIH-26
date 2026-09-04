@@ -1,0 +1,94 @@
+# Default System Configuration for AMR Fleet Coordination
+
+simulation:
+  timestep: 0.1             # seconds per simulation tick
+  max_steps: 2000           # maximum simulation ticks
+  seed: 42                  # random seed for reproducibility
+  realtime_factor: 1.0      # speed multiplier (0 = unlimited headless speed)
+
+warehouse:
+  layout_type: "corridor_heavy" # "open", "corridor_heavy", "intersection_heavy", "choke_point", "dense"
+  width: 25
+  height: 20
+  shelf_density: 0.25
+  pickup_stations:
+    - [2, 2]
+    - [2, 10]
+    - [2, 17]
+  dropoff_stations:
+    - [22, 2]
+    - [22, 10]
+    - [22, 17]
+  charging_stations:
+    - [1, 1]
+    - [1, 18]
+    - [23, 1]
+    - [23, 18]
+
+fleet:
+  robot_count: 6
+  robot_geometry:
+    footprint: "box"
+    radius: 0.45            # meters
+    length: 0.8             # meters
+    width: 0.6              # meters
+    safety_margin: 0.15     # meters
+    max_velocity: 1.5       # m/s
+    max_acceleration: 1.0   # m/s^2
+    turning_radius: 0.0     # 0 = differential/omni capable
+  battery:
+    capacity: 100.0         # %
+    discharge_rate: 0.02    # % per moving step
+    idle_discharge: 0.002   # % per idle step
+    low_battery_threshold: 20.0
+    critical_threshold: 10.0
+    charge_rate: 0.5        # % per step
+
+sensors:
+  mode: "LOW_NOISE"         # "PERFECT", "LOW_NOISE", "MODERATE_NOISE", "DROPOUT"
+  lidar_range: 5.0          # grid units
+  detection_noise_prob: 0.02
+  dropout_prob: 0.01
+
+network:
+  topology: "RANGE_LIMITED" # "FULL_MESH", "RANGE_LIMITED", "PARTITIONED"
+  comm_range: 8.0           # grid units
+  latency_ms: 25.0          # message delivery latency
+  packet_loss: 0.05         # 5% packet loss
+  jitter_ms: 5.0
+  burst_loss_prob: 0.01
+
+planning:
+  algorithm: "pibt"         # "astar", "reservation", "pibt"
+  horizon: 15               # planning steps ahead
+  decision_timeout_ms: 10.0 # ms budget per robot decision
+  heuristic: "manhattan"    # "manhattan", "euclidean"
+
+coordination:
+  mode: "adaptive"          # "static_local", "static_neighbor", "static_cluster", "adaptive"
+  local_threshold: 0.25     # congestion score threshold for local mode
+  neighbor_threshold: 0.55   # congestion score threshold for neighbor mode
+  cluster_threshold: 0.80   # congestion score threshold for cluster mode
+  priority_aging_rate: 0.1  # priority boost per blocked/waiting tick
+
+allocation:
+  algorithm: "fleet_aware"  # "nearest", "fleet_aware", "marginal_cost"
+  weights:
+    w_distance: 1.0
+    w_eta: 1.5
+    w_congestion: 2.0
+    w_workload: 0.8
+    w_battery: 1.2
+    w_deadline: 2.5
+    w_conflict: 1.8
+
+tasks:
+  generation_mode: "poisson" # "fixed", "uniform", "poisson", "burst"
+  arrival_rate: 0.3         # tasks per second
+  total_tasks: 30
+  max_concurrent: 12
+
+safety:
+  enforce_discrete_invariants: true
+  enable_continuous_lookahead: true
+  violation_action: "ESTOP" # "WAIT", "REPLAN", "ESTOP"

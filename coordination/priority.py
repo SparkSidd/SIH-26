@@ -1,0 +1,38 @@
+"""Dynamic priority calculation and starvation prevention aging."""
+
+from typing import Dict, Optional
+from simulator.robot import Robot
+from simulator.task import Task
+
+
+class PriorityEngine:
+    """Computes dynamic priority scores with anti-starvation aging mechanisms."""
+
+    def __init__(self, aging_rate: float = 0.15):
+        self.aging_rate = aging_rate
+
+    def compute_robot_priority(
+        self,
+        robot: Robot,
+        active_task: Optional[Task] = None,
+        congestion_at_robot: float = 0.0,
+    ) -> float:
+        """Calculate composite dynamic priority for an AMR."""
+        # 1. Base task priority
+        task_urgency = active_task.priority if active_task else 1.0
+        
+        # 2. Battery health urgency (robots heading to charger get higher priority if low)
+        battery_urgency = 0.0
+        if robot.battery.is_low:
+            battery_urgency = 1.5
+        if robot.battery.is_critical:
+            battery_urgency = 3.0
+
+        # 3. Starvation aging: boost priority for robots that have been waiting repeatedly
+        starvation_boost = robot.wait_steps * self.aging_rate
+
+        # 4. Congestion penalty
+        congestion_boost = 0.2 if congestion_at_robot > 2.0 else 0.0
+
+        total_priority = task_urgency + battery_urgency + starvation_boost + congestion_boost
+        return max(0.1, total_priority)
