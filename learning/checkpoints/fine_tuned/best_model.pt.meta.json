@@ -1,0 +1,11 @@
+{
+  "filepath": "learning\\checkpoints\\fine_tuned\\best_model.pt",
+  "sha256": "11840c2e6550658ebdc3dcf8aee55c19fbdcda07af5dab2fa7f2f1baacabb6b3",
+  "training_stage": "fine_tuned_target_warehouse",
+  "source_domain": "synthetic_warehouse_lifelong_mapf",
+  "target_domain": "sih26123_warehouse_24x16",
+  "metrics": {
+    "final_train_loss": 0.029150837240740655,
+    "best_val_loss": 0.0477161630988121
+  }
+}

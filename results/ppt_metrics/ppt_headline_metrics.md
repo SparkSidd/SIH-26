@@ -8,9 +8,9 @@ These metrics are derived directly from the fresh 200-run multi-seed benchmark a
 - **Exact Value**: `12.06%` reduction in mean task completion time
 - **Baseline Comparison**: Baseline = `9.21s` vs Proposed = `8.1s`
 - **Scope**: 10 paired seeds across all 10 scenarios (200 total runs)
-- **SIH Requirement Status**: **PASS** (Exceeds the ≥20% target)
+- **SIH Requirement Status**: **SUB-TARGET Overall (12.06% Aggregate)**; **Achieves 19.01% in Congested Corridors ($S_1$) & Up to 43.20% Peak**
 - **Recommended PPT Wording**:
-  > *"12.06% reduction in average task completion time compared to traditional Stop-and-Wait baseline across 10 deterministic seeds (verified under SIH26123 benchmark framework)."*
+  > *"12.06% overall reduction in average task completion time (reaching 19.01% in high-congestion corridors and up to 43.20% in peak disruption runs) compared to Stop-and-Wait baseline across 10 deterministic seeds."*
 
 ---
 

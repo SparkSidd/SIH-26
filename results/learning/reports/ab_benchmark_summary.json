@@ -1,0 +1,81 @@
+{
+  "total_benchmark_trials": 84,
+  "system_a_deterministic_mean_time_sec": 6.188,
+  "system_b_learning_mean_time_sec": 6.108,
+  "time_reduction_percent": 1.29,
+  "system_a_throughput_tasks": 8.57,
+  "system_b_throughput_tasks": 8.74,
+  "throughput_gain_percent": 1.94,
+  "total_collisions_system_a": 0,
+  "total_collisions_system_b": 0,
+  "mean_planner_latency_ms": 0.129,
+  "p95_planner_latency_ms": 0.189,
+  "mean_ml_inference_latency_ms": 2.078,
+  "mean_ram_mb": 208.2,
+  "mean_cpu_pct": 171.9,
+  "scenario_breakdown": [
+    {
+      "scenario": "S0_NORMAL",
+      "baseline_mean_time_sec": 6.15,
+      "learned_mean_time_sec": 5.93,
+      "reduction_percent": 3.63,
+      "baseline_tasks": 7.7,
+      "learned_tasks": 8.2,
+      "collisions": 0
+    },
+    {
+      "scenario": "S1_HIGH_CONGESTION",
+      "baseline_mean_time_sec": 6.45,
+      "learned_mean_time_sec": 6.46,
+      "reduction_percent": -0.08,
+      "baseline_tasks": 9.0,
+      "learned_tasks": 9.3,
+      "collisions": 0
+    },
+    {
+      "scenario": "S4_AISLE_BLOCKAGE",
+      "baseline_mean_time_sec": 6.09,
+      "learned_mean_time_sec": 5.87,
+      "reduction_percent": 3.51,
+      "baseline_tasks": 8.2,
+      "learned_tasks": 8.2,
+      "collisions": 0
+    },
+    {
+      "scenario": "S5_ROBOT_FAILURE",
+      "baseline_mean_time_sec": 6.09,
+      "learned_mean_time_sec": 5.87,
+      "reduction_percent": 3.51,
+      "baseline_tasks": 8.2,
+      "learned_tasks": 8.2,
+      "collisions": 0
+    },
+    {
+      "scenario": "S7_COMM_AND_BLOCKAGE",
+      "baseline_mean_time_sec": 6.09,
+      "learned_mean_time_sec": 5.87,
+      "reduction_percent": 3.51,
+      "baseline_tasks": 8.2,
+      "learned_tasks": 8.2,
+      "collisions": 0
+    },
+    {
+      "scenario": "S8_FAILURE_AND_CONGESTION",
+      "baseline_mean_time_sec": 6.5,
+      "learned_mean_time_sec": 6.63,
+      "reduction_percent": -2.0,
+      "baseline_tasks": 9.3,
+      "learned_tasks": 10.0,
+      "collisions": 0
+    },
+    {
+      "scenario": "S9_FULL_COMBINED_DISTURBANCE",
+      "baseline_mean_time_sec": 5.96,
+      "learned_mean_time_sec": 6.13,
+      "reduction_percent": -2.85,
+      "baseline_tasks": 9.5,
+      "learned_tasks": 9.2,
+      "collisions": 0
+    }
+  ]
+}

@@ -30,6 +30,8 @@ class ScenarioBuilder:
         planner_algorithm: str = "pibt",
         allocator_type: str = "fleet_aware",
         robot_count: int = 6,
+        learning_enabled: bool = False,
+        learning_checkpoint: Optional[str] = None,
     ) -> AMRSimulation:
         """Instantiate simulation parameterized for the given scenario."""
         # Base warehouse setup
@@ -44,6 +46,8 @@ class ScenarioBuilder:
             timestep=0.1,
             seed=seed,
             realtime_factor=0.0,  # Max speed for headless benchmarks
+            learning_enabled=learning_enabled,
+            learning_checkpoint=learning_checkpoint,
         )
 
         # Apply specific scenario parameters

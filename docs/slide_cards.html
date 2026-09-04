@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH26123 — PPT Presentation Slide Cards</title>
+    <style>
+        :root {
+            --bg-base: #0a0e17;
+            --bg-card: #111827;
+            --bg-card-alt: #1f2937;
+            --border: #374151;
+            --cyan: #06b6d4;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .header-bar {
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .header-bar h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .header-bar p {
+            color: var(--cyan);
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .instruction-tag {
+            display: inline-block;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+
+        /* 16:9 Presentation Slide Canvas */
+        .slide-container {
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16 / 9;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 16px;
+        }
+
+        .slide-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .slide-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .slide-badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--emerald);
+            color: var(--emerald);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 14px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 4-KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .kpi-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 12px 0 6px 0;
+            line-height: 1;
+        }
+
+        .kpi-number.emerald { color: var(--emerald); }
+        .kpi-number.cyan { color: var(--cyan); }
+        .kpi-number.amber { color: var(--amber); }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            color: #e5e7eb;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .kpi-tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            display: inline-block;
+        }
+
+        /* Comparison Table */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .comp-table th {
+            text-align: left;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #d1d5db;
+        }
+
+        .comp-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comp-table td.strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .pill-win {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Bar Chart Visuals */
+        .chart-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .chart-label {
+            width: 180px;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+        .chart-bars {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            height: 12px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .bar.base {
+            background: #4b5563;
+        }
+
+        .bar.prop {
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+        }
+
+        .bar-val {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            width: 50px;
+        }
+
+        .chart-delta {
+            width: 80px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--emerald);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <h1>SIH 2026 Presentation Slide Cards</h1>
+        <p>Problem Statement SIH26123 — Edge-AI Distributed Fleet Coordination</p>
+        <span class="instruction-tag">📸 TIP: Take screenshots (Windows: Win + Shift + S) or copy content directly into PowerPoint / Google Slides</span>
+    </div>
+
+    <!-- SLIDE 1: Executive KPI Scorecard -->
+    <div class="slide-container" id="slide1">
+        <div class="slide-header">
+            <div>
+                <div class="slide-title">Executive Performance Scorecard</div>
+                <div class="slide-subtitle">Fresh 200-Run Multi-Seed Benchmark vs Stop-and-Wait Baseline</div>
+            </div>
+            <div class="slide-badge">Empirically Audited</div>
+        </div>
+
+        <div class="slide-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Fleet Safety</div>
+                    <div class="kpi-number emerald">0</div>
+                    <div class="kpi-label">Inter-Robot Collisions</div>
+                    <div class="kpi-tag">200/200 Runs Safe</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">Task Time Reduction</div>
+                    <div class="kpi-number cyan">-12.1%</div>
+                    <div class="kpi-label">Mean Completion Time</div>
+                    <div class="kpi-tag">Up to -43.2% Peak Runs</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">Edge Compute</div>
+                    <div class="kpi-number emerald">0.08 ms</div>
+                    <div class="kpi-label">Mean Planner Latency</div>
+                    <div class="kpi-tag">P95: 0.14 ms / Real-time</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-title">Hardware Profile</div>
+                    <div class="kpi-number cyan">54 MB</div>
+                    <div class="kpi-label">Peak Edge RAM</div>
+                    <div class="kpi-tag">Embedded Ready (RPi/Jetson)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>SIH26123 • Smart Warehouses Fleet Coordination</span>
+            <span>10 Scenarios (S0–S9) • 10 Deterministic Seeds</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Head-to-Head Comparative Table -->
+    <div class="slide-container" id="slide2">
+        <div class="slide-header">
+            <div>
+                <div class="slide-title">Head-to-Head Benchmark Comparison</div>
+                <div class="slide-subtitle">Stopping & Waiting vs Distributed Edge-AI Coordination</div>
+            </div>
+            <div class="slide-badge">Direct Paired Runs</div>
+        </div>
+
+        <div class="slide-content">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Baseline (Stop-and-Wait)</th>
+                        <th>Proposed (Edge-AI Fleet)</th>
+                        <th>Improvement</th>
+                        <th>Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="strong">Average Task Time</td>
+                        <td>9.21 seconds</td>
+                        <td class="strong">8.10 seconds</td>
+                        <td><span class="pill-win">12.1% Faster ↓</span></td>
+                        <td>100 paired runs</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Congested Corridor Time (S1)</td>
+                        <td>10.28 seconds</td>
+                        <td class="strong">8.32 seconds</td>
+                        <td><span class="pill-win">19.0% Faster ↓</span></td>
+                        <td>Bottleneck stress</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Fleet Throughput</td>
+                        <td>15.7 tasks/run</td>
+                        <td class="strong">17.6 tasks/run</td>
+                        <td><span class="pill-win">+12.1% Tasks ↑</span></td>
+                        <td>Completed in 120s</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Inter-Robot Collisions</td>
+                        <td>0 (Hard locked)</td>
+                        <td class="strong">0 (Safety Supervisor)</td>
+                        <td><span class="pill-win">100% Collision-Free</span></td>
+                        <td>200 verified runs</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Planner Latency</td>
+                        <td>Centralized dependency</td>
+                        <td class="strong">0.08 ms (P95: 0.14 ms)</td>
+                        <td><span class="pill-win">Sub-millisecond</span></td>
+                        <td>Monotonic timer</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">AMR Failure Recovery</td>
+                        <td>Stalls indefinitely</td>
+                        <td class="strong">100% In-flight Reassign</td>
+                        <td><span class="pill-win">0 Lost Payloads</span></td>
+                        <td>S5 fault audit</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="slide-footer">
+            <span>SIH26123 • Edge-AI Architecture</span>
+            <span>Fully Reproducible via: python main.py --benchmark</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Visual Scenario Chart -->
+    <div class="slide-container" id="slide3">
+        <div class="slide-header">
+            <div>
+                <div class="slide-title">Completion Time Reduction Across Stress Scenarios</div>
+                <div class="slide-subtitle">Empirical Performance Across Nominal, Fault, and Degradation Modes</div>
+            </div>
+            <div class="slide-badge">Robustness Profile</div>
+        </div>
+
+        <div class="slide-content">
+            <div style="width: 100%; max-width: 850px; margin: 0 auto;">
+                <div class="chart-row">
+                    <div class="chart-label">S1 High Congestion</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 250px;"></div><span class="bar-val">10.3s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 202px;"></div><span class="bar-val">8.3s</span></div>
+                    </div>
+                    <div class="chart-delta">-19.0%</div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-label">S8 Failure & Congestion</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 240px;"></div><span class="bar-val">9.9s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 195px;"></div><span class="bar-val">8.0s</span></div>
+                    </div>
+                    <div class="chart-delta">-19.0%</div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-label">S2 Comm Latency (150ms)</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 218px;"></div><span class="bar-val">9.0s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 187px;"></div><span class="bar-val">7.7s</span></div>
+                    </div>
+                    <div class="chart-delta">-13.9%</div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-label">S4 Aisle Blockage</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 218px;"></div><span class="bar-val">9.0s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 188px;"></div><span class="bar-val">7.8s</span></div>
+                    </div>
+                    <div class="chart-delta">-13.3%</div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-label">S5 AMR Hardware Fault</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 210px;"></div><span class="bar-val">8.7s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 185px;"></div><span class="bar-val">7.7s</span></div>
+                    </div>
+                    <div class="chart-delta">-11.6%</div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-label">S0 Nominal Warehouse</div>
+                    <div class="chart-bars">
+                        <div class="bar-wrap"><div class="bar base" style="width: 227px;"></div><span class="bar-val">9.3s</span></div>
+                        <div class="bar-wrap"><div class="bar prop" style="width: 208px;"></div><span class="bar-val">8.6s</span></div>
+                    </div>
+                    <div class="chart-delta">-8.1%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Grey: Stop-and-Wait Baseline • Cyan/Green: Proposed System</span>
+            <span>Key Finding: Highest Gains Under Severe Bottlenecks & Disruptions</span>
+        </div>
+    </div>
+
+</body>
+</html>

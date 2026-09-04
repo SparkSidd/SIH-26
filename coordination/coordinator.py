@@ -1,6 +1,5 @@
-"""Master Fleet Coordinator integrating allocation, congestion, adaptive intensity, and MAPF."""
-
-from typing import Callable, Dict, List, Optional, Set, Tuple
+import os
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from coordination.allocator import FleetAwareTaskAllocator, BaselineNearestAllocator
 from coordination.adaptive_coordination import AdaptiveCoordinator, CoordinationMode
 from coordination.congestion import CongestionModel
@@ -8,6 +7,8 @@ from coordination.priority import PriorityEngine
 from events.event import Event, EventType
 from events.event_bus import EventBus
 from execution.action import RobotAction, ActionType
+from learning.config import LearningConfig
+from learning.priority_policy import PriorityPolicy
 from planning.deadlock import DeadlockDetector
 from planning.multi_agent import MultiAgentPlanner
 from planning.astar import SpaceTimeAStarPlanner
@@ -30,6 +31,8 @@ class FleetCoordinator:
         planner_algorithm: str = "pibt",
         allocator_type: str = "fleet_aware",
         event_bus: Optional[EventBus] = None,
+        learning_enabled: bool = False,
+        learning_checkpoint: Optional[str] = None,
     ):
         self.map_width = map_width
         self.map_height = map_height
@@ -41,6 +44,20 @@ class FleetCoordinator:
         # A high-horizon A* dedicated to rerouting stuck robots
         self.reroute_astar = SpaceTimeAStarPlanner(heuristic_type="manhattan", max_horizon=200, timeout_ms=150.0)
         self.event_bus = event_bus
+
+        # Learning-guided priority advisor
+        self.learning_policy: Optional[PriorityPolicy] = None
+        self.learning_telemetry: Dict[str, Any] = {
+            "enabled": learning_enabled,
+            "is_fallback": True,
+            "status": "Disabled" if not learning_enabled else "Uninitialized",
+            "mean_latency_ms": 0.0,
+            "last_latency_ms": 0.0,
+        }
+        if learning_enabled:
+            ckpt_path = learning_checkpoint or os.path.join("learning", "checkpoints", "fine_tuned", "best_model.pt")
+            config = LearningConfig(enabled=True, checkpoint_path=ckpt_path)
+            self.learning_policy = PriorityPolicy(config=config, deterministic_engine=self.priority_engine)
 
         self.allocator_type = allocator_type
         self.fleet_allocator = FleetAwareTaskAllocator()
@@ -208,6 +225,28 @@ class FleetCoordinator:
                 target_goals[r_id] = active_wp_path[0]
             else:
                 target_goals[r_id] = ultimate_goal
+
+        # 4b. Query learned priority policy if enabled
+        if self.learning_policy and self.learning_policy.config.enabled:
+            cong_map = {r_id: self.congestion_model.get_cell_congestion(robots[r_id].position) for r_id in active_robot_ids}
+            learned_priorities, is_fallback, status = self.learning_policy.get_fleet_priorities(
+                active_robot_ids=active_robot_ids,
+                robots=robots,
+                tasks=tasks,
+                target_goals=target_goals,
+                congestion_at_robots=cong_map,
+                blocked_cells=blocked_cells,
+            )
+            for r_id in active_robot_ids:
+                if r_id in learned_priorities:
+                    priorities[r_id] = learned_priorities[r_id]
+            self.learning_telemetry = {
+                "enabled": True,
+                "is_fallback": is_fallback,
+                "status": status,
+                "mean_latency_ms": round(self.learning_policy.inference_engine.mean_latency_ms, 3),
+                "last_latency_ms": round(self.learning_policy.inference_engine.last_latency_ms, 3),
+            }
 
         # 5. Detect and resolve deadlocks before planning
         wait_steps_map = {r_id: robots[r_id].wait_steps for r_id in active_robot_ids}
@@ -377,11 +416,15 @@ class FleetCoordinator:
                         ))
 
         # 7. Multi-Agent Planning step (PIBT or Space-Time A*)
+        effective_priorities = {
+            r_id: priorities.get(r_id, 1.0) + getattr(robots[r_id], "priority_boost", 0.0)
+            for r_id in active_robot_ids
+        }
         next_cells = self.multi_agent_planner.plan_fleet_step(
             robot_ids=active_robot_ids,
             current_positions=robot_positions,
             target_goals=target_goals,
-            priorities=priorities,
+            priorities=effective_priorities,
             is_walkable_fn=is_walkable_fn,
             blocked_cells=blocked_cells,
             current_step=step,

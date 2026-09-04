@@ -1,0 +1,8 @@
+scenario,baseline_mean_time_sec,learned_mean_time_sec,reduction_percent,baseline_tasks,learned_tasks,collisions
+S0_NORMAL,6.15,5.93,3.63,7.7,8.2,0
+S1_HIGH_CONGESTION,6.45,6.46,-0.08,9.0,9.3,0
+S4_AISLE_BLOCKAGE,6.09,5.87,3.51,8.2,8.2,0
+S5_ROBOT_FAILURE,6.09,5.87,3.51,8.2,8.2,0
+S7_COMM_AND_BLOCKAGE,6.09,5.87,3.51,8.2,8.2,0
+S8_FAILURE_AND_CONGESTION,6.5,6.63,-2.0,9.3,10.0,0
+S9_FULL_COMBINED_DISTURBANCE,5.96,6.13,-2.85,9.5,9.2,0

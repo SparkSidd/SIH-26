@@ -1,0 +1,11 @@
+{
+  "filepath": "learning\\checkpoints\\pretrained\\base_model.pt",
+  "sha256": "1bb31e2a1606afb80ed44d6c7efaa0dfd3fd4c7f2dcfea463a60768291d54c70",
+  "training_stage": "pretrained",
+  "source_domain": "generalized_mapf_corridor_interactions",
+  "target_domain": "sih26123_warehouse_24x16",
+  "metrics": {
+    "final_train_loss": 0.051931300573050974,
+    "best_val_loss": 0.05539228767156601
+  }
+}

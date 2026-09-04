@@ -146,9 +146,12 @@ def run_headless(
     allocator: str = "fleet_aware",
     seed: int = 42,
     scenario: str = "S0_NORMAL",
+    learning_enabled: bool = False,
+    learning_checkpoint: Optional[str] = None,
 ) -> None:
     """Run headless simulation without GUI for high-speed computation."""
-    print(f"Running Headless: Scenario={scenario}, Planner={planner}, Allocator={allocator}, Robots={robot_count}, Steps={steps}")
+    mode_str = "LEARNING-GUIDED (RL-RH-PP Attention)" if learning_enabled else "DETERMINISTIC HEURISTIC"
+    print(f"Running Headless: Scenario={scenario}, Planner={planner}, Allocator={allocator}, Mode={mode_str}, Robots={robot_count}, Steps={steps}")
     
     scenario_id = ScenarioID[scenario] if scenario in ScenarioID.__members__ else ScenarioID.S0_NORMAL
     sim = ScenarioBuilder.build_scenario(
@@ -157,6 +160,8 @@ def run_headless(
         planner_algorithm=planner,
         allocator_type=allocator,
         robot_count=robot_count,
+        learning_enabled=learning_enabled,
+        learning_checkpoint=learning_checkpoint,
     )
 
     t0 = time.time()
@@ -207,6 +212,8 @@ def main():
     parser.add_argument("--steps", type=int, default=500, help="Simulation steps for headless mode")
     parser.add_argument("--seeds", type=int, default=5, help="Number of random seeds for benchmark")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for single run")
+    parser.add_argument("--learning", action="store_true", help="Enable RL-RH-PP learning-guided priority decision layer")
+    parser.add_argument("--learning-checkpoint", type=str, default=None, help="Path to learned model checkpoint (.pt)")
 
     args = parser.parse_args()
 
@@ -232,6 +239,8 @@ def main():
             allocator=args.allocator,
             seed=args.seed,
             scenario=args.scenario,
+            learning_enabled=args.learning,
+            learning_checkpoint=args.learning_checkpoint,
         )
     else:
         # Default: Launch Web Control Center

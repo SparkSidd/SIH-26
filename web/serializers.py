@@ -400,4 +400,5 @@ class SimulationStateSerializer:
             "kpis": kpi_data,
             "events": formatted_events,
             "benchmark_comparison": benchmark_comparison,
+            "learning": getattr(sim.coordinator, "learning_telemetry", {"enabled": False, "status": "Disabled", "is_fallback": True}),
         }

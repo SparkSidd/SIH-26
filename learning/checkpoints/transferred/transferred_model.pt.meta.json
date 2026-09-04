@@ -1,0 +1,11 @@
+{
+  "filepath": "learning\\checkpoints\\transferred\\transferred_model.pt",
+  "sha256": "08c252c28efd7c4297467b36ad57c66a3360141ce64df51cd39eee4b9323382e",
+  "training_stage": "transferred_frozen_backbone",
+  "source_domain": "synthetic_warehouse_lifelong_mapf",
+  "target_domain": "sih26123_warehouse_24x16",
+  "metrics": {
+    "final_train_loss": 0.034248382318764925,
+    "best_val_loss": 0.05346417427062988
+  }
+}

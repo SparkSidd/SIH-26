@@ -42,6 +42,8 @@ class AMRSimulation:
         seed: int = 42,
         realtime_factor: float = 1.0,
         enable_recorder: bool = False,
+        learning_enabled: bool = False,
+        learning_checkpoint: Optional[str] = None,
     ):
         self.seed = seed
         self.timestep = timestep
@@ -65,6 +67,8 @@ class AMRSimulation:
             planner_algorithm=planner_algorithm,
             allocator_type=allocator_type,
             event_bus=self.event_bus,
+            learning_enabled=learning_enabled,
+            learning_checkpoint=learning_checkpoint,
         )
         self.safety_supervisor = SafetySupervisor(event_bus=self.event_bus)
         self.executor = ActionExecutor()
