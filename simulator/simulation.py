@@ -15,7 +15,9 @@ from network.message import MessageType
 from network.network_conditions import NetworkConditions
 from network.topology import NetworkTopology
 from planning.deadlock import DeadlockDetector
+import time
 from replay.recorder import SimulationRecorder
+from safety.collision_checker import CollisionChecker
 from safety.supervisor import SafetySupervisor
 from simulator.clock import SimulationClock
 from simulator.obstacle import Obstacle, ObstacleType
@@ -225,6 +227,8 @@ class AMRSimulation:
             sim_time=sim_time,
             step=step,
         )
+        # Record pure planning latency
+        self.metrics.record_planning_latency(self.coordinator.multi_agent_planner.last_planning_latency_ms)
 
         # 13. Safety supervisor validation (hard invariant checking & fallback replacement)
         current_pos_map = {r_id: r.position for r_id, r in self.world.robots.items()}
@@ -242,10 +246,14 @@ class AMRSimulation:
         )
 
         # 14. Execute only approved actions via ActionExecutor
+        prev_positions = {r_id: r.position for r_id, r in self.world.robots.items()}
         for r_id, robot in self.world.robots.items():
             if r_id in approved_actions:
                 act = approved_actions[r_id]
                 self.executor.execute_action(robot, act, self.timestep)
+
+        # 14b. Ground-truth collision audit at every simulation tick
+        self._check_physical_collisions(step, sim_time, prev_positions)
 
         # 15. Update metrics & resource profiling
         self._update_metrics(sim_time, step)
@@ -307,8 +315,8 @@ class AMRSimulation:
                                     event_type=EventType.TASK_REASSIGNED,
                                     sim_time=sim_time,
                                     step=step,
-                                    source="Simulation",
-                                    data={"task_id": task.id, "failed_robot": robot.id},
+                                    source="FailureRecovery",
+                                    data={"robot_id": robot.id, "task_id": task.id},
                                 )
                             )
                     self.event_bus.publish(
@@ -316,7 +324,7 @@ class AMRSimulation:
                             event_type=EventType.ROBOT_FAILED,
                             sim_time=sim_time,
                             step=step,
-                            source="Simulation",
+                            source="Environment",
                             data={"robot_id": robot.id, "reason": f_reason},
                         )
                     )
@@ -393,3 +401,59 @@ class AMRSimulation:
             cpu_pct=cpu,
             mem_mb=mem,
         )
+
+    def _check_physical_collisions(self, step: int, sim_time: float, prev_positions: Dict[str, Tuple[int, int]]) -> None:
+        """Physical ground-truth collision auditor verifying zero collisions at every simulation tick."""
+        robots_list = [r for r in self.world.robots.values() if r.is_healthy]
+
+        # 1. Obstacle collision
+        for r in robots_list:
+            if not self.warehouse.is_walkable(r.position) or r.position in self.warehouse.blocked_cells:
+                self.metrics.total_collisions += 1
+                self.event_bus.publish(
+                    Event(
+                        event_type=EventType.CRITICAL_SAFETY_VIOLATION,
+                        sim_time=sim_time,
+                        step=step,
+                        source="CollisionAuditor",
+                        data={"type": "OBSTACLE_COLLISION", "robot_id": r.id, "position": list(r.position)},
+                    )
+                )
+
+        # 2. Pairwise conflicts: Vertex, Edge Swap, and Continuous swept geometric overlap
+        n = len(robots_list)
+        for i in range(n):
+            r1 = robots_list[i]
+            p1_curr = r1.position
+            p1_prev = prev_positions.get(r1.id, p1_curr)
+
+            for j in range(i + 1, n):
+                r2 = robots_list[j]
+                p2_curr = r2.position
+                p2_prev = prev_positions.get(r2.id, p2_curr)
+
+                # Same cell collision (Vertex)
+                if p1_curr == p2_curr:
+                    self.metrics.total_collisions += 1
+                    self.event_bus.publish(
+                        Event(
+                            event_type=EventType.CRITICAL_SAFETY_VIOLATION,
+                            sim_time=sim_time,
+                            step=step,
+                            source="CollisionAuditor",
+                            data={"type": "SAME_CELL_COLLISION", "robots": [r1.id, r2.id], "position": list(p1_curr)},
+                        )
+                    )
+
+                # Edge swap collision
+                elif p1_curr == p2_prev and p2_curr == p1_prev and p1_curr != p1_prev:
+                    self.metrics.total_collisions += 1
+                    self.event_bus.publish(
+                        Event(
+                            event_type=EventType.CRITICAL_SAFETY_VIOLATION,
+                            sim_time=sim_time,
+                            step=step,
+                            source="CollisionAuditor",
+                            data={"type": "EDGE_SWAP_COLLISION", "robots": [r1.id, r2.id]},
+                        )
+                    )

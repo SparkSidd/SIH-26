@@ -24,11 +24,11 @@ class BaselineRunner:
     ) -> AMRSimulation:
         """Create exact scenario instance configured for the selected baseline."""
         if baseline == BaselineType.STOP_AND_WAIT:
-            # Uses A* planner with reactive stop-and-wait upon conflict + nearest allocator
+            # Uses uncoordinated A* with reactive stop-and-wait yielding upon conflict + nearest allocator
             return ScenarioBuilder.build_scenario(
                 scenario_id=scenario_id,
                 seed=seed,
-                planner_algorithm="astar",
+                planner_algorithm="stop_and_wait",
                 allocator_type="nearest",
                 robot_count=robot_count,
             )

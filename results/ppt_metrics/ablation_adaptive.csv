@@ -1,0 +1,4 @@
+ablation,seed,adaptive_completion_time,fixed_completion_time,adaptive_waiting,fixed_waiting,adaptive_deadlocks,fixed_deadlocks
+Adaptive vs Fixed LOCAL (S1),42,7.35,7.35,43,43,0,0
+Adaptive vs Fixed LOCAL (S1),101,8.05,8.05,3,3,0,0
+Adaptive vs Fixed LOCAL (S1),202,7.7,7.7,82,82,0,0

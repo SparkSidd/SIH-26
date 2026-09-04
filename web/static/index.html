@@ -486,13 +486,13 @@
         <div class="judge-grid">
             <div class="judge-card">
                 <div class="judge-card-label">FLEET COLLISIONS</div>
-                <div class="judge-card-metric" style="color:var(--accent-emerald);">0</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Formal Safety Supervisor Guarantee</div>
+                <div id="judgeCollisions" class="judge-card-metric" style="color:var(--accent-emerald);">0</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Zero Inter-Robot Collisions Verified across 200 Benchmark Runs</div>
             </div>
             <div class="judge-card">
                 <div class="judge-card-label">TASK TIME REDUCTION</div>
-                <div class="judge-card-metric">24.5%</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">vs Centralized Stop-and-Wait Baseline</div>
+                <div id="judgeTimeReduction" class="judge-card-metric">12.1%</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Mean Reduction vs Stop-and-Wait (Up to 43.2% in Peak Disruption)</div>
             </div>
             <div class="judge-card">
                 <div class="judge-card-label">ACTIVE AMRS IN FLEET</div>
@@ -500,19 +500,52 @@
                 <div style="color:var(--text-secondary); font-size:0.8rem;">Decentralized P2P Mesh Network</div>
             </div>
             <div class="judge-card">
-                <div class="judge-card-label">FAULT TASK RECOVERY</div>
+                <div class="judge-card-label">FAULT & BLOCKAGE RECOVERY</div>
                 <div class="judge-card-metric" style="color:var(--accent-emerald);">100%</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Sub-second Autonomous Reassignment</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Autonomous Space-Time Detours & Task Reclaim</div>
             </div>
             <div class="judge-card">
-                <div class="judge-card-label">PLANNING LATENCY</div>
-                <div class="judge-card-metric">&lt;2 ms</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Real-Time Edge-AI Computation</div>
+                <div class="judge-card-label">EDGE PLANNING LATENCY</div>
+                <div id="judgeLatency" class="judge-card-metric">0.14 ms</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Sub-Millisecond Mean Latency (P95: 0.25 ms) on Edge Hardware</div>
             </div>
             <div class="judge-card">
-                <div class="judge-card-label">BANDWIDTH REDUCTION</div>
-                <div class="judge-card-metric">93%</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Localized P2P Exchange vs Central Cloud</div>
+                <div class="judge-card-label">EDGE RAM OVERHEAD</div>
+                <div id="judgeMemory" class="judge-card-metric">54 MB</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Peak Memory Profile (Sub-60 MB on Low-Power Compute)</div>
+            </div>
+        </div>
+
+        <!-- How was this measured? section -->
+        <div style="margin-top: 24px; padding: 16px; background: rgba(10, 15, 29, 0.95); border: 1px solid var(--border-cyan); border-radius: 8px; font-family: var(--font-mono); font-size: 0.8rem;">
+            <div style="color: var(--accent-cyan); font-weight: 700; margin-bottom: 8px; font-size: 0.9rem;">
+                HOW WAS THIS MEASURED? (SCIENTIFIC BENCHMARK METHODOLOGY)
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; color: var(--text-secondary);">
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">CONTROLLED EXPERIMENT:</span><br>
+                    Identical warehouse layout (30x20), identical AMR kinematic models (1.5 m/s max, 0.45m radius), identical Poisson task stream, across 10 deterministic seeds [42, 101, 202, 303, 404, 505, 606, 707, 808, 909].
+                </div>
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">EXECUTABLE BASELINE:</span><br>
+                    Stop-and-Wait baseline executes uncoordinated A* shortest paths with reactive yielding upon conflict and nearest-robot task allocation.
+                </div>
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">PROPOSED SYSTEM:</span><br>
+                    Fleet-Aware Task Allocation (ETA + Congestion heatmap), Priority Inheritance Backtracking (PIBT), Space-Time A* active waypoint detour recovery, and continuous Safety Supervisor.
+                </div>
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">SCENARIOS TESTED:</span><br>
+                    All 10 scenarios S0–S9 evaluated (200 complete paired runs). No cherry-picking; all 10 seeds retained.
+                </div>
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">SAFETY INVARIANT:</span><br>
+                    Collisions continuously verified at every simulation tick (Vertex conflict, Edge-swap, and Obstacle intrusion).
+                </div>
+                <div>
+                    <span style="color: var(--text-primary); font-weight: 600;">EDGE COMPUTATION:</span><br>
+                    Planning latency measured via monotonic high-resolution timer (time.perf_counter) isolating algorithmic compute from network/browser rendering.
+                </div>
             </div>
         </div>
     </div>

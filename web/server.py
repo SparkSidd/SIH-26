@@ -149,7 +149,7 @@ class ControlCenterManager:
             6: "Phase 6/9: AMR Hardware Fault Injected — Automatic task recovery & handover",
             7: "Phase 7/9: Wireless Channel Degradation — Operating under 25% packet loss & latency",
             8: "Phase 8/9: Fleet Stabilization & Resilient Recovery — Zero collisions maintained",
-            9: "Phase 9/9: Benchmark Telemetry Verified — 24.5% task time reduction vs Stop-and-Wait",
+            9: "Phase 9/9: Benchmark Telemetry Verified — 12.1% mean / up to 43.2% peak task time reduction vs Stop-and-Wait",
         }
         return descriptions.get(self.demo_phase, "Phase Complete")
 

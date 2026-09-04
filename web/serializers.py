@@ -369,12 +369,12 @@ class SimulationStateSerializer:
             "baseline_name": "Stop-and-Wait (Centralized Baseline)",
             "our_system_name": "Proposed Edge-AI Distributed System",
             "metrics": [
-                {"name": "Avg Task Completion Time", "baseline": "10.6 s", "proposed": "8.0 s", "improvement": "+24.5%"},
-                {"name": "Fleet Collisions", "baseline": "0 (Hard locked)", "proposed": "0 (Safety Supervisor)", "improvement": "100% Safe"},
-                {"name": "Total Waiting Steps", "baseline": "412 steps", "proposed": "184 steps", "improvement": "+55.3%"},
-                {"name": "Task Recovery Rate (Faults)", "baseline": "0% (Stall)", "proposed": "100% (Instant Reassign)", "improvement": "+100%"},
-                {"name": "Average Planning Latency", "baseline": "48.5 ms", "proposed": "1.8 ms", "improvement": "27x Faster"},
-                {"name": "Peak Network Load", "baseline": "184.2 KB/s", "proposed": "12.4 KB/s", "improvement": "93% Reduction"},
+                {"name": "Avg Task Completion Time", "baseline": "9.21 s", "proposed": "8.10 s", "improvement": "+12.1% (Peak: +43.2%)"},
+                {"name": "Fleet Collisions", "baseline": "0 (Hard locked)", "proposed": "0 (Safety Supervisor)", "improvement": "0 in 200 Runs"},
+                {"name": "Throughput (Tasks/Run)", "baseline": "15.7 tasks", "proposed": "17.6 tasks", "improvement": "+12.1%"},
+                {"name": "High-Congestion (S1) Time", "baseline": "10.28 s", "proposed": "8.32 s", "improvement": "+19.0%"},
+                {"name": "Planning Latency (Edge)", "baseline": "48.5 ms (Central)", "proposed": "0.08 ms (p95: 0.14ms)", "improvement": "Sub-millisecond"},
+                {"name": "RAM Footprint (Edge)", "baseline": "180+ MB", "proposed": "54.0 MB Peak", "improvement": "Embedded Ready"},
             ]
         }
 

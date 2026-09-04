@@ -182,26 +182,12 @@ def run_headless(
     print("=======================================================\n")
 
 
-def run_benchmark(seeds_count: int = 5, robot_count: int = 6) -> None:
+def run_benchmark(seeds_count: int = 10, robot_count: int = 6) -> None:
     """Execute standard benchmark suite comparing baselines across all scenarios."""
+    from benchmark.sih_metrics_audit import SIHMetricsAuditor
     seeds = [42, 101, 202, 303, 404, 505, 606, 707, 808, 909][:seeds_count]
-    runner = BenchmarkRunner(seeds=seeds, steps_per_run=400)
-
-    print("==================================================================")
-    print(" STARTING SIH26123 FULL BENCHMARK SUITE")
-    print("==================================================================")
-
-    scenarios_to_test = [
-        ScenarioID.S0_NORMAL,
-        ScenarioID.S1_HIGH_CONGESTION,
-        ScenarioID.S3_PACKET_LOSS,
-        ScenarioID.S4_AISLE_BLOCKAGE,
-        ScenarioID.S5_ROBOT_FAILURE,
-        ScenarioID.S9_FULL_COMBINED_DISTURBANCE,
-    ]
-
-    for sc in scenarios_to_test:
-        runner.run_scenario_comparison(scenario_id=sc, robot_count=robot_count)
+    auditor = SIHMetricsAuditor(seeds=seeds, steps_per_run=350, robot_count=robot_count)
+    auditor.run_full_benchmark()
 
 
 def main():

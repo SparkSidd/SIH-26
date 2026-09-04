@@ -108,4 +108,7 @@ class FleetMetrics:
             "total_messages_sent": last_snap.total_messages_sent if last_snap else 0,
             "total_messages_dropped": last_snap.total_messages_dropped if last_snap else 0,
             "average_planning_latency_ms": round(float(np.mean(self.planning_latencies_ms)), 2) if self.planning_latencies_ms else 0.0,
+            "median_planning_latency_ms": round(float(np.median(self.planning_latencies_ms)), 2) if self.planning_latencies_ms else 0.0,
+            "p95_planning_latency_ms": round(float(np.percentile(self.planning_latencies_ms, 95)), 2) if self.planning_latencies_ms else 0.0,
+            "max_planning_latency_ms": round(float(np.max(self.planning_latencies_ms)), 2) if self.planning_latencies_ms else 0.0,
         }

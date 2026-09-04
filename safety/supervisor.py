@@ -101,6 +101,39 @@ class SafetySupervisor:
             approved_actions[robot_id] = action
             occupied_targets.add(target)
 
+        # 3. Post-pass: ensure strict invariant validity with cascading yield
+        for _ in range(len(sorted_robots) + 1):
+            report = SafetyInvariants.verify_action_batch(
+                approved_actions, current_positions, blocked_cells, failed_robot_ids
+            )
+            if report.is_safe:
+                break
+
+            # If conflict exists, the moving robot must yield to the stationary robot
+            # or lower priority robot yields if both are moving
+            handled = False
+            for r_viol in (report.violating_robots or []):
+                act = approved_actions.get(r_viol)
+                if not act:
+                    continue
+                curr = current_positions.get(r_viol, act.target_cell)
+                if act.target_cell != curr:
+                    self.total_interventions += 1
+                    approved_actions[r_viol] = SafetyFallback.create_wait_fallback(
+                        r_viol, curr, f"Cascading yield to resolve {report.violation_type}"
+                    )
+                    self._emit_intervention(r_viol, f"CASCADE_{report.violation_type}", sim_time, step)
+                    handled = True
+                    break
+
+            if not handled and report.violating_robots:
+                # Fallback: force the second violating robot to wait
+                r_viol = report.violating_robots[-1]
+                curr = current_positions.get(r_viol, approved_actions[r_viol].target_cell)
+                approved_actions[r_viol] = SafetyFallback.create_wait_fallback(
+                    r_viol, curr, "Emergency safety invariant enforcement"
+                )
+
         return approved_actions
 
     def _emit_intervention(self, robot_id: str, reason: str, sim_time: float, step: int) -> None:

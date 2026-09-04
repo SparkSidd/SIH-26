@@ -140,14 +140,15 @@ class SpaceTimeAStarPlanner:
             if t_rel >= self.max_horizon:
                 continue
 
-            # Generate actions: Move to 4-neighbors or WAIT in place
+            # Generate actions: Move to 4-neighbors; only WAIT if avoiding dynamic reservations
             neighbors = [
                 (current_pos[0] + 1, current_pos[1]),
                 (current_pos[0] - 1, current_pos[1]),
                 (current_pos[0], current_pos[1] + 1),
                 (current_pos[0], current_pos[1] - 1),
-                current_pos,  # Wait in place
             ]
+            if reservation_table is not None:
+                neighbors.append(current_pos)  # Wait in place
 
             next_t_rel = t_rel + 1
             next_t_abs = t_abs + 1
