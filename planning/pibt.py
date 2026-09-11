@@ -2,7 +2,8 @@
 
 import math
 import random
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from collections import deque
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 
 class PIBTPlanner:
@@ -14,6 +15,38 @@ class PIBTPlanner:
 
     def __init__(self, seed: int = 42):
         self.rng = random.Random(seed)
+        self._bfs_cache: Dict[Tuple[int, int], Dict[Tuple[int, int], int]] = {}
+
+    def _get_distance_to_goal(
+        self,
+        goal_pos: Tuple[int, int],
+        is_walkable_fn: Callable[[Tuple[int, int]], bool],
+    ) -> Dict[Tuple[int, int], int]:
+        """Compute or retrieve reverse BFS distance map from goal_pos over static walkable cells."""
+        if goal_pos in self._bfs_cache:
+            return self._bfs_cache[goal_pos]
+
+        # Use static walkable geometry if available (to allow dynamic blockage encounters to trigger A* rerouting)
+        walkable_check = is_walkable_fn
+        self_obj = getattr(is_walkable_fn, "__self__", None)
+        if self_obj is not None and hasattr(self_obj, "is_static_walkable"):
+            walkable_check = self_obj.is_static_walkable
+
+        dist_map: Dict[Tuple[int, int], int] = {goal_pos: 0}
+        queue = deque([goal_pos])
+
+        while queue:
+            curr = queue.popleft()
+            d = dist_map[curr]
+            cx, cy = curr
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nbr = (cx + dx, cy + dy)
+                if nbr not in dist_map and walkable_check(nbr):
+                    dist_map[nbr] = d + 1
+                    queue.append(nbr)
+
+        self._bfs_cache[goal_pos] = dist_map
+        return dist_map
 
     def plan_step(
         self,
@@ -23,8 +56,10 @@ class PIBTPlanner:
         priorities: Dict[str, float],
         is_walkable_fn: Callable[[Tuple[int, int]], bool],
         blocked_cells: Optional[Set[Tuple[int, int]]] = None,
+        congestion_model: Optional[Any] = None,
+        preferred_directions: Optional[Dict[Tuple[int, int], Tuple[int, int]]] = None,
     ) -> Dict[str, Tuple[int, int]]:
-        """Compute next 1-step movement for each robot using PIBT."""
+        """Compute next 1-step movement for each robot using PIBT with congestion and execution awareness."""
         blocked = blocked_cells or set()
         
         # Next cell decisions: robot_id -> next_pos
@@ -49,6 +84,8 @@ class PIBTPlanner:
                     reserved_targets=reserved_targets,
                     is_walkable_fn=is_walkable_fn,
                     blocked_cells=blocked,
+                    congestion_model=congestion_model,
+                    preferred_directions=preferred_directions,
                 )
 
         # Fill any unresolved robots with their current position (WAIT)
@@ -68,6 +105,8 @@ class PIBTPlanner:
         is_walkable_fn: Callable[[Tuple[int, int]], bool],
         blocked_cells: Set[Tuple[int, int]],
         visited_in_chain: Optional[Set[str]] = None,
+        congestion_model: Optional[Any] = None,
+        preferred_directions: Optional[Dict[Tuple[int, int], Tuple[int, int]]] = None,
     ) -> bool:
         """Recursive priority inheritance attempt to place robot_id into its best candidate cell."""
         if visited_in_chain is None:
@@ -92,13 +131,36 @@ class PIBTPlanner:
         # Filter walkable & unblocked
         valid_candidates = [c for c in candidates if is_walkable_fn(c) and c not in blocked_cells]
 
-        # Sort candidates by distance to goal
-        valid_candidates.sort(
-            key=lambda c: (
-                abs(c[0] - goal_pos[0]) + abs(c[1] - goal_pos[1]),
-                0 if c != curr_pos else 0.1,  # Prefer moving over staying if distance is equal
-            )
-        )
+        # Sort candidates considering obstacle-aware distance, congestion avoidance, turns, and flow preference
+        dist_map = self._get_distance_to_goal(goal_pos, is_walkable_fn)
+
+        def _candidate_score(c: Tuple[int, int]) -> float:
+            base_dist = float(dist_map.get(c, abs(c[0] - goal_pos[0]) + abs(c[1] - goal_pos[1])))
+            # Flow guidance: with-flow is discounted (-0.15), counter-flow is penalized (+0.35)
+            flow_penalty = 0.0
+            if preferred_directions is not None and c != curr_pos:
+                p_dir = preferred_directions.get(curr_pos) or preferred_directions.get(c)
+                if p_dir is not None:
+                    step_dir = (c[0] - curr_pos[0], c[1] - curr_pos[1])
+                    if step_dir == (-p_dir[0], -p_dir[1]):
+                        goal_dist = abs(curr_pos[0] - goal_pos[0]) + abs(curr_pos[1] - goal_pos[1])
+                        flow_penalty = 2.4 if goal_dist > 2 else 0.3
+                    elif step_dir == (p_dir[0], p_dir[1]):
+                        flow_penalty = -0.3
+
+            # Safe waiting: penalize waiting in congested/chokepoint cells to encourage moving to clear havens
+            wait_penalty = 0.0
+            if c == curr_pos and goal_pos != curr_pos:
+                cong_at_curr = congestion_model.get_cell_congestion(curr_pos) if congestion_model is not None else 0.0
+                wait_penalty = 0.18 + 0.08 * min(cong_at_curr, 4.0)
+
+            cong_penalty = 0.0
+            if congestion_model is not None and c != curr_pos:
+                cong_penalty = 0.12 * min(congestion_model.get_cell_congestion(c), 5.0)
+
+            return base_dist + wait_penalty + cong_penalty + flow_penalty
+
+        valid_candidates.sort(key=_candidate_score)
 
         for candidate in valid_candidates:
             # Check if candidate is already reserved by an agent

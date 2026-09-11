@@ -126,6 +126,13 @@ class Warehouse:
         x, y = pos
         return 0 <= x < self.width and 0 <= y < self.height
 
+    def is_static_walkable(self, pos: Tuple[int, int]) -> bool:
+        """Check if cell is structurally free from permanent walls or storage racks (ignoring dynamic temporary blockages)."""
+        if not self.is_within_bounds(pos):
+            return False
+        cell_val = self.grid[pos[0], pos[1]]
+        return cell_val not in (CellType.WALL.value, CellType.SHELF.value)
+
     def is_walkable(self, pos: Tuple[int, int]) -> bool:
         """Check if cell is free to be traversed by a robot."""
         if not self.is_within_bounds(pos):

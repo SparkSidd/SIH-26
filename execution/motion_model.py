@@ -2,7 +2,7 @@
 
 import math
 from typing import Tuple
-from simulator.robot import Robot, RobotGeometry
+from simulator.robot import Robot, RobotGeometry, RobotState
 
 
 class MotionModel:

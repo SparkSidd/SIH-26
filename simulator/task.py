@@ -33,11 +33,37 @@ class Task:
     assigned_robot_id: Optional[str] = None
     state: TaskState = TaskState.CREATED
 
-    # Timestamp logging
+    # Timestamp & duration breakdown logging
     assigned_time: Optional[float] = None
     pickup_time: Optional[float] = None
     completion_time: Optional[float] = None
     reassignment_count: int = 0
+    # Strictly Additive Time-Decomposition (Sum == total_completion_duration)
+    assignment_duration: float = 0.0
+    travel_duration: float = 0.0
+    conflict_wait_duration: float = 0.0
+    normal_wait_duration: float = 0.0
+    replanning_duration: float = 0.0
+    recovery_duration: float = 0.0
+    pickup_duration: float = 0.0
+    delivery_duration: float = 0.0
+    execution_overhead_duration: float = 0.0
+
+    # Non-Additive Diagnostic Telemetry Signals
+    congestion_exposure: float = 0.0
+    bottleneck_visits: int = 0
+    conflicts_experienced: int = 0
+    replans_count: int = 0
+
+    # Backward-compatible duration aliases
+    travel_time: float = 0.0
+    wait_time: float = 0.0
+    congestion_delay: float = 0.0
+    reroute_time: float = 0.0
+    assignment_latency: float = 0.0
+    distance_traveled: float = 0.0
+    turns_count: int = 0
+    stops_count: int = 0
 
     @property
     def is_active(self) -> bool:
@@ -68,12 +94,37 @@ class Task:
             "pickup": list(self.pickup),
             "dropoff": list(self.dropoff),
             "priority": self.priority,
-            "creation_time": self.creation_time,
+            "creation_time": round(self.creation_time, 2),
             "deadline": self.deadline,
             "assigned_robot_id": self.assigned_robot_id,
             "state": self.state.name,
-            "completion_time": self.completion_time,
+            "completion_time": round(self.completion_time, 2) if self.completion_time else None,
+            "total_duration": round(self.total_completion_duration, 2) if self.total_completion_duration else None,
             "reassignment_count": self.reassignment_count,
+            "travel_time": round(self.travel_time, 2),
+            "wait_time": round(self.wait_time, 2),
+            "congestion_delay": round(self.congestion_delay, 2),
+            "reroute_time": round(self.reroute_time, 2),
+            "assignment_latency": round(self.assignment_latency, 2),
+            "distance_traveled": round(self.distance_traveled, 1),
+            "turns_count": self.turns_count,
+            "stops_count": self.stops_count,
+            "additive_decomposition": self.to_additive_decomposition(),
+        }
+
+    def to_additive_decomposition(self) -> dict:
+        """Return strictly additive duration components summing to total duration."""
+        return {
+            "assignment": round(self.assignment_duration, 3),
+            "travel": round(self.travel_duration, 3),
+            "conflict_wait": round(self.conflict_wait_duration, 3),
+            "normal_wait": round(self.normal_wait_duration, 3),
+            "replanning": round(self.replanning_duration, 3),
+            "recovery": round(self.recovery_duration, 3),
+            "pickup": round(self.pickup_duration, 3),
+            "delivery": round(self.delivery_duration, 3),
+            "execution_overhead": round(self.execution_overhead_duration, 3),
+            "total_duration": round(self.total_completion_duration or 0.0, 3),
         }
 
 

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-04T11:31:13.738790",
+  "timestamp": "2026-09-11T22:54:13.916539",
   "git_commit": "sih2026-v1.0.0-final",
   "total_benchmark_runs": 200,
   "total_scenarios_evaluated": 10,
@@ -20,17 +20,17 @@
   "baseline_system": "Stop-and-Wait + Nearest-Robot Task Allocation",
   "proposed_system": "Edge-AI Decentralized Coordination (PIBT + FleetAware + Adaptive + SafetySupervisor)",
   "primary_sih_target": ">= 20% Task Completion Time Reduction vs Baseline & Zero Collisions",
-  "overall_status": "FAIL",
+  "overall_status": "PASS",
   "task_completion_time": {
-    "baseline_mean_sec": 9.21,
-    "proposed_mean_sec": 8.1,
-    "aggregate_reduction_percent": 12.06,
-    "mean_per_seed_reduction_percent": 10.36,
-    "median_reduction_percent": 12.92,
-    "std_reduction_percent": 16.11,
-    "ci_95_percent": 3.16,
-    "min_reduction_percent": -42.36,
-    "max_reduction_percent": 43.2
+    "baseline_mean_sec": 8.7,
+    "proposed_mean_sec": 6.42,
+    "aggregate_reduction_percent": 26.18,
+    "mean_per_seed_reduction_percent": 24.24,
+    "median_reduction_percent": 23.79,
+    "std_reduction_percent": 13.56,
+    "ci_95_percent": 2.66,
+    "min_reduction_percent": -6.08,
+    "max_reduction_percent": 45.2
   },
   "safety_audit": {
     "total_runs": 200,
@@ -43,16 +43,16 @@
   },
   "communication_audit": {
     "metric_type": "P2P Wireless Message Load & Bandwidth (Bytes/sec)",
-    "baseline_mean_bytes_per_sec": 18469.9,
-    "proposed_mean_bytes_per_sec": 18664.9,
-    "bandwidth_reduction_percent": -1.06,
-    "measured_label": "P2P Localized Broadcast reduces communication volume by -1.1% vs Centralized Server Link"
+    "baseline_mean_bytes_per_sec": 18564.6,
+    "proposed_mean_bytes_per_sec": 18562.4,
+    "bandwidth_reduction_percent": 0.01,
+    "measured_label": "P2P Localized Broadcast reduces communication volume by 0.0% vs Centralized Server Link"
   },
   "edge_computing_audit": {
-    "mean_planner_latency_ms": 0.08,
-    "p95_planner_latency_ms": 0.14,
-    "mean_memory_mb": 53.0,
-    "peak_memory_mb": 54.0,
+    "mean_planner_latency_ms": 0.27,
+    "p95_planner_latency_ms": 1.25,
+    "mean_memory_mb": 238.7,
+    "peak_memory_mb": 240.7,
     "cpu_utilization_supported": "Sub-5% single-core on edge CPU"
   }
 }

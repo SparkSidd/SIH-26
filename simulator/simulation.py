@@ -314,6 +314,8 @@ class AMRSimulation:
                             task.assigned_robot_id = None
                             task.priority += 1.0
                             robot.current_task_id = None
+                            robot.has_payload = False
+                            robot.reset_wait()
                             self.event_bus.publish(
                                 Event(
                                     event_type=EventType.TASK_REASSIGNED,
@@ -335,7 +337,7 @@ class AMRSimulation:
                 self.scheduled_failures.remove((f_step, f_robot_id, f_reason))
 
     def _update_task_lifecycles(self, sim_time: float, step: int) -> None:
-        """Advance robot task interaction states (picking up, delivering)."""
+        """Advance robot task interaction states (picking up, delivering) and track duration breakdowns."""
         for r_id, robot in self.world.robots.items():
             if not robot.current_task_id or not robot.is_healthy:
                 continue
@@ -344,10 +346,49 @@ class AMRSimulation:
             if not task:
                 continue
 
+            # Strictly Additive Task Duration Breakdown
+            if task.is_active:
+                dt = self.clock.dt
+                if task.assigned_time is not None:
+                    task.assignment_duration = max(0.0, task.assigned_time - task.creation_time)
+                    task.assignment_latency = task.assignment_duration
+
+                if robot.velocity > 0:
+                    task.travel_duration += dt
+                    task.travel_time += dt
+                elif robot.state == RobotState.REPLANNING:
+                    task.replanning_duration += dt
+                    task.reroute_time += dt
+                elif robot.state == RobotState.BLOCKED:
+                    task.recovery_duration += dt
+                    task.stops_count += 1
+                elif robot.state == RobotState.WAITING:
+                    task.stops_count += 1
+                    if getattr(robot, "wait_reason", "") in (
+                        "Deadlock cycle resolution / yielding",
+                        "Yielding to higher-priority peer",
+                    ) or robot.wait_steps > 0:
+                        task.conflict_wait_duration += dt
+                        task.wait_time += dt
+                    else:
+                        task.normal_wait_duration += dt
+                        task.wait_time += dt
+
+                # Non-additive telemetry: spatial congestion exposure
+                cell_cong = self.coordinator.congestion_model.get_cell_congestion(robot.position)
+                task.congestion_exposure += cell_cong * dt
+                if cell_cong >= 1.0:
+                    task.congestion_delay += 0.05 * min(cell_cong, 4.0)
+
+            # Enforce consistency: if task has not yet reached pickup, robot cannot carry payload
+            if task.state == TaskState.ASSIGNED and robot.position != task.pickup and not task.pickup_time:
+                robot.has_payload = False
+
             # Arrived at pickup
             if robot.position == task.pickup and task.state == TaskState.ASSIGNED:
                 task.state = TaskState.PICKED_UP
                 task.pickup_time = sim_time
+                task.pickup_duration += self.clock.dt
                 robot.has_payload = True
                 robot.set_state(RobotState.DELIVERING, "Arrived at pickup, transitioning to delivery")
                 robot.target_position = task.dropoff
@@ -361,15 +402,44 @@ class AMRSimulation:
                     )
                 )
 
-            # Arrived at dropoff
-            elif robot.position == task.dropoff and task.state == TaskState.PICKED_UP:
+            # Arrived at dropoff (MUST have payload or be in PICKED_UP state)
+            elif robot.position == task.dropoff and (task.state == TaskState.PICKED_UP or robot.has_payload):
                 task.state = TaskState.DELIVERED
                 task.completion_time = sim_time
+                task.delivery_duration += self.clock.dt
                 robot.has_payload = False
-                robot.set_state(RobotState.IDLE, "Delivered payload")
-                robot.current_task_id = None
-                robot.target_position = None
+                robot.tasks_completed += 1
                 robot.reset_wait()
+
+                # Strictly additive closure: allocate discrete clock residual to execution overhead
+                total_dur = sim_time - task.creation_time
+                subtotal = (
+                    task.assignment_duration
+                    + task.travel_duration
+                    + task.conflict_wait_duration
+                    + task.normal_wait_duration
+                    + task.replanning_duration
+                    + task.recovery_duration
+                    + task.pickup_duration
+                    + task.delivery_duration
+                )
+                task.execution_overhead_duration = max(0.0, total_dur - subtotal)
+
+                # Phase 3: Immediate transition to pre-assigned rolling handover task
+                if robot.next_task_id and robot.next_task_id in self.world.tasks:
+                    next_task = self.world.tasks[robot.next_task_id]
+                    robot.current_task_id = next_task.id
+                    robot.next_task_id = None
+                    robot.target_position = next_task.pickup
+                    next_task.state = TaskState.ASSIGNED
+                    next_task.assigned_robot_id = robot.id
+                    next_task.assigned_time = sim_time
+                    next_task.assignment_latency = sim_time - next_task.creation_time
+                    robot.set_state(RobotState.TASK_ASSIGNED, "Immediate handover to pre-assigned task")
+                else:
+                    robot.set_state(RobotState.IDLE, "Delivered payload")
+                    robot.current_task_id = None
+                    robot.target_position = None
                 
                 # Record metrics
                 duration = task.total_completion_duration or (sim_time - task.creation_time)
@@ -384,6 +454,7 @@ class AMRSimulation:
                         data={"robot_id": robot.id, "task_id": task.id, "duration": duration},
                     )
                 )
+
 
     def _update_metrics(self, sim_time: float, step: int) -> None:
         """Gather edge profiling samples and compute snapshot."""

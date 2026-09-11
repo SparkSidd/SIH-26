@@ -66,16 +66,49 @@ class FleetCoordinator:
         # Track forced-reroute cooldowns (robot_id -> step_last_rerouted)
         self._reroute_cooldown: Dict[str, int] = {}
         self._REROUTE_COOLDOWN_STEPS = 12
+        # Reroute deduplication signatures: robot_id -> (start_pos, goal_pos, frozenset(blocked_cells))
+        self._last_reroute_signature: Dict[str, Tuple[Tuple[int, int], Tuple[int, int], frozenset]] = {}
+        self._reroute_failures: Dict[str, int] = {}
 
         # Active waypoint paths set by reroute A* — PIBT follows these waypoint-by-waypoint
-        # robot_id -> remaining waypoints (list of positions to follow in order)
         self._active_waypoints: Dict[str, List[Tuple[int, int]]] = {}
-        # Track when the waypoint path was assigned (to expire stale paths)
         self._waypoint_assigned_step: Dict[str, int] = {}
 
-        # Real telemetry: latest Wait-For Graph edges and deadlock cycles
+        # Real telemetry: latest Wait-For Graph edges, deadlock cycles, and coordination mode
         self.last_wfg_edges: List[Dict[str, Any]] = []
         self.last_deadlock_cycles: List[List[str]] = []
+        self.current_coordination_mode: CoordinationMode = CoordinationMode.LOCAL
+
+        # Phase 7: Preferred corridor flow directions (soft traffic guidance)
+        self.preferred_directions: Dict[Tuple[int, int], Tuple[int, int]] = {}
+        self._preferred_directions_initialized: bool = False
+
+    def _setup_topology_preferred_directions(self, is_walkable_fn: Callable[[Tuple[int, int]], bool]) -> None:
+        """Assign soft flow directions according to warehouse topology (choke passages or cross-aisle highways)."""
+        self.preferred_directions.clear()
+        mid_x = self.map_width // 2
+        # Check if central dividing wall exists (e.g. choke_point layout)
+        is_choke_layout = not is_walkable_fn((mid_x, 9))
+
+        if is_choke_layout:
+            # Choke-point warehouse: choke passages are shared bidirectional conduits
+            # Do not restrict flow, allowing AMRs to take the closest choke passage without vertical detours
+            self.preferred_directions.clear()
+        else:
+            # Corridor-heavy warehouse: dual-lane paired cross-aisle highways
+            for x in range(self.map_width):
+                if abs(x - mid_x) <= 1:
+                    continue
+                self.preferred_directions[(x, 2)] = (1, 0)   # Top East-bound
+                self.preferred_directions[(x, 1)] = (-1, 0)  # Top West-bound
+                self.preferred_directions[(x, 9)] = (1, 0)   # Center East-bound
+                self.preferred_directions[(x, 10)] = (-1, 0) # Center West-bound
+                self.preferred_directions[(x, 17)] = (1, 0)  # Bottom East-bound
+                self.preferred_directions[(x, 18)] = (-1, 0) # Bottom West-bound
+
+    def _initialize_preferred_directions(self) -> None:
+        """Initial default directions before topology check."""
+        self._preferred_directions_initialized = False
 
     def _invalidate_waypoints_if_blocked(
         self, robot_id: str, blocked_cells: Set[Tuple[int, int]]
@@ -95,6 +128,8 @@ class FleetCoordinator:
             return
         while path and path[0] == current_pos:
             path.pop(0)
+            # Progress resets failure backoff
+            self._reroute_failures[robot_id] = 0
         if not path:
             del self._active_waypoints[robot_id]
             if robot_id in self._waypoint_assigned_step:
@@ -110,6 +145,11 @@ class FleetCoordinator:
         step: int,
     ) -> Dict[str, RobotAction]:
         """Execute step coordination and return proposed actions for all robots."""
+        # 0. Initialize topology-aware highway directions once map is accessible
+        if not self._preferred_directions_initialized and is_walkable_fn is not None:
+            self._preferred_directions_initialized = True
+            self._setup_topology_preferred_directions(is_walkable_fn)
+
         # 1. Update congestion heatmap
         robot_positions = {r_id: r.position for r_id, r in robots.items()}
         robot_paths = {r_id: r.planned_path for r_id, r in robots.items() if r.planned_path}
@@ -148,6 +188,7 @@ class FleetCoordinator:
                 # Clear any stale waypoints
                 self._active_waypoints.pop(r_id, None)
                 self._waypoint_assigned_step.pop(r_id, None)
+                self._last_reroute_signature.pop(r_id, None)
                 if self.event_bus:
                     self.event_bus.publish(Event(
                         event_type=EventType.TASK_REASSIGNED,
@@ -158,12 +199,16 @@ class FleetCoordinator:
                               "reason": "Goal cell blocked — task requeued for reassignment"},
                     ))
 
-        # 3. Allocate unassigned queued tasks
-        unassigned_tasks = [t for t in tasks.values() if t.state in (TaskState.CREATED, TaskState.QUEUED)]
+        # 3. Allocate unassigned queued tasks with rolling lookahead handover
+        pre_reserved_ids = {r.next_task_id for r in robots.values() if r.next_task_id}
+        unassigned_tasks = [
+            t for t in tasks.values()
+            if t.state in (TaskState.CREATED, TaskState.QUEUED) and t.id not in pre_reserved_ids
+        ]
         if unassigned_tasks:
             if self.allocator_type == "fleet_aware":
                 assignments = self.fleet_allocator.allocate(
-                    unassigned_tasks, robots, self.congestion_model, is_walkable_fn
+                    unassigned_tasks, robots, self.congestion_model, is_walkable_fn, all_tasks=tasks
                 )
             else:
                 assignments = self.nearest_allocator.allocate(unassigned_tasks, robots)
@@ -171,15 +216,41 @@ class FleetCoordinator:
             for robot_id, task_id in assignments:
                 robot = robots[robot_id]
                 task = tasks[task_id]
-                robot.current_task_id = task.id
-                robot.target_position = task.pickup
-                robot.set_state(RobotState.TASK_ASSIGNED, "Assigned new task")
-                task.state = TaskState.ASSIGNED
-                task.assigned_robot_id = robot.id
-                task.assigned_time = sim_time
-                # New task assignment invalidates old waypoints
-                if robot_id in self._active_waypoints:
-                    del self._active_waypoints[robot_id]
+
+                if robot.current_task_id is None:
+                    # Immediate assignment for idle robot
+                    robot.current_task_id = task.id
+                    robot.target_position = task.pickup
+                    robot.set_state(RobotState.TASK_ASSIGNED, "Assigned new task")
+                    task.state = TaskState.ASSIGNED
+                    task.assigned_robot_id = robot.id
+                    task.assigned_time = sim_time
+                    task.assignment_latency = sim_time - task.creation_time
+                    if robot_id in self._active_waypoints:
+                        del self._active_waypoints[robot_id]
+                elif robot.next_task_id is None:
+                    # Rolling handover pre-reservation (retains QUEUED state to preserve active task invariants)
+                    robot.next_task_id = task.id
+
+        # Station Clearance / Haven Retreat (Optimization Track I):
+        # Clear IDLE AMRs off active pickup/dropoff stations into parking bays so they never block peers
+        if self.allocator_type == "fleet_aware":
+            stations = {
+                (2, 2), (2, self.map_height // 2), (2, self.map_height - 3),
+                (self.map_width - 3, 2), (self.map_width - 3, self.map_height // 2), (self.map_width - 3, self.map_height - 3),
+            }
+            for r_id, robot in robots.items():
+                if robot.is_healthy and robot.state == RobotState.IDLE and robot.current_task_id is None:
+                    if robot.position in stations:
+                        chargers = [
+                            (1, 1),
+                            (1, self.map_height - 2),
+                            (self.map_width - 2, 1),
+                            (self.map_width - 2, self.map_height - 2),
+                        ]
+                        nearest = min(chargers, key=lambda c: abs(c[0] - robot.position[0]) + abs(c[1] - robot.position[1]))
+                        robot.set_state(RobotState.GOING_TO_CHARGER, "Clearing station to parking bay")
+                        robot.target_position = nearest
 
         # 4. Compute dynamic priorities and target goals
         priorities: Dict[str, float] = {}
@@ -190,6 +261,7 @@ class FleetCoordinator:
             if not robot.is_healthy or robot.state == RobotState.FAILED:
                 self._active_waypoints.pop(r_id, None)
                 self._waypoint_assigned_step.pop(r_id, None)
+                self._last_reroute_signature.pop(r_id, None)
                 continue
 
             active_robot_ids.append(r_id)
@@ -199,14 +271,28 @@ class FleetCoordinator:
 
             # Determine robot ultimate goal position (final destination)
             if robot.current_task_id and active_task:
-                if active_task.state == TaskState.PICKED_UP or getattr(robot, "has_payload", False):
+                if active_task.state == TaskState.PICKED_UP:
+                    ultimate_goal = active_task.dropoff
+                elif active_task.state == TaskState.ASSIGNED:
+                    if robot.position == active_task.pickup or (getattr(robot, "has_payload", False) and active_task.pickup_time):
+                        ultimate_goal = active_task.dropoff
+                    else:
+                        ultimate_goal = active_task.pickup
+                elif getattr(robot, "has_payload", False):
                     ultimate_goal = active_task.dropoff
                 else:
                     ultimate_goal = active_task.pickup
-            elif robot.battery.is_low:
-                ultimate_goal = (1, 1)
+            elif robot.state == RobotState.GOING_TO_CHARGER:
+                chargers = [(1, 1), (1, 18), (23, 1), (23, 18)]
+                ultimate_goal = min(chargers, key=lambda c: abs(c[0] - robot.position[0]) + abs(c[1] - robot.position[1]))
             else:
                 ultimate_goal = robot.position
+
+            # Clear waypoints if robot has already reached its ultimate destination or is idle
+            if robot.position == ultimate_goal or robot.state in (RobotState.IDLE, RobotState.CHARGING):
+                self._active_waypoints.pop(r_id, None)
+                self._waypoint_assigned_step.pop(r_id, None)
+                self._last_reroute_signature.pop(r_id, None)
 
             # Advance waypoints if robot has reached a waypoint
             self._advance_waypoints(r_id, robot.position)
@@ -221,7 +307,6 @@ class FleetCoordinator:
             # If there's an active rerouted waypoint path, follow the next waypoint
             active_wp_path = self._active_waypoints.get(r_id)
             if active_wp_path:
-                # Use next waypoint as immediate PIBT target (waypoint following)
                 target_goals[r_id] = active_wp_path[0]
             else:
                 target_goals[r_id] = ultimate_goal
@@ -250,7 +335,6 @@ class FleetCoordinator:
 
         # 5. Detect and resolve deadlocks before planning
         wait_steps_map = {r_id: robots[r_id].wait_steps for r_id in active_robot_ids}
-        # Compute immediate 1-step targets for the Wait-For-Graph
         immediate_targets = {}
         for r_id in active_robot_ids:
             r = robots[r_id]
@@ -278,25 +362,23 @@ class FleetCoordinator:
                         immediate_targets[r_id] = r.position
 
         dl_report = self.deadlock_detector.detect_deadlocks(
-            current_positions={r_id: robots[r_id].position for r_id in active_robot_ids},
+            current_positions=robot_positions,
             desired_targets=immediate_targets,
             wait_threshold=STUCK_THRESHOLD,
             robot_wait_steps=wait_steps_map,
         )
 
-        # Record real Wait-For Graph relationships for live digital twin telemetry
-        pos_to_r = {robots[r_id].position: r_id for r_id in active_robot_ids}
+        # Record real WFG edges for telemetry
         edges = []
-        for r_id in active_robot_ids:
-            tgt = immediate_targets.get(r_id)
-            if tgt and tgt != robots[r_id].position and tgt in pos_to_r:
-                occ = pos_to_r[tgt]
+        pos_to_robot = {pos: rid for rid, pos in robot_positions.items()}
+        for r_id, target in immediate_targets.items():
+            if target != robot_positions.get(r_id) and target in pos_to_robot:
+                occ = pos_to_robot[target]
                 if occ != r_id:
                     edges.append({
-                        "from_robot": r_id,
-                        "to_robot": occ,
-                        "target_cell": list(tgt),
-                        "wait_steps": wait_steps_map.get(r_id, 0),
+                        "from": r_id,
+                        "to": occ,
+                        "cell": list(target),
                         "is_cycle": any(r_id in c and occ in c for c in dl_report.cycles),
                     })
         self.last_wfg_edges = edges
@@ -318,39 +400,96 @@ class FleetCoordinator:
                                 data={"cycle": cycle, "breaker": breaker},
                             ))
 
-        # 6. For stuck robots: force a full A* reroute to bypass blocked aisles
-        #    A robot is "stuck" if it has waited >= STUCK_THRESHOLD consecutive steps
-        #    AND has a final goal different from its current position
+        # Phase 8: Event-Triggered Adaptive Coordination Evaluation
+        recent_conflicts = len(dl_report.cycles)
+        has_deadlocks = dl_report.is_deadlocked
+        is_aisle_blocked = len(blocked_cells) > 0
+        norm_avg_cong = self.congestion_model.get_average_congestion_index()
+        self.current_coordination_mode = self.adaptive_coordinator.evaluate_mode(
+            average_congestion=norm_avg_cong / 100.0,
+            recent_conflicts_count=recent_conflicts,
+            is_aisle_blocked=is_aisle_blocked,
+            has_deadlocks=has_deadlocks,
+            sim_time=sim_time,
+        )
+
+        # 6. Strict Rerouting Guards (Phase 1 & Phase 9 Intelligent Rerouting)
+        #    A reroute is ONLY permitted if:
+        #    - robot is healthy and has an active task (or going to charger)
+        #    - robot is not IDLE, CHARGING, FAILED, PICKING, or DELIVERING
+        #    - ultimate_goal != robot.position
+        #    - robot.wait_steps >= STUCK_THRESHOLD
+        #    - not already following a waypoint path
+        #    - dynamic cooldown has elapsed with backoff for unchanged scenarios
         for r_id in active_robot_ids:
             robot = robots[r_id]
             active_task = tasks.get(robot.current_task_id) if robot.current_task_id else None
 
-            # Get ultimate goal (final destination, not the waypoint step)
+            if not active_task and robot.state != RobotState.GOING_TO_CHARGER:
+                self._active_waypoints.pop(r_id, None)
+                self._waypoint_assigned_step.pop(r_id, None)
+                self._last_reroute_signature.pop(r_id, None)
+                continue
+
+            if robot.state in (RobotState.CHARGING, RobotState.FAILED):
+                continue
+
             if active_task:
-                if active_task.state == TaskState.PICKED_UP or getattr(robot, "has_payload", False):
+                if active_task.state == TaskState.PICKED_UP:
+                    ultimate_goal = active_task.dropoff
+                elif active_task.state == TaskState.ASSIGNED:
+                    if robot.position == active_task.pickup or (getattr(robot, "has_payload", False) and active_task.pickup_time):
+                        ultimate_goal = active_task.dropoff
+                    else:
+                        ultimate_goal = active_task.pickup
+                elif getattr(robot, "has_payload", False):
                     ultimate_goal = active_task.dropoff
                 else:
                     ultimate_goal = active_task.pickup
-            elif robot.battery.is_low:
-                ultimate_goal = (1, 1)
+            elif robot.state == RobotState.GOING_TO_CHARGER:
+                chargers = [(1, 1), (1, 18), (23, 1), (23, 18)]
+                ultimate_goal = min(chargers, key=lambda c: abs(c[0] - robot.position[0]) + abs(c[1] - robot.position[1]))
             else:
-                ultimate_goal = robot.position
+                continue
 
-            # If robot is stuck for >= STUCK_THRESHOLD, clear stale waypoints to enable fresh replanning
+            if ultimate_goal == robot.position:
+                self._active_waypoints.pop(r_id, None)
+                self._waypoint_assigned_step.pop(r_id, None)
+                self._last_reroute_signature.pop(r_id, None)
+                continue
+
             if robot.wait_steps >= STUCK_THRESHOLD:
                 self._active_waypoints.pop(r_id, None)
                 self._waypoint_assigned_step.pop(r_id, None)
 
             last_rerouted = self._reroute_cooldown.get(r_id, -999)
             already_has_waypoints = r_id in self._active_waypoints
+            consecutive_fails = self._reroute_failures.get(r_id, 0)
+            dynamic_cooldown = min(40, self._REROUTE_COOLDOWN_STEPS * (1 + consecutive_fails))
 
-            if (
+            # If destination is occupied by a stationary peer, hold backoff so we don't spam replans
+            dest_occupant = any(
+                other.is_healthy and other.position == ultimate_goal 
+                for oid, other in robots.items() if oid != r_id
+            )
+            if dest_occupant:
+                dynamic_cooldown = max(dynamic_cooldown, 20)
+
+            # Deduplication signature: (start_pos, goal_pos, blocked_cells)
+            current_signature = (robot.position, ultimate_goal, frozenset(blocked_cells))
+            last_sig = self._last_reroute_signature.get(r_id)
+
+            reroute_allowed = (
                 robot.wait_steps >= STUCK_THRESHOLD
                 and ultimate_goal != robot.position
-                and (step - last_rerouted) >= self._REROUTE_COOLDOWN_STEPS
+                and (step - last_rerouted) >= dynamic_cooldown
                 and not already_has_waypoints
-            ):
-                # 1st attempt: treat other stationary/stuck robots as obstacles to find a clear detour
+            )
+
+            if reroute_allowed:
+                self._last_reroute_signature[r_id] = current_signature
+
+                # 1st attempt: treat other stationary robots as obstacles
                 reroute_blocked = set(blocked_cells)
                 for other_id, other_robot in robots.items():
                     if other_id != r_id and other_robot.is_healthy:
@@ -364,9 +503,11 @@ class FleetCoordinator:
                     is_walkable_fn=is_walkable_fn,
                     blocked_cells=reroute_blocked,
                     start_timestep=step,
+                    congestion_model=self.congestion_model,
+                    preferred_directions=self.preferred_directions,
                 )
 
-                # Fallback: if no path exists routing around other robots, plan using only static blocked_cells
+                # Fallback: plan using only static blocked cells
                 if not reroute_result.is_success or len(reroute_result.path) <= 1:
                     reroute_result = self.reroute_astar.plan(
                         robot_id=r_id,
@@ -375,19 +516,21 @@ class FleetCoordinator:
                         is_walkable_fn=is_walkable_fn,
                         blocked_cells=blocked_cells,
                         start_timestep=step,
+                        congestion_model=self.congestion_model,
+                        preferred_directions=self.preferred_directions,
                     )
 
                 self._reroute_cooldown[r_id] = step
 
                 if reroute_result.is_success and len(reroute_result.path) > 1:
-                    # Store FULL rerouted path as active waypoints (skip current pos at index 0)
                     self._active_waypoints[r_id] = list(reroute_result.path[1:])
                     self._waypoint_assigned_step[r_id] = step
-                    # Update planned_path for telemetry display (full path including current pos)
                     robot.planned_path = list(reroute_result.path)
                     robot.set_state(RobotState.REPLANNING, "Forced A* reroute around blockage")
-                    robot.wait_steps = 0  # Reset stuck counter
-                    # Override PIBT target to first waypoint
+                    # Only reset wait_steps if the reroute genuinely found a multi-step detour path
+                    if len(reroute_result.path) > 2:
+                        robot.wait_steps = 0
+                    self._reroute_failures[r_id] = 0
                     target_goals[r_id] = reroute_result.path[1]
                     if self.event_bus:
                         self.event_bus.publish(Event(
@@ -404,9 +547,10 @@ class FleetCoordinator:
                             },
                         ))
                 else:
-                    # Truly unreachable — mark BLOCKED so UI shows it correctly
+                    # Truly unreachable: increment failure backoff
+                    self._reroute_failures[r_id] = consecutive_fails + 1
                     robot.set_state(RobotState.BLOCKED, "No path found — aisle fully blocked")
-                    if self.event_bus:
+                    if self.event_bus and consecutive_fails == 0:
                         self.event_bus.publish(Event(
                             event_type=EventType.AISLE_BLOCKED,
                             sim_time=sim_time,
@@ -415,7 +559,7 @@ class FleetCoordinator:
                             data={"robot_id": r_id, "reason": "No A* path available"},
                         ))
 
-        # 7. Multi-Agent Planning step (PIBT or Space-Time A*)
+        # 7. Multi-Agent Planning step (PIBT with congestion and execution awareness)
         effective_priorities = {
             r_id: priorities.get(r_id, 1.0) + getattr(robots[r_id], "priority_boost", 0.0)
             for r_id in active_robot_ids
@@ -428,9 +572,11 @@ class FleetCoordinator:
             is_walkable_fn=is_walkable_fn,
             blocked_cells=blocked_cells,
             current_step=step,
+            congestion_model=self.congestion_model,
+            preferred_directions=self.preferred_directions,
         )
 
-        # 8. Formulate candidate RobotActions
+        # 8. Formulate candidate RobotActions with explicit waiting diagnostics
         candidate_actions: Dict[str, RobotAction] = {}
         for r_id in list(robots.keys()):
             robot = robots[r_id]
@@ -445,27 +591,41 @@ class FleetCoordinator:
             next_pos = next_cells.get(r_id, robot.position)
             action_type = ActionType.MOVE if next_pos != robot.position else ActionType.WAIT
 
-            # Update planned lookahead path for telemetry
-            # Priority: active rerouted waypoint path > fresh A* replan > next PIBT step
+            # Set explicit waiting diagnostics for Robot Inspector (Phase 13)
+            if action_type == ActionType.WAIT:
+                if dl_report.is_deadlocked and any(r_id in c for c in dl_report.cycles):
+                    robot.wait_reason = "Deadlock cycle resolution / yielding"
+                elif target_goals.get(r_id) != robot.position:
+                    robot.wait_reason = "Yielding to higher-priority peer"
+                elif robot.state == RobotState.BLOCKED:
+                    robot.wait_reason = "Corridor blocked by obstacle"
+                elif robot.state == RobotState.IDLE:
+                    robot.wait_reason = "Idle awaiting task"
+                elif robot.state == RobotState.CHARGING:
+                    robot.wait_reason = "Charging at station"
+
+            # Update planned lookahead path for telemetry efficiently (only replan if goal changed)
             active_wp_path = self._active_waypoints.get(r_id)
             if active_wp_path and robot.state == RobotState.REPLANNING:
-                # Keep the rerouted planned path (already set in reroute block above)
                 pass
             else:
                 goal = target_goals.get(r_id, robot.position)
                 if goal != robot.position:
-                    plan_res = self.multi_agent_planner.astar.plan(
-                        robot_id=r_id,
-                        start_pos=robot.position,
-                        goal_pos=goal,
-                        is_walkable_fn=is_walkable_fn,
-                        blocked_cells=blocked_cells,
-                        start_timestep=step,
-                    )
-                    if plan_res.is_success and len(plan_res.path) > 1:
-                        robot.planned_path = plan_res.path
-                    else:
-                        robot.planned_path = [robot.position, next_pos]
+                    if not robot.planned_path or robot.planned_path[-1] != goal or robot.planned_path[0] != robot.position:
+                        plan_res = self.multi_agent_planner.astar.plan(
+                            robot_id=r_id,
+                            start_pos=robot.position,
+                            goal_pos=goal,
+                            is_walkable_fn=is_walkable_fn,
+                            blocked_cells=blocked_cells,
+                            start_timestep=step,
+                            congestion_model=self.congestion_model,
+                            preferred_directions=self.preferred_directions,
+                        )
+                        if plan_res.is_success and len(plan_res.path) > 1:
+                            robot.planned_path = plan_res.path
+                        else:
+                            robot.planned_path = [robot.position, next_pos]
                 else:
                     robot.planned_path = [robot.position]
 

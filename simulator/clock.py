@@ -48,6 +48,11 @@ class SimulationClock:
         self._last_wall_time = None
 
     @property
+    def dt(self) -> float:
+        """Alias for timestep in seconds."""
+        return self.timestep
+
+    @property
     def current_time(self) -> float:
         """Alias for sim_time."""
         return self.sim_time

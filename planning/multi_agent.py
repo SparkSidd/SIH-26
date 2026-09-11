@@ -1,7 +1,7 @@
 """Multi-Agent path planning coordinator interface and adapters."""
 
 import time
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from planning.astar import SpaceTimeAStarPlanner, PlannerResult, PlannerStatusCode
 from planning.pibt import PIBTPlanner
 from planning.reservation import SpaceTimeReservationTable
@@ -28,6 +28,8 @@ class MultiAgentPlanner:
         is_walkable_fn: Callable[[Tuple[int, int]], bool],
         blocked_cells: Optional[Set[Tuple[int, int]]] = None,
         current_step: int = 0,
+        congestion_model: Optional[Any] = None,
+        preferred_directions: Optional[Dict[Tuple[int, int], Tuple[int, int]]] = None,
     ) -> Dict[str, Tuple[int, int]]:
         """Compute the next single-step target cell for all active robots with microsecond timing."""
         t_start = time.perf_counter()
@@ -41,6 +43,8 @@ class MultiAgentPlanner:
                 priorities=priorities,
                 is_walkable_fn=is_walkable_fn,
                 blocked_cells=blocked_cells,
+                congestion_model=congestion_model,
+                preferred_directions=preferred_directions,
             )
             # Check for any unhandled robots and apply graceful fallback
             for r_id in robot_ids:
@@ -57,6 +61,8 @@ class MultiAgentPlanner:
                         is_walkable_fn=is_walkable_fn,
                         blocked_cells=blocked_cells,
                         start_timestep=current_step,
+                        congestion_model=congestion_model,
+                        preferred_directions=preferred_directions,
                     )
                     if res.is_success and len(res.path) > 1:
                         next_step_cells[r_id] = res.path[1]

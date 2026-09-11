@@ -87,8 +87,10 @@ class Robot:
         # State machine
         self.state: RobotState = RobotState.IDLE
         self.current_task_id: Optional[str] = None
+        self.next_task_id: Optional[str] = None
         self.target_position: Optional[Tuple[int, int]] = None
         self.has_payload: bool = False
+        self.tasks_completed: int = 0
         
         # Planned discrete path / continuous trajectory
         self.planned_path: List[Tuple[int, int]] = []
@@ -102,6 +104,7 @@ class Robot:
         self.base_priority: float = 1.0
         self.priority_boost: float = 0.0
         self.wait_steps: int = 0
+        self.wait_reason: str = "Idle awaiting task"
         self.total_distance_traveled: float = 0.0
         self.total_steps_active: int = 0
 
@@ -116,16 +119,31 @@ class Robot:
     def set_state(self, new_state: RobotState, reason: str = "") -> None:
         """Explicit state machine transition."""
         self.state = new_state
+        if reason:
+            self.wait_reason = reason
+        if new_state in (RobotState.IDLE, RobotState.CHARGING, RobotState.FAILED):
+            if not reason:
+                if new_state == RobotState.IDLE:
+                    self.wait_reason = "Idle awaiting task"
+                elif new_state == RobotState.CHARGING:
+                    self.wait_reason = "Charging at station"
+                elif new_state == RobotState.FAILED:
+                    self.wait_reason = "Hardware fault / E-stop"
 
     def reset_wait(self) -> None:
         """Reset starvation wait counter and priority boost upon moving."""
         self.wait_steps = 0
         self.priority_boost = 0.0
+        self.wait_reason = ""
 
-    def increment_wait(self, boost_rate: float = 0.1) -> None:
+    def increment_wait(self, boost_rate: float = 0.1, reason: str = "") -> None:
         """Increment wait counter and boost priority to avoid starvation."""
         self.wait_steps += 1
         self.priority_boost += boost_rate
+        if reason:
+            self.wait_reason = reason
+        elif not self.wait_reason or self.wait_reason == "Idle awaiting task":
+            self.wait_reason = "Waiting for path clearance"
 
     def to_dict(self) -> dict:
         return {
@@ -136,8 +154,11 @@ class Robot:
             "battery": round(self.battery.current_charge, 2),
             "state": self.state.name,
             "current_task_id": self.current_task_id,
+            "next_task_id": self.next_task_id,
+            "tasks_completed": self.tasks_completed,
             "dynamic_priority": round(self.dynamic_priority, 2),
             "wait_steps": self.wait_steps,
+            "wait_reason": self.wait_reason,
             "is_healthy": self.is_healthy,
             "has_payload": self.has_payload,
         }

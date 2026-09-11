@@ -5,7 +5,7 @@ from enum import Enum, auto
 import heapq
 import math
 import time
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import numpy as np
 
 from planning.reservation import SpaceTimeReservationTable
@@ -64,8 +64,10 @@ class SpaceTimeAStarPlanner:
         reservation_table: Optional[SpaceTimeReservationTable] = None,
         blocked_cells: Optional[Set[Tuple[int, int]]] = None,
         start_timestep: int = 0,
+        congestion_model: Optional[Any] = None,
+        preferred_directions: Optional[Dict[Tuple[int, int], Tuple[int, int]]] = None,
     ) -> PlannerResult:
-        """Find optimal space-time path from start to goal."""
+        """Find optimal space-time path from start to goal considering kinodynamics and congestion."""
         t_start = time.perf_counter()
         blocked = blocked_cells or set()
 
@@ -166,7 +168,32 @@ class SpaceTimeAStarPlanner:
                     if reservation_table.is_edge_reserved(current_pos, next_pos, next_t_abs, exclude_robot_id=robot_id):
                         continue
 
-                tentative_g = g_scores[(current_pos, t_rel)] + (1.0 if next_pos != current_pos else 1.05)
+                # Execution-Aware step cost: distance + turn penalty + congestion + flow
+                step_cost = 1.0 if next_pos != current_pos else 1.2
+                if (current_pos, t_rel) in came_from and next_pos != current_pos:
+                    prev_pos, _ = came_from[(current_pos, t_rel)]
+                    dx_prev = current_pos[0] - prev_pos[0]
+                    dy_prev = current_pos[1] - prev_pos[1]
+                    dx_new = next_pos[0] - current_pos[0]
+                    dy_new = next_pos[1] - current_pos[1]
+                    if (dx_prev, dy_prev) != (dx_new, dy_new):
+                        step_cost += 0.2  # Soft turn penalty
+
+                if congestion_model is not None and next_pos != current_pos:
+                    cell_cong = congestion_model.get_cell_congestion(next_pos)
+                    step_cost += 0.5 * min(cell_cong, 20.0)
+
+                if preferred_directions is not None and next_pos != current_pos:
+                    pref_dir = preferred_directions.get(current_pos) or preferred_directions.get(next_pos)
+                    if pref_dir is not None:
+                        actual_dir = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1])
+                        if actual_dir == (-pref_dir[0], -pref_dir[1]):
+                            rem_dist = abs(current_pos[0] - goal_pos[0]) + abs(current_pos[1] - goal_pos[1])
+                            step_cost += 2.4 if rem_dist > 2 else 0.3
+                        elif actual_dir == pref_dir:
+                            step_cost -= 0.15  # With-flow incentive
+
+                tentative_g = g_scores[(current_pos, t_rel)] + step_cost
                 state_key = (next_pos, next_t_rel)
 
                 if state_key not in g_scores or tentative_g < g_scores[state_key]:
