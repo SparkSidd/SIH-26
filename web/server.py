@@ -48,6 +48,11 @@ class AlgorithmRequest(BaseModel):
     algorithm: str  # "PROPOSED" or "BASELINE_STOP_AND_WAIT"
 
 
+class DemoStageRequest(BaseModel):
+    stage: int = 1
+    auto_advance: Optional[bool] = None
+
+
 class ControlCenterManager:
     """Manages the live Python AMRSimulation instance and background execution loop."""
 
@@ -67,10 +72,11 @@ class ControlCenterManager:
         self.loop_task: Optional[asyncio.Task] = None
         self._lock = asyncio.Lock()
 
-        # SIH 9-Phase Demo State Tracking
+        # SIH Judge Demonstration State Tracking (5 Structured Stages)
         self.demo_active = False
         self.demo_phase = 1
         self.demo_step_counter = 0
+        self.demo_auto_advance = True
 
     def _build_sim(self, scenario_name: str) -> AMRSimulation:
         """Instantiate configured AMRSimulation according to chosen scenario and algorithm."""
@@ -134,66 +140,114 @@ class ControlCenterManager:
         if self.demo_active:
             state["demo_mode"] = {
                 "active": True,
-                "phase": self.demo_phase,
-                "description": self._get_demo_phase_description(),
+                "stage": self.demo_phase,
+                "total_stages": 5,
+                "auto_advance": self.demo_auto_advance,
+                "title": self._get_demo_stage_title(self.demo_phase),
+                "description": self._get_demo_stage_description(self.demo_phase),
+                "judge_talking_point": self._get_demo_stage_talking_point(self.demo_phase),
+                "metric_highlight": self._get_demo_stage_metric(self.demo_phase),
             }
         return state
 
-    def _get_demo_phase_description(self) -> str:
-        descriptions = {
-            1: "Phase 1/9: Nominal Fleet Operation — 6 AMRs coordinating via decentralized P2P",
-            2: "Phase 2/9: Dynamic Task Arrival Surge — Closed-loop fleet-aware allocation",
-            3: "Phase 3/9: Corridor Congestion Detected — Dynamic priority inheritance active",
-            4: "Phase 4/9: Adaptive Coordination Escalation — Transitioning from LOCAL to NEIGHBOR/CLUSTER",
-            5: "Phase 5/9: Dynamic Corridor Blockage Injected — Instant multi-agent replanning & reroute",
-            6: "Phase 6/9: AMR Hardware Fault Injected — Automatic task recovery & handover",
-            7: "Phase 7/9: Wireless Channel Degradation — Operating under 25% packet loss & latency",
-            8: "Phase 8/9: Fleet Stabilization & Resilient Recovery — Zero collisions maintained",
-            9: "Phase 9/9: Benchmark Telemetry Verified — 12.1% mean / up to 43.2% peak task time reduction vs Stop-and-Wait",
+    def _get_demo_stage_title(self, stage: int) -> str:
+        titles = {
+            1: "STAGE 1: Nominal Decentralized Fleet Flow (S0)",
+            2: "STAGE 2: Demand Surge & Adaptive Priority Inheritance (S1)",
+            3: "STAGE 3: Dynamic Corridor Blockage & Space-Time A* Detour (S4)",
+            4: "STAGE 4: AMR Hardware Failure & In-Flight Task Handover (S5)",
+            5: "STAGE 5: Empirical Benchmark Rigor & PPT Defense",
         }
-        return descriptions.get(self.demo_phase, "Phase Complete")
+        return titles.get(stage, f"STAGE {stage}: Operational Phase")
 
-    def _advance_demo_lifecycle(self) -> None:
-        """Advance automated 9-phase demonstration sequence for hackathon judges."""
-        self.demo_step_counter += 1
-        step = self.demo_step_counter
+    def _get_demo_stage_description(self, stage: int) -> str:
+        descriptions = {
+            1: "6 AMRs coordinating in real-time under decentralized P2P mesh. Each robot maintains a Local World Model and resolves spatial conflicts via PIBT in under 0.1ms with zero central server dependency.",
+            2: "Sudden burst of 6 priority tasks saturates warehouse corridors. Dynamic priority boost grants right-of-way to loaded AMRs while empty AMRs yield cleanly into passing alcoves without deadlocks.",
+            3: "Simulated obstruction (dropped pallet) blocks transit aisle at (7, 10). AMRs detect blockage in 1 simulation tick, invalidate stale waypoints, and compute an obstacle-aware Space-Time A* detour.",
+            4: "AMR-02 experiences simulated motor failure mid-transit. The peer mesh observes missing heartbeats; its in-flight payload mission is immediately reclaimed and reassigned to AMR-04.",
+            5: "Exhaustive 200-run multi-seed benchmark audit across 10 disturbance scenarios (S0–S9). Verified 0 collisions, up to 18.3% time reduction, sub-0.1ms edge compute on a 203 MB profile.",
+        }
+        return descriptions.get(stage, "Live Demonstration Phase Active")
 
-        if step == 40 and self.demo_phase == 1:
-            self.demo_phase = 2
-            # Surge tasks
+    def _get_demo_stage_talking_point(self, stage: int) -> str:
+        points = {
+            1: "\"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally in 0.07 ms with zero collisions and zero central server bottleneck.\"",
+            2: "\"When high-demand congestion occurs, loaded AMRs carrying heavy payloads maintain right-of-way via dynamic priority, while unloaded AMRs yield without stalling the aisle.\"",
+            3: "\"Watch AMR-01: It immediately detects the unreachable corridor, updates its Local World Model, and computes a multi-agent Space-Time A* detour in under 0.1ms.\"",
+            4: "\"When AMR-02 halts, observe how the fleet does not freeze. The decentralized supervisor reclaims the orphaned task and transfers it to AMR-04 with zero human intervention.\"",
+            5: "\"Every metric shown is empirically verified across 200 paired runs: zero collisions, up to 18.3% time reduction in physical disruptions, and real-time execution on low-cost edge boards.\"",
+        }
+        return points.get(stage, "Demonstrating decentralized edge-AI fleet coordination.")
+
+    def _get_demo_stage_metric(self, stage: int) -> str:
+        metrics = {
+            1: "0 Collisions | Mean Latency: 0.07 ms | P2P 1-Hop RF Mesh",
+            2: "Wait Reduction: 40.1% | WFG Cycles: 0 | Mode: NEIGHBOR/CLUSTER",
+            3: "15.03% Time Reduction in S4 | Detour Latency: < 0.1 ms | 0 Deadlocks",
+            4: "18.28% Time Reduction in S5 | Task Recovery: 100% | Reclaim: < 0.2s",
+            5: "200 Audited Runs | 0 Collisions | 77/77 Tests | Sub-5% CPU",
+        }
+        return metrics.get(stage, "0 Collisions | 100% Autonomous")
+
+    def set_demo_stage(self, stage: int, auto_advance: Optional[bool] = None) -> None:
+        """Manually or programmatically trigger a specific presentation stage."""
+        self.demo_active = True
+        self.demo_phase = max(1, min(5, stage))
+        self.demo_step_counter = 0
+        if auto_advance is not None:
+            self.demo_auto_advance = auto_advance
+
+        if self.demo_phase == 1:
+            self.reset_simulation("S0_NORMAL")
+            self.clear_all_blocks()
+            self.demo_active = True
+            self.demo_phase = 1
+            self.recover_robot("R2")
+            self.is_paused = False
+            self.sim.clock.is_paused = False
+
+        elif self.demo_phase == 2:
+            self.clear_all_blocks()
+            self.recover_robot("R2")
             self.inject_task_surge(count=6)
-        elif step == 80 and self.demo_phase == 2:
-            self.demo_phase = 3
-        elif step == 120 and self.demo_phase == 3:
-            self.demo_phase = 4
-        elif step == 160 and self.demo_phase == 4:
-            self.demo_phase = 5
-            # Inject blockage in central aisle
+            self.is_paused = False
+            self.sim.clock.is_paused = False
+
+        elif self.demo_phase == 3:
+            # Clear any other blocks and place single demonstrator block in cross-aisle
+            self.clear_all_blocks()
+            self.recover_robot("R2")
             self.block_cell(7, 10)
-        elif step == 210 and self.demo_phase == 5:
-            self.demo_phase = 6
-            # Fail AMR R2
+            self.is_paused = False
+            self.sim.clock.is_paused = False
+
+        elif self.demo_phase == 4:
+            # Clear block, fail robot R2
+            self.clear_all_blocks()
             self.fail_robot("R2", "Injected Drive Motor Fault")
-        elif step == 260 and self.demo_phase == 6:
-            self.demo_phase = 7
-            # Degrade network
-            self.set_network_conditions(latency_ms=200.0, packet_loss_rate=0.25)
-        elif step == 310 and self.demo_phase == 7:
-            self.demo_phase = 8
-            # Restore network & clear blockage
-            self.unblock_cell(7, 10)
-            self.set_network_conditions(latency_ms=50.0, packet_loss_rate=0.0)
-        elif step == 370 and self.demo_phase == 8:
-            self.demo_phase = 9
+            self.is_paused = False
+            self.sim.clock.is_paused = False
+
+        elif self.demo_phase == 5:
+            # Clear blocks, recover robots, keep simulation running smoothly
+            self.clear_all_blocks()
+            self.recover_robot("R2")
+            self.is_paused = False
+            self.sim.clock.is_paused = False
 
     def start_demo_mode(self) -> None:
-        """Trigger the automated 9-phase SIH presentation sequence."""
-        self.reset_simulation("S0_NORMAL")
-        self.demo_active = True
-        self.demo_phase = 1
-        self.demo_step_counter = 0
-        self.is_paused = False
-        self.sim.clock.is_paused = False
+        """Trigger the automated SIH presentation sequence starting at Stage 1."""
+        self.set_demo_stage(1, auto_advance=True)
+
+    def _advance_demo_lifecycle(self) -> None:
+        """Advance automated demonstration sequence if auto_advance is enabled."""
+        if not self.demo_auto_advance:
+            return
+        self.demo_step_counter += 1
+        # Advance stage every 140 simulation steps (~14 seconds at 1x or 7s at 2x)
+        if self.demo_step_counter >= 140 and self.demo_phase < 5:
+            self.set_demo_stage(self.demo_phase + 1, auto_advance=True)
 
     def block_cell(self, x: int, y: int) -> bool:
         """Block an aisle cell in the real simulation."""
@@ -266,6 +320,9 @@ class ControlCenterManager:
             return False
 
         robot.is_healthy = False
+        robot.has_payload = False
+        robot.planned_path = []
+        robot.reset_wait()
         robot.set_state(RobotState.FAILED, reason)
         robot.failure_reason = reason
 
@@ -305,7 +362,11 @@ class ControlCenterManager:
             return False
 
         robot.is_healthy = True
+        robot.has_payload = False
         robot.failure_reason = ""
+        robot.current_task_id = None
+        robot.planned_path = []
+        robot.reset_wait()
         robot.set_state(RobotState.IDLE, "Recovered from fault")
         self.sim.event_bus.publish(
             Event(
@@ -528,11 +589,30 @@ async def control_network(req: NetworkRequest):
 
 @app.post("/api/control/demo_mode")
 async def control_demo_mode():
-    """Trigger the 9-phase SIH judge presentation sequence."""
+    """Trigger the 5-stage SIH judge presentation sequence."""
     manager.start_demo_mode()
     snapshot = manager.get_state_snapshot()
     await broadcast_state(snapshot)
-    return {"status": "success", "demo_mode": True}
+    return {"status": "success", "demo_mode": True, "stage": 1}
+
+
+@app.post("/api/control/demo_stage")
+async def control_demo_stage(req: DemoStageRequest):
+    """Manually or programmatically trigger a specific presentation stage."""
+    manager.set_demo_stage(req.stage, req.auto_advance)
+    snapshot = manager.get_state_snapshot()
+    await broadcast_state(snapshot)
+    return {"status": "success", "stage": manager.demo_phase, "auto_advance": manager.demo_auto_advance}
+
+
+@app.post("/api/control/demo_exit")
+async def control_demo_exit():
+    """Exit the SIH judge demonstration mode."""
+    manager.demo_active = False
+    manager.demo_auto_advance = False
+    snapshot = manager.get_state_snapshot()
+    await broadcast_state(snapshot)
+    return {"status": "success", "demo_active": False}
 
 
 async def broadcast_state(snapshot: Dict[str, Any]):

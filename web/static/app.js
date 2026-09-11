@@ -153,15 +153,54 @@ function handleIncomingState(newState) {
         }
     }
 
-    // 3. Demo Banner
-    const demoBanner = document.getElementById('demoBanner');
-    if (demoBanner) {
+    // 3. Demo Mode Controller & Stage Synchronizer
+    const demoCtrl = document.getElementById('judgeDemoController');
+    if (demoCtrl) {
         if (newState.demo_mode && newState.demo_mode.active) {
-            demoBanner.classList.add('active');
-            const phaseText = document.getElementById('demoPhaseText');
-            if (phaseText) phaseText.textContent = newState.demo_mode.description;
+            demoCtrl.style.display = 'block';
+            const stage = newState.demo_mode.stage || 1;
+            const total = newState.demo_mode.total_stages || 5;
+
+            const badgeEl = document.getElementById('demoStageBadge');
+            if (badgeEl) badgeEl.textContent = `STAGE ${stage} / ${total}`;
+
+            const titleEl = document.getElementById('demoStageTitle');
+            if (titleEl) titleEl.textContent = newState.demo_mode.title || `STAGE ${stage}`;
+
+            const descEl = document.getElementById('demoStageDesc');
+            if (descEl) descEl.textContent = newState.demo_mode.description || '';
+
+            const talkEl = document.getElementById('demoStageTalkingPoint');
+            if (talkEl) talkEl.textContent = newState.demo_mode.judge_talking_point || '';
+
+            const metricEl = document.getElementById('demoStageMetric');
+            if (metricEl) metricEl.textContent = newState.demo_mode.metric_highlight || '';
+
+            // Update stage pills
+            for (let i = 1; i <= 5; i++) {
+                const pill = document.getElementById(`stagePill_${i}`);
+                if (pill) {
+                    if (i === stage) {
+                        pill.classList.add('active');
+                    } else {
+                        pill.classList.remove('active');
+                    }
+                }
+            }
+
+            // Update auto-advancing toggle button
+            const autoBtn = document.getElementById('btnToggleDemoAuto');
+            if (autoBtn) {
+                if (newState.demo_mode.auto_advance) {
+                    autoBtn.textContent = 'Auto: ON';
+                    autoBtn.classList.add('active');
+                } else {
+                    autoBtn.textContent = 'Auto: PAUSED';
+                    autoBtn.classList.remove('active');
+                }
+            }
         } else {
-            demoBanner.classList.remove('active');
+            demoCtrl.style.display = 'none';
         }
     }
 
@@ -366,10 +405,15 @@ function renderKPIs(kpis, network, congestion, deadlock) {
     const elNet = document.getElementById('kpiNetworkHealth');
     if (elNet) elNet.textContent = `${network.health_pct}% (${network.latency_ms.toFixed(0)}ms)`;
 
-    // Congestion indicator in HUD
+    // Congestion indicator in HUD (Phase 2 Normalized Index 0-100)
     const elHudCong = document.getElementById('hudCongestion');
-    if (elHudCong) {
-        elHudCong.textContent = `Peak Congestion: ${(congestion.peak_congestion * 100).toFixed(0)}% at (${congestion.most_congested_cell[0]},${congestion.most_congested_cell[1]})`;
+    if (elHudCong && congestion) {
+        if (congestion.display_text) {
+            elHudCong.textContent = congestion.display_text;
+        } else {
+            const idx = congestion.peak_index !== undefined ? congestion.peak_index : Math.min(100, Math.round(congestion.peak_congestion * 10));
+            elHudCong.textContent = `Peak Congestion: ${idx}/100 at (${congestion.most_congested_cell[0]},${congestion.most_congested_cell[1]})`;
+        }
     }
 }
 
@@ -382,7 +426,7 @@ function renderRobotInspector(robots) {
     if (!robot) return;
 
     const elId = document.getElementById('inspectorRobotId');
-    if (elId) elId.textContent = robot.id;
+    if (elId) elId.textContent = `${robot.id} (Completed: ${robot.tasks_completed || 0})`;
 
     const elState = document.getElementById('inspState');
     if (elState) {
@@ -432,10 +476,11 @@ function renderRobotInspector(robots) {
 
     const elWait = document.getElementById('inspWaitSteps');
     if (elWait) {
+        const reason = robot.wait_reason || 'Nominal';
         if (robot.wait_steps > 0) {
-            elWait.innerHTML = `<span style="color:var(--accent-amber); font-weight:700;">${robot.wait_steps} consecutive steps</span>`;
+            elWait.innerHTML = `<span style="color:var(--accent-amber); font-weight:700;">${robot.wait_steps} steps [${reason}]</span>`;
         } else {
-            elWait.textContent = '0 steps (Moving)';
+            elWait.innerHTML = `<span style="color:var(--text-muted);">0 steps (${reason})</span>`;
         }
     }
 
@@ -1169,6 +1214,81 @@ function renderWarehouse() {
         });
     }
 
+    // 12. Stage-Specific Visual Callouts for Demo Mode
+    if (simState.demo_mode && simState.demo_mode.active) {
+        const stage = simState.demo_mode.stage;
+
+        // Stage 3: Animated Callout above Blocked Corridor
+        if (stage === 3 && wh.blocked_cells && wh.blocked_cells.length > 0) {
+            wh.blocked_cells.forEach(([bx, by]) => {
+                const cx = bx * cellSize + cellSize / 2;
+                const cy = by * cellSize - 14;
+
+                const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 180);
+                ctx.save();
+                ctx.shadowColor = 'rgba(244, 63, 94, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = `rgba(244, 63, 94, ${pulse})`;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+
+                const tagW = 164;
+                const tagH = 20;
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(cx - tagW / 2, cy - tagH / 2, tagW, tagH, 4);
+                } else {
+                    ctx.rect(cx - tagW / 2, cy - tagH / 2, tagW, tagH);
+                }
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '700 8px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⛔ BLOCKED AISLE — DETOUR ACTIVE', cx, cy);
+                ctx.restore();
+            });
+        }
+
+        // Stage 4: Animated Callout above Failed AMR
+        if (stage === 4 && simState.robots) {
+            simState.robots.forEach(r => {
+                if (!r.is_healthy) {
+                    const rx = r.position[0] * cellSize + cellSize / 2;
+                    const ry = r.position[1] * cellSize - 22;
+
+                    const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 150);
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(244, 63, 94, 0.95)';
+                    ctx.shadowBlur = 14;
+                    ctx.fillStyle = `rgba(244, 63, 94, ${pulse})`;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+
+                    const tagW = 186;
+                    const tagH = 20;
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(rx - tagW / 2, ry - tagH / 2, tagW, tagH, 4);
+                    } else {
+                        ctx.rect(rx - tagW / 2, ry - tagH / 2, tagW, tagH);
+                    }
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 8px JetBrains Mono';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('⚠️ MOTOR STALL: REALLOCATING TASK', rx, ry);
+                    ctx.restore();
+                }
+            });
+        }
+    }
+
     ctx.restore();
 
     // Canvas Flash Notification Toast
@@ -1269,9 +1389,11 @@ wrapper.addEventListener('mousemove', (e) => {
         else if (isDropoff) { cellType = 'DROPOFF BAY'; isProtected = true; }
         else if (isCharge) { cellType = 'CHARGING PAD'; isProtected = true; }
 
-        const cong = (simState.congestion && simState.congestion.heatmap && simState.congestion.heatmap[gridX])
-            ? (simState.congestion.heatmap[gridX][gridY] * 100).toFixed(0)
-            : '0';
+        const cong = (simState.congestion && simState.congestion.normalized_heatmap && simState.congestion.normalized_heatmap[gridX])
+            ? simState.congestion.normalized_heatmap[gridX][gridY]
+            : (simState.congestion && simState.congestion.heatmap && simState.congestion.heatmap[gridX]
+                ? Math.round(100 * (1 - Math.exp(-simState.congestion.heatmap[gridX][gridY] / 4.0)))
+                : 0);
 
         const occupyingRobot = simState.robots.find(r => r.position[0] === gridX && r.position[1] === gridY);
 
@@ -1279,7 +1401,7 @@ wrapper.addEventListener('mousemove', (e) => {
             <div class="tt-title">Cell (${gridX}, ${gridY})</div>
             <div>Terrain: <strong>${cellType}</strong></div>
             ${isProtected ? `<div style="color:var(--accent-emerald);">🛡️ Protected Station</div>` : ''}
-            <div>Congestion: <strong>${cong}%</strong></div>
+            <div>Congestion Index: <strong>${cong}/100</strong></div>
             ${occupyingRobot ? `<div style="color:var(--accent-cyan); margin-top:2px;">AMR: <strong>${occupyingRobot.id}</strong> (${occupyingRobot.state}${occupyingRobot.has_payload ? ', CARGO' : ''})</div>` : ''}
         `;
 
@@ -1435,8 +1557,88 @@ function injectTaskSurge() {
 }
 
 function triggerDemoMode() {
-    sendCommand('demo_mode');
-    showCanvasFlash('SIH 9-Phase Autonomous Demonstration Started', '#a855f7');
+    startJudgeDemoTour();
+}
+
+function startJudgeDemoTour() {
+    fetch('/api/control/demo_mode', { method: 'POST' })
+        .then(res => res.json())
+        .then(() => {
+            showCanvasFlash('⚡ SIH Judge Presentation Tour Activated — Stage 1: Nominal Fleet Flow', '#a855f7');
+        })
+        .catch(() => {
+            sendCommand('demo_mode');
+            showCanvasFlash('⚡ SIH Judge Presentation Tour Activated', '#a855f7');
+        });
+}
+
+function selectDemoStage(stage) {
+    stage = Math.max(1, Math.min(5, stage));
+    const autoBtn = document.getElementById('btnToggleDemoAuto');
+    const autoAdvance = autoBtn ? autoBtn.classList.contains('active') : true;
+
+    fetch('/api/control/demo_stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: stage, auto_advance: autoAdvance }),
+    }).then(res => res.json()).then(() => {
+        const titles = [
+            "Nominal Fleet Flow (S0)",
+            "Demand Surge & Congestion (S1)",
+            "Corridor Blockage & Detour (S4)",
+            "AMR Hardware Fault & Reclaim (S5)",
+            "Benchmark Rigor & PPT Defense"
+        ];
+        showCanvasFlash(`🎯 Stage ${stage}: ${titles[stage - 1]}`, '#00f0ff');
+        if (stage === 5) {
+            const overlay = document.getElementById('judgeOverlay');
+            if (overlay && !overlay.classList.contains('open')) {
+                overlay.classList.add('open');
+            }
+        }
+    }).catch(err => console.error('Failed to set demo stage:', err));
+}
+
+function navigateDemoStage(delta) {
+    let currentStage = 1;
+    if (simState && simState.demo_mode && simState.demo_mode.stage) {
+        currentStage = simState.demo_mode.stage;
+    }
+    let targetStage = currentStage + delta;
+    if (targetStage < 1) targetStage = 1;
+    if (targetStage > 5) targetStage = 5;
+    selectDemoStage(targetStage);
+}
+
+function toggleDemoAutoPlay() {
+    let currentStage = 1;
+    let autoAdvance = true;
+    if (simState && simState.demo_mode) {
+        currentStage = simState.demo_mode.stage || 1;
+        autoAdvance = !simState.demo_mode.auto_advance;
+    } else {
+        const autoBtn = document.getElementById('btnToggleDemoAuto');
+        autoAdvance = autoBtn ? !autoBtn.classList.contains('active') : false;
+    }
+
+    fetch('/api/control/demo_stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: currentStage, auto_advance: autoAdvance }),
+    }).then(() => {
+        showCanvasFlash(`Demo Auto-Advance: ${autoAdvance ? 'ENABLED (14s/stage)' : 'PAUSED (Presenter Controlled)'}`, '#a855f7');
+    }).catch(err => console.error('Failed to toggle auto-play:', err));
+}
+
+function exitDemoMode() {
+    fetch('/api/control/demo_exit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    }).then(() => {
+        const demoCtrl = document.getElementById('judgeDemoController');
+        if (demoCtrl) demoCtrl.style.display = 'none';
+        showCanvasFlash('Exited Presentation Tour — Free Exploration Active', '#10b981');
+    }).catch(err => console.error('Failed to exit demo mode:', err));
 }
 
 function toggleAlgorithmMode() {
@@ -1536,6 +1738,42 @@ if (toggleDeadlocksBtn) {
 document.getElementById('btnZoomIn').onclick = () => { zoomScale = Math.min(3.5, zoomScale * 1.2); };
 document.getElementById('btnZoomOut').onclick = () => { zoomScale = Math.max(0.4, zoomScale / 1.2); };
 document.getElementById('btnResetView').onclick = () => { zoomScale = 1.0; panOffsetX = 0; panOffsetY = 0; };
+
+// Presenter Keyboard Shortcuts
+function togglePlayPause() {
+    if (simState && !simState.clock.is_paused) {
+        sendCommand('pause');
+    } else {
+        sendCommand('play');
+    }
+}
+
+window.addEventListener('keydown', (e) => {
+    // Ignore keystrokes when typing inside inputs, textareas, or selects
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+    if (e.key === 'd' || e.key === 'D') {
+        startJudgeDemoTour();
+    } else if (e.key === 'p' || e.key === 'P') {
+        toggleJudgeOverlay();
+    } else if (e.key >= '1' && e.key <= '5') {
+        selectDemoStage(parseInt(e.key, 10));
+    } else if (e.key === 'ArrowRight') {
+        navigateDemoStage(1);
+    } else if (e.key === 'ArrowLeft') {
+        navigateDemoStage(-1);
+    } else if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+    } else if (e.key === 'Escape') {
+        const overlay = document.getElementById('judgeOverlay');
+        if (overlay && overlay.classList.contains('open')) {
+            overlay.classList.remove('open');
+        } else {
+            exitDemoMode();
+        }
+    }
+});
 
 // =============================================================================
 // INITIALIZATION
