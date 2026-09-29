@@ -102,7 +102,7 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants
 # ──────────────────────────────────────────────────────────────────────────────
-CONTROL_LOOP_HZ = 10.0              # coordination step rate
+CONTROL_LOOP_HZ = 20.0              # coordination step rate (raised from 10→20 for smoother motion)
 BELIEF_BROADCAST_HZ = 5.0          # P2P state broadcast rate
 ODOM_POSITION_TOLERANCE = 0.3      # metres — snap to grid cell when within this
 LIDAR_OBSTACLE_THRESHOLD = 0.8     # metres — range reading below this = obstacle
@@ -677,9 +677,11 @@ class AMRNode(Node):
         Translate a RobotAction from the coordination stack into a ROS 2
         geometry_msgs/Twist velocity command.
 
-        Implements smooth unicycle control with lookahead trajectory blending,
-        proportional-saturating heading damping, docking deceleration, and
-        physical safety buffer enforcement.
+        Smooth unicycle controller:
+          - Continuous arc motion: never stops to pivot unless yaw_error > 90°
+          - Full speed on straight runs, proportional slowdown on turns
+          - Short docking deceleration zone (0.45m from goal)
+          - Emergency halt only for true bumper contact (<0.30m)
         """
         twist = Twist()
 
@@ -688,7 +690,7 @@ class AMRNode(Node):
             tx, ty, _ = grid_to_world(target[0], target[1], self._map_height)
             dist_to_target = math.hypot(tx - self._world_x, ty - self._world_y)
 
-            # Lookahead heading: if close to target waypoint, point toward final destination
+            # Lookahead: when close to waypoint, point toward final goal
             if dist_to_target < 0.40 and self.robot.target_position and self.robot.target_position != target:
                 gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
                 target_yaw = math.atan2(gy - self._world_y, gx - self._world_x)
@@ -698,40 +700,50 @@ class AMRNode(Node):
             yaw_error = _normalize_angle(target_yaw - self._world_yaw)
             base_speed = action.target_velocity * self.robot.geometry.max_velocity
 
-            # Check distance to final mission goal for smooth docking deceleration
+            # Distance to final mission goal
             if self.robot.target_position:
                 gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
                 dist_to_goal = math.hypot(gx - self._world_x, gy - self._world_y)
             else:
                 dist_to_goal = dist_to_target
 
-            # Proximity safety buffer: halt linear motion only if immediate bumper obstruction < 0.40m
-            if self._min_forward_dist < 0.40:
+            # ── Emergency bumper stop: only on true close contact (<0.30m) ──
+            # Raised from 0.40→0.30m to avoid false stops on adjacent shelf corners
+            if self._min_forward_dist < 0.30:
                 twist.linear.x = 0.0
-                twist.angular.z = float(min(1.8, max(-1.8, 1.8 * yaw_error))) if abs(yaw_error) > 0.05 else 0.0
-            elif abs(yaw_error) > math.radians(55.0):
-                # Sharp heading discrepancy: pivot smoothly with proportional scaling
+                twist.angular.z = float(min(2.2, max(-2.2, 2.2 * yaw_error))) if abs(yaw_error) > 0.05 else 0.0
+
+            # ── Stop-pivot only for very sharp turns (>90°) ──────────────────
+            # Was 55° — at 55° almost every grid turn triggered a stop.
+            # At 90° robots can arc through normal ±45° grid corners without stopping.
+            elif abs(yaw_error) > math.radians(90.0):
                 twist.linear.x = 0.0
-                pivot_w = min(2.2, max(0.8, abs(yaw_error) * 2.2))
+                pivot_w = min(2.5, max(1.0, abs(yaw_error) * 2.5))
                 twist.angular.z = float(pivot_w * math.copysign(1.0, yaw_error))
+
             else:
-                # Smooth continuous dynamic arc: maintain forward momentum while turning
-                cos_err = max(0.15, math.cos(yaw_error))
-                if dist_to_goal < 0.70:
-                    # Controlled docking approach
-                    speed = max(0.25, min(base_speed, dist_to_goal * 1.5)) * cos_err
+                # ── Continuous arc motion ────────────────────────────────────
+                # Speed reduction: cosine of yaw error, floored at 0.50 (was 0.15)
+                # → robot keeps ≥50% speed even in a 60° arc turn
+                cos_err = max(0.50, math.cos(yaw_error))
+
+                if dist_to_goal < 0.45:
+                    # Docking zone: controlled approach, min 0.45 m/s
+                    speed = max(0.45, min(base_speed, dist_to_goal * 2.2)) * cos_err
                 elif dist_to_target < 0.30:
-                    speed = max(0.35, min(base_speed, dist_to_target * 2.2)) * cos_err
+                    # Waypoint capture: maintain momentum
+                    speed = max(0.55, min(base_speed, dist_to_target * 3.0)) * cos_err
                 else:
+                    # Open run: full base speed
                     speed = base_speed * cos_err
 
                 twist.linear.x = float(speed)
-                twist.angular.z = float(min(2.2, max(-2.2, 2.4 * yaw_error)))
+                twist.angular.z = float(min(2.5, max(-2.5, 2.5 * yaw_error)))
 
         elif action.action_type == ActionType.ROTATE:
             if action.target_heading is not None:
                 yaw_error = _normalize_angle(action.target_heading - self._world_yaw)
-                rot_w = min(2.2, max(0.6, abs(yaw_error) * 2.2))
+                rot_w = min(2.5, max(0.8, abs(yaw_error) * 2.5))
                 twist.angular.z = float(rot_w * math.copysign(1.0, yaw_error))
 
         # WAIT, PICK, DROP, CHARGE, ESTOP → zero twist (robot stops safely)
