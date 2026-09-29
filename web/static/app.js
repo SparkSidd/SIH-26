@@ -1860,7 +1860,8 @@ function switchMainView(viewId) {
 
     // Update active tab in navbar
     document.querySelectorAll('.app-nav-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.getAttribute('data-view') === viewId);
+        const matches = tab.getAttribute('data-view') === viewId || tab.id === `navTab_${viewId}`;
+        tab.classList.toggle('active', matches);
     });
 
     // Toggle active state on view containers
@@ -1871,7 +1872,8 @@ function switchMainView(viewId) {
                 el.classList.add('active');
                 if (key === 'digital_twin') {
                     el.style.display = 'grid';
-                    setTimeout(() => { if (typeof resizeCanvas === 'function') resizeCanvas(); }, 120);
+                    setTimeout(() => { if (typeof resizeCanvas === 'function') resizeCanvas(); }, 50);
+                    setTimeout(() => { if (typeof resizeCanvas === 'function') resizeCanvas(); }, 150);
                 } else {
                     el.style.display = 'block';
                 }
@@ -2264,5 +2266,18 @@ window.addEventListener('keydown', (e) => {
 // INITIALIZATION
 // =============================================================================
 
+switchMainView('digital_twin');
 connectWebSocket();
 requestAnimationFrame(renderWarehouse);
+
+window.addEventListener('DOMContentLoaded', () => {
+    switchMainView('digital_twin');
+    resizeCanvas();
+    setTimeout(resizeCanvas, 100);
+});
+
+window.addEventListener('load', () => {
+    switchMainView('digital_twin');
+    resizeCanvas();
+    setTimeout(resizeCanvas, 150);
+});
