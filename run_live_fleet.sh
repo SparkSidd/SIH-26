@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
 # run_live_fleet.sh -- SIH26123 Gazebo Live Fleet Launcher with Real-Time Safety HUD
 # Usage (in WSL2):
-#   bash run_live_fleet.sh [SCENARIO] [POLICY] [RECORDING]
+#   bash run_live_fleet.sh [SCENARIO] [POLICY] [RECORDING] [PROFILE]
+#
 # Examples:
-#   bash run_live_fleet.sh                           # 6 robots, LIVE_DEMO, proposed policy, HUD on
-#   bash run_live_fleet.sh SCENARIO_B proposed       # Congestion at choke points
-#   bash run_live_fleet.sh SCENARIO_C proposed       # Dynamic blockage & STA* replanning
-#   bash run_live_fleet.sh LIVE_DEMO proposed true   # Presentation Recording mode (clean banner)
+#   bash run_live_fleet.sh                                    # 6 robots, LIVE_DEMO, normal profile
+#   bash run_live_fleet.sh SCENARIO_C proposed false normal   # Blockage recovery, normal profile
+#   bash run_live_fleet.sh SCENARIO_C proposed false recording # Blockage recovery, RECORDING profile
+#   bash run_live_fleet.sh LIVE_DEMO proposed true recording  # Presentation Recording mode
+#
+# Profiles:
+#   normal    Balanced simulation (full sensors, moderate rendering, INFO logs)
+#   debug     Maximum observability (180 LiDAR rays, visualize, DEBUG logs)
+#   recording SIH video optimized (36 rays, no shadows, ERROR-only logs)
 
 SCENARIO="${1:-LIVE_DEMO}"
 POLICY="${2:-proposed}"
 RECORDING="${3:-false}"
+PROFILE="${4:-normal}"
 
 if [ -d "/home/siddharth/sih26" ]; then
     PROJECT_DIR="/home/siddharth/sih26"
@@ -39,6 +46,7 @@ if [ ! -d "/mnt/shared_memory" ] || ! mountpoint -q /mnt/shared_memory; then
 fi
 
 export SIH26_PROJECT_DIR="$PROJECT_DIR"
+export SIH26_PROFILE="$PROFILE"
 # CRITICAL: Re-prepend project source AFTER any ROS2 overlay sourcing.
 # The ament install/setup.bash may re-inject the colcon-built egg at the front
 # of PYTHONPATH via local_setup.bash. We override it here to ensure the live
@@ -46,13 +54,22 @@ export SIH26_PROJECT_DIR="$PROJECT_DIR"
 export PYTHONPATH="$PROJECT_DIR:${PYTHONPATH:-}"
 export LIVE_TELEMETRY="${LIVE_TELEMETRY:-0}"
 
+# GPU selection: prefer NVIDIA if present, otherwise use Intel/D3D12
+# (Gazebo Harmonic picks up MESA_D3D12_DEFAULT_ADAPTER_NAME for GPU routing)
+if command -v nvidia-smi &>/dev/null; then
+    export MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
+else
+    export MESA_D3D12_DEFAULT_ADAPTER_NAME="Intel"
+fi
+
 echo "======================================================================"
 echo "  SIH26123 — DECENTRALIZED AMR FLEET COORDINATION (GAZEBO/ROS 2)"
 echo "  Scenario:  $SCENARIO"
 echo "  Policy:    $POLICY (PIBT + Space-Time A* + Hungarian Allocation)"
+echo "  Profile:   $PROFILE  (world: warehouse_*_${PROFILE}.sdf)"
 echo "  Recording: $RECORDING"
 echo "  Project:   $PROJECT_DIR"
-echo "======================================================================"
+echo "=================================================================="
 
 cd "$PROJECT_DIR"
 
