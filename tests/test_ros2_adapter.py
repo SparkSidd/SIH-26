@@ -23,6 +23,9 @@ import pytest
 import numpy as np
 from typing import Dict, Tuple
 
+import os
+os.environ["USE_MOCK_ROS"] = "1"
+
 # ── SIL imports ──────────────────────────────────────────────────────────────
 from ros2_integration.mock_ros import rclpy_stub as rclpy
 from ros2_integration.mock_ros.rclpy_stub import Node

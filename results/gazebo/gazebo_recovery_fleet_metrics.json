@@ -1,0 +1,58 @@
+{
+  "policy": "RECOVERY",
+  "single_task": false,
+  "tasks_completed": 1,
+  "total_tasks": 1,
+  "makespan_s": 116.91,
+  "total_task_completion_time_s": 116.91,
+  "mean_task_completion_time_s": 116.91,
+  "throughput_tasks_per_hr": 30.8,
+  "total_wait_time_s": 0.0,
+  "number_of_replans": 369,
+  "collision_count": 0,
+  "deadlock_count": 0,
+  "task_assignments": {
+    "T_REC_01": "R01"
+  },
+  "task_details": {
+    "T_REC_01": {
+      "id": "T_REC_01",
+      "pickup": [
+        10,
+        2
+      ],
+      "dropoff": [
+        20,
+        5
+      ],
+      "priority": 2.0,
+      "creation_time": 18107.34,
+      "deadline": null,
+      "assigned_robot_id": "R01",
+      "state": "DELIVERED",
+      "completion_time": 18224.25,
+      "total_duration": 116.91,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 116.91
+      }
+    }
+  }
+}

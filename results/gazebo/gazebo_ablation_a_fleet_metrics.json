@@ -1,0 +1,258 @@
+{
+  "policy": "ABLATION_A",
+  "single_task": false,
+  "tasks_completed": 6,
+  "total_tasks": 6,
+  "makespan_s": 66.48,
+  "total_task_completion_time_s": 182.29,
+  "mean_task_completion_time_s": 30.38,
+  "throughput_tasks_per_hr": 324.9,
+  "total_wait_time_s": 3.3,
+  "number_of_replans": 64,
+  "collision_count": 0,
+  "deadlock_count": 0,
+  "task_assignments": {
+    "T02": "R01",
+    "T04": "R02",
+    "T06": "R03",
+    "T03": "R04",
+    "T01": "R05",
+    "T05": "R06"
+  },
+  "task_details": {
+    "T01": {
+      "id": "T01",
+      "pickup": [
+        2,
+        2
+      ],
+      "dropoff": [
+        20,
+        17
+      ],
+      "priority": 1.5,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R05",
+      "state": "DELIVERED",
+      "completion_time": 16327.93,
+      "total_duration": 35.09,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 35.09
+      }
+    },
+    "T02": {
+      "id": "T02",
+      "pickup": [
+        2,
+        2
+      ],
+      "dropoff": [
+        20,
+        5
+      ],
+      "priority": 1.5,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R01",
+      "state": "DELIVERED",
+      "completion_time": 16359.32,
+      "total_duration": 66.48,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 66.48
+      }
+    },
+    "T03": {
+      "id": "T03",
+      "pickup": [
+        2,
+        9
+      ],
+      "dropoff": [
+        20,
+        5
+      ],
+      "priority": 1.2,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R04",
+      "state": "DELIVERED",
+      "completion_time": 16322.62,
+      "total_duration": 29.78,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 29.78
+      }
+    },
+    "T04": {
+      "id": "T04",
+      "pickup": [
+        2,
+        9
+      ],
+      "dropoff": [
+        20,
+        10
+      ],
+      "priority": 1.2,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R02",
+      "state": "DELIVERED",
+      "completion_time": 16306.62,
+      "total_duration": 13.78,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 13.78
+      }
+    },
+    "T05": {
+      "id": "T05",
+      "pickup": [
+        2,
+        17
+      ],
+      "dropoff": [
+        20,
+        10
+      ],
+      "priority": 1.0,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R06",
+      "state": "DELIVERED",
+      "completion_time": 16317.12,
+      "total_duration": 24.28,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 24.28
+      }
+    },
+    "T06": {
+      "id": "T06",
+      "pickup": [
+        2,
+        17
+      ],
+      "dropoff": [
+        20,
+        17
+      ],
+      "priority": 1.0,
+      "creation_time": 16292.84,
+      "deadline": null,
+      "assigned_robot_id": "R03",
+      "state": "DELIVERED",
+      "completion_time": 16305.72,
+      "total_duration": 12.88,
+      "reassignment_count": 0,
+      "travel_time": 0.0,
+      "wait_time": 0.0,
+      "congestion_delay": 0.0,
+      "reroute_time": 0.0,
+      "assignment_latency": 0.0,
+      "distance_traveled": 0.0,
+      "turns_count": 0,
+      "stops_count": 0,
+      "additive_decomposition": {
+        "assignment": 0.0,
+        "travel": 0.0,
+        "conflict_wait": 0.0,
+        "normal_wait": 0.0,
+        "replanning": 0.0,
+        "recovery": 0.0,
+        "pickup": 0.0,
+        "delivery": 0.0,
+        "execution_overhead": 0.0,
+        "total_duration": 12.88
+      }
+    }
+  }
+}

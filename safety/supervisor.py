@@ -15,6 +15,14 @@ class SafetySupervisor:
         self.event_bus = event_bus
         self.total_interventions: int = 0
         self.critical_violations: int = 0
+        self.vertex_conflicts: int = 0
+        self.edge_conflicts: int = 0
+        self.swept_volume_conflicts: int = 0
+        self.blocked_cell_attempts: int = 0
+        self.collision_attempts: int = 0
+        self.total_collisions: int = 0
+        self.last_violation: Optional[Dict[str, Any]] = None
+        self.assertions_verified: bool = True
 
     def filter_actions(
         self,
@@ -62,6 +70,7 @@ class SafetySupervisor:
             # Check if target is blocked
             if target in blocked_cells:
                 self.total_interventions += 1
+                self.blocked_cell_attempts += 1
                 approved_actions[robot_id] = SafetyFallback.create_wait_fallback(
                     robot_id, curr_pos, f"Target {target} is blocked"
                 )
@@ -72,6 +81,8 @@ class SafetySupervisor:
             # Check vertex conflict against already approved targets
             if target in occupied_targets:
                 self.total_interventions += 1
+                self.vertex_conflicts += 1
+                self.collision_attempts += 1
                 # Must yield and WAIT in current cell
                 approved_actions[robot_id] = SafetyFallback.create_wait_fallback(
                     robot_id, curr_pos, f"Yielding cell {target} to higher priority peer"
@@ -90,6 +101,8 @@ class SafetySupervisor:
 
             if edge_swap:
                 self.total_interventions += 1
+                self.edge_conflicts += 1
+                self.collision_attempts += 1
                 approved_actions[robot_id] = SafetyFallback.create_wait_fallback(
                     robot_id, curr_pos, "Preventing edge-swap collision"
                 )

@@ -92,16 +92,54 @@ def _make_choke_grid() -> np.ndarray:
 
 
 SCENARIOS = {
+    "LIVE_TEST_SINGLE": {
+        "name": "Live Single Robot Continuous Demo",
+        "grid_fn": _make_open_grid,
+        "num_robots": 1,
+        "robot_starts": [(6, 9)],
+        "tasks": [
+            ("T01", (6, 5), (18, 14)),
+        ],
+        "timeout_steps": 200,
+    },
+    "LIVE_TEST_TWO": {
+        "name": "Live Two Robot Yielding Demo",
+        "grid_fn": _make_open_grid,
+        "num_robots": 2,
+        "robot_starts": [(6, 9), (18, 9)],
+        "tasks": [
+            ("T01", (6, 5), (18, 14)),
+            ("T02", (18, 14), (6, 5)),
+        ],
+        "timeout_steps": 200,
+    },
+    "LIVE_DEMO": {
+        "name": "Live Fleet 6-Robot Continuous Demo",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(4, 5), (4, 14), (10, 5), (10, 14), (16, 5), (16, 14)],
+        "tasks": [
+            ("T01", (6, 5), (18, 14)),
+            ("T02", (18, 14), (6, 5)),
+            ("T03", (6, 14), (18, 5)),
+            ("T04", (18, 5), (6, 14)),
+            ("T05", (10, 5), (15, 14)),
+            ("T06", (15, 14), (10, 5)),
+        ],
+        "timeout_steps": 300,
+    },
     "S1": {
         "name": "Open Warehouse — Basic Navigation",
         "grid_fn": _make_open_grid,
-        "num_robots": 4,
-        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10)],
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
         "tasks": [
             ("T01", (5, 2), (20, 17)),
             ("T02", (5, 10), (20, 5)),
             ("T03", (5, 17), (20, 10)),
             ("T04", (10, 5), (15, 15)),
+            ("T05", (15, 2), (5, 17)),
+            ("T06", (15, 17), (5, 2)),
         ],
         "timeout_steps": 200,
     },
@@ -169,6 +207,7 @@ def _make_odom(
     q_w = math.cos(yaw / 2.0)
 
     msg = Odometry()
+    msg.header.frame_id = "world"
     msg.pose.pose.position.x = wx
     msg.pose.pose.position.y = wy
     msg.pose.pose.position.z = wz

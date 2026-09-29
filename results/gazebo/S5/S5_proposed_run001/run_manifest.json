@@ -1,0 +1,24 @@
+{
+  "run_id": "S5_proposed_run001",
+  "scenario": "S5",
+  "policy": "proposed",
+  "seed": 0,
+  "robot_count": 6,
+  "timestamp": "2026-09-12T10:23:33.900080+00:00",
+  "software": {
+    "ros_distro": "jazzy",
+    "gazebo_version": "Gazebo Sim, version 8.15.0",
+    "python": "3.12",
+    "coordinator_checkpoint": "CHECKPOINT_FINAL_PRE_GAZEBO"
+  },
+  "physics": {
+    "step_size_ms": 1,
+    "real_time_factor": 1.0,
+    "world": "warehouse_s5.sdf"
+  },
+  "network": {
+    "latency_ms": 0,
+    "jitter_ms": 0,
+    "loss_pct": 0
+  }
+}

@@ -1,0 +1,59 @@
+# ros_gz_bridge configuration — SIH26123 AMR Fleet
+# Used by: ros2 launch ros_gz_bridge ros_gz_bridge.launch.py
+#          bridge_name:=sih_bridge config_file:=config/bridge.yaml
+#
+# Direction notation (per ros_gz_bridge convention):
+#   [gz -> ros]  = Gazebo publishes, ROS subscribes
+#   [ros -> gz]  = ROS publishes, Gazebo subscribes
+#   [bidirectional] = both directions
+#
+# One bridge config covers all 6 robots (R01..R06).
+# The namespace is applied per-robot in the launch file via remapping.
+
+# ── Per-robot topics (template; applied per namespace in launch) ──────────────
+
+# cmd_vel: ROS coordinator → Gazebo diff-drive
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+# odom: Gazebo diff-drive → ROS coordinator
+- ros_topic_name: "/odom"
+  gz_topic_name: "/odom"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# scan (2D LiDAR): Gazebo GPU LiDAR sensor → ROS AMRNode
+- ros_topic_name: "/scan"
+  gz_topic_name: "/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+# imu: Gazebo IMU sensor → ROS AMRNode
+- ros_topic_name: "/imu"
+  gz_topic_name: "/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# clock: Gazebo simulation clock → ROS (enables use_sim_time)
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+# tf: joint/body transforms from Gazebo
+- ros_topic_name: "/tf"
+  gz_topic_name: "/tf"
+  ros_type_name: "tf2_msgs/msg/TFMessage"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: GZ_TO_ROS
+
+# ── P2P fleet belief topics (pure ROS, no Gazebo bridge needed) ───────────────
+# /fleet/beliefs  — String JSON (published by each AMRNode, consumed by peers)
+# These stay in ROS DDS space and do not require Gazebo bridging.

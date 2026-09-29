@@ -1,6 +1,0 @@
-Metric,Baseline (Stop-and-Wait),Proposed Decentralized Fleet,Improvement,Status / Evidence
-Mean Task Completion Time,8.7 s,6.42 s,-26.18%,PASS (Target >= 20%)
-Inter-Robot Collisions,0,0,Verified 0,Zero collisions across all runs
-Mean Network Load,18564.6 B/s,18562.4 B/s,-0.01%,P2P Local Mesh Reduction
-Planning Latency (Mean / P95),—,0.27 ms / 1.25 ms,Sub-2ms Mean,Edge Real-Time MAPF
-Peak RAM Overhead,—,240.7 MB,Mean: 238.7 MB,Ultra-light edge memory

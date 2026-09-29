@@ -1,0 +1,3378 @@
+<?xml version="1.0" ?>
+<!--
+  warehouse_s4.sdf — Gazebo Harmonic world for S4/S8 scenarios.
+  25x20 grid with central dividing wall and two choke passages at y=5 and y=14.
+  Mirrors _make_choke_grid() in fleet_launcher.py.
+  Scale: 1 grid cell = 1.0 m, FLIP_Y=True (grid row 0 = world Y max = 19)
+-->
+<sdf version="1.10">
+  <world name="warehouse_s4">
+
+    <physics name="default" type="ode">
+      <real_time_update_rate>250</real_time_update_rate>
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <ode>
+        <solver><type>quick</type><iters>50</iters><sor>1.3</sor></solver>
+        <constraints>
+          <cfm>0</cfm><erp>0.2</erp>
+          <contact_max_correcting_vel>100</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+
+    <gravity>0 0 -9.81</gravity>
+    <atmosphere type="adiabatic"/>
+
+    <!-- ── GUI ─────────────────────────────────────────────────────────── -->
+    <gui fullscreen="0">
+      <!-- 3D scene -->
+      <plugin filename="MinimalScene" name="3D View">
+        <gz-gui>
+          <title>3D View</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property>
+        </gz-gui>
+        <engine>ogre</engine>
+        <scene>scene</scene>
+        <ambient_light>0.5 0.5 0.5</ambient_light>
+        <background_color>0.7 0.7 0.7</background_color>
+        <camera_pose>12.0 1.8 11.0 0 0.96 1.5708</camera_pose>
+      </plugin>
+
+      <!-- Plugins that add functionality to the scene -->
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <gz-gui>
+          <property key="state" type="string">floating</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+
+      <!-- World control -->
+      <plugin filename="WorldControl" name="World control">
+        <gz-gui>
+          <title>World control</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">72</property>
+          <property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="left" target="left"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </gz-gui>
+        <play_pause>true</play_pause>
+        <step>true</step>
+        <start_paused>false</start_paused>
+        <use_event>true</use_event>
+      </plugin>
+
+      <!-- World statistics -->
+      <plugin filename="WorldStats" name="World stats">
+        <gz-gui>
+          <title>World stats</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">110</property>
+          <property type="double" key="width">290</property>
+          <property type="double" key="z">1</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="right" target="right"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </gz-gui>
+        <sim_time>true</sim_time>
+        <real_time>true</real_time>
+        <real_time_factor>true</real_time_factor>
+        <iterations>true</iterations>
+      </plugin>
+    </gui>
+
+    <scene>
+      <ambient>0.5 0.5 0.55 1</ambient>
+      <background>0.12 0.15 0.18 1</background>
+      <shadows>true</shadows>
+      <grid>false</grid>
+      <origin_visual>false</origin_visual>
+    </scene>
+
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>1000</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>25 20</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>25 20</size></plane></geometry>
+          <material>
+            <ambient>0.22 0.25 0.28 1</ambient>
+            <diffuse>0.22 0.25 0.28 1</diffuse>
+            <specular>0.08 0.08 0.08 1</specular>
+          </material>
+        </visual>
+        <pose>12.0 9.5 0 0 0 0</pose>
+      </link>
+    </model>
+
+    <!-- Perimeter walls (high-contrast industrial silver) -->
+    <model name="wall_west">
+      <static>true</static><pose>0.1 9.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.2 20.0 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 20.0 2.5</size></box></geometry><material><ambient>0.65 0.68 0.72 1</ambient><diffuse>0.72 0.75 0.80 1</diffuse><specular>0.15 0.15 0.15 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="wall_east">
+      <static>true</static><pose>23.9 9.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.2 20.0 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 20.0 2.5</size></box></geometry><material><ambient>0.65 0.68 0.72 1</ambient><diffuse>0.72 0.75 0.80 1</diffuse><specular>0.15 0.15 0.15 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="wall_south">
+      <static>true</static><pose>12.0 19.9 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>25.0 0.2 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>25.0 0.2 2.5</size></box></geometry><material><ambient>0.65 0.68 0.72 1</ambient><diffuse>0.72 0.75 0.80 1</diffuse><specular>0.15 0.15 0.15 1</specular></material></visual>
+      </link>
+    </model>
+    <model name="wall_north">
+      <static>true</static><pose>12.0 0.1 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>25.0 0.2 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>25.0 0.2 2.5</size></box></geometry><material><ambient>0.65 0.68 0.72 1</ambient><diffuse>0.72 0.75 0.80 1</diffuse><specular>0.15 0.15 0.15 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!--
+      Central dividing wall at grid x=12 (world x=12.0).
+      Choke passages at grid y=5 (world y=14.0) and grid y=14 (world y=5.0).
+      Wall segments cover rows 1-4, 6-13, 15-18 (skipping choke at 5 and 14).
+      High-visibility safety hazard amber makes bottlenecks instantly obvious to judges.
+    -->
+
+    <!-- Segment 1: grid rows 1-4 → world y = 15..18 → center y=16.5, height=4 -->
+    <model name="divider_north">
+      <static>true</static>
+      <pose>12.0 16.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.2 4.0 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 4.0 2.5</size></box></geometry>
+          <material><ambient>0.92 0.48 0.08 1</ambient><diffuse>0.92 0.48 0.08 1</diffuse><specular>0.25 0.25 0.25 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Choke passage at grid y=5 → world y=14.0: GAP HERE (no wall) -->
+
+    <!-- Segment 2: grid rows 6-13 → world y = 6..13 → center y=9.5, height=8 -->
+    <model name="divider_middle">
+      <static>true</static>
+      <pose>12.0 9.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.2 8.0 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 8.0 2.5</size></box></geometry>
+          <material><ambient>0.92 0.48 0.08 1</ambient><diffuse>0.92 0.48 0.08 1</diffuse><specular>0.25 0.25 0.25 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Choke passage at grid y=14 → world y=5.0: GAP HERE (no wall) -->
+
+    <!-- Segment 3: grid rows 15-18 → world y = 1..4 → center y=2.5, height=4 -->
+    <model name="divider_south">
+      <static>true</static>
+      <pose>12.0 2.5 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.2 4.0 2.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 4.0 2.5</size></box></geometry>
+          <material><ambient>0.92 0.48 0.08 1</ambient><diffuse>0.92 0.48 0.08 1</diffuse><specular>0.25 0.25 0.25 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+
+    <model name="floor_grid_telemetry">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="link">
+
+        <visual name="grid_x_1">
+          <pose>1.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_2">
+          <pose>2.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_3">
+          <pose>3.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_4">
+          <pose>4.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_5">
+          <pose>5.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_6">
+          <pose>6.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_7">
+          <pose>7.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_8">
+          <pose>8.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_9">
+          <pose>9.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_10">
+          <pose>10.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_11">
+          <pose>11.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_12">
+          <pose>12.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_13">
+          <pose>13.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_14">
+          <pose>14.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_15">
+          <pose>15.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_16">
+          <pose>16.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_17">
+          <pose>17.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_18">
+          <pose>18.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_19">
+          <pose>19.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_20">
+          <pose>20.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_21">
+          <pose>21.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_22">
+          <pose>22.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_x_23">
+          <pose>23.0 9.5 0.001 0 0 0</pose>
+          <geometry><box><size>0.02 19.0 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_1">
+          <pose>12.0 1.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_2">
+          <pose>12.0 2.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_3">
+          <pose>12.0 3.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_4">
+          <pose>12.0 4.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_5">
+          <pose>12.0 5.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_6">
+          <pose>12.0 6.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_7">
+          <pose>12.0 7.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_8">
+          <pose>12.0 8.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_9">
+          <pose>12.0 9.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_10">
+          <pose>12.0 10.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_11">
+          <pose>12.0 11.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_12">
+          <pose>12.0 12.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_13">
+          <pose>12.0 13.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_14">
+          <pose>12.0 14.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_15">
+          <pose>12.0 15.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_16">
+          <pose>12.0 16.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_17">
+          <pose>12.0 17.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+
+        <visual name="grid_y_18">
+          <pose>12.0 18.0 0.001 0 0 0</pose>
+          <geometry><box><size>23.0 0.02 0.001</size></box></geometry>
+          <material><ambient>0.14 0.18 0.24 1</ambient><diffuse>0.16 0.20 0.28 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="choke_hazard_north">
+      <static>true</static>
+      <pose>12.000 14.000 0 0 0 0</pose>
+      <link name="link">
+
+        <visual name="stripe_0">
+          <pose>-0.400 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_1">
+          <pose>-0.200 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_2">
+          <pose>0.000 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_3">
+          <pose>0.200 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_4">
+          <pose>0.400 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="choke_hazard_south">
+      <static>true</static>
+      <pose>12.000 5.000 0 0 0 0</pose>
+      <link name="link">
+
+        <visual name="stripe_0">
+          <pose>-0.400 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_1">
+          <pose>-0.200 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_2">
+          <pose>0.000 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_3">
+          <pose>0.200 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="stripe_4">
+          <pose>0.400 0 0.004 0 0 0</pose>
+          <geometry><box><size>0.18 1.40 0.003</size></box></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_n_nw -->
+    <model name="bollard_n_nw">
+      <static>true</static>
+      <pose>11.750 14.800 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_n_sw -->
+    <model name="bollard_n_sw">
+      <static>true</static>
+      <pose>11.750 13.200 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_n_ne -->
+    <model name="bollard_n_ne">
+      <static>true</static>
+      <pose>12.250 14.800 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_n_se -->
+    <model name="bollard_n_se">
+      <static>true</static>
+      <pose>12.250 13.200 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_s_nw -->
+    <model name="bollard_s_nw">
+      <static>true</static>
+      <pose>11.750 5.800 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_s_sw -->
+    <model name="bollard_s_sw">
+      <static>true</static>
+      <pose>11.750 4.200 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_s_ne -->
+    <model name="bollard_s_ne">
+      <static>true</static>
+      <pose>12.250 5.800 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety Bollard: bollard_s_se -->
+    <model name="bollard_s_se">
+      <static>true</static>
+      <pose>12.250 4.200 0.0 0 0 0</pose>
+      <link name="link">
+        <visual name="post">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.90</length></cylinder></geometry>
+          <material><ambient>0.95 0.75 0.05 1</ambient><diffuse>0.98 0.82 0.08 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="stripe1">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>0 0 0.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.082</radius><length>0.10</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="transit_lanes">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="link">
+<visual name="lane_north_west"><pose>7.0 14.0 0.002 0 0 0</pose><geometry><box><size>7.5 0.08 0.002</size></box></geometry><material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+<visual name="lane_north_east"><pose>16.5 14.0 0.002 0 0 0</pose><geometry><box><size>7.0 0.08 0.002</size></box></geometry><material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+<visual name="lane_south_west"><pose>7.0 5.0 0.002 0 0 0</pose><geometry><box><size>7.5 0.08 0.002</size></box></geometry><material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+<visual name="lane_south_east"><pose>16.5 5.0 0.002 0 0 0</pose><geometry><box><size>7.0 0.08 0.002</size></box></geometry><material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="pad_pickup_1">
+      <static>true</static>
+      <pose>2.000 17.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_pickup_1 -->
+    <model name="cargo_pickup_1">
+      <static>true</static>
+      <pose>1.100 17.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_pickup_2">
+      <static>true</static>
+      <pose>2.000 12.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_pickup_2 -->
+    <model name="cargo_pickup_2">
+      <static>true</static>
+      <pose>1.100 12.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_pickup_3">
+      <static>true</static>
+      <pose>2.000 7.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_pickup_3 -->
+    <model name="cargo_pickup_3">
+      <static>true</static>
+      <pose>1.100 7.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_pickup_4">
+      <static>true</static>
+      <pose>2.000 2.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_pickup_4 -->
+    <model name="cargo_pickup_4">
+      <static>true</static>
+      <pose>1.100 2.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_staging_n">
+      <static>true</static>
+      <pose>5.000 14.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_staging_n -->
+    <model name="cargo_staging_n">
+      <static>true</static>
+      <pose>5.000 15.200 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_staging_s">
+      <static>true</static>
+      <pose>5.000 5.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.05 0.50 0.28 1</ambient><diffuse>0.08 0.72 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.10 0.85 0.40 1</ambient><diffuse>0.10 0.90 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_p_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_top"><pose>0.01 0.16 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_mid"><pose>0.01 0.02 0.005 0 0 0</pose><geometry><box><size>0.16 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_p_right"><pose>0.09 0.09 0.005 0 0 0</pose><geometry><box><size>0.07 0.18 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_staging_s -->
+    <model name="cargo_staging_s">
+      <static>true</static>
+      <pose>5.000 3.800 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.72 0.52 0.32 1</ambient><diffuse>0.82 0.62 0.40 1</diffuse></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_1">
+      <static>true</static>
+      <pose>20.000 3.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_1 -->
+    <model name="cargo_dropoff_1">
+      <static>true</static>
+      <pose>21.100 3.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_2">
+      <static>true</static>
+      <pose>20.000 16.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_2 -->
+    <model name="cargo_dropoff_2">
+      <static>true</static>
+      <pose>21.100 16.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_3">
+      <static>true</static>
+      <pose>20.000 11.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_3 -->
+    <model name="cargo_dropoff_3">
+      <static>true</static>
+      <pose>21.100 11.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_4">
+      <static>true</static>
+      <pose>20.000 6.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_4 -->
+    <model name="cargo_dropoff_4">
+      <static>true</static>
+      <pose>21.100 6.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_5">
+      <static>true</static>
+      <pose>21.000 14.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_5 -->
+    <model name="cargo_dropoff_5">
+      <static>true</static>
+      <pose>22.100 14.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_dropoff_6">
+      <static>true</static>
+      <pose>21.000 5.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.65 0.35 0.05 1</ambient><diffuse>0.90 0.55 0.08 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.98 0.75 0.08 1</ambient><diffuse>1.0 0.80 0.10 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_d_vert"><pose>-0.10 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_top"><pose>0.0 0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_bot"><pose>0.0 -0.16 0.005 0 0 0</pose><geometry><box><size>0.15 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_d_right"><pose>0.09 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.30 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Staged Pallet & Goods: cargo_dropoff_6 -->
+    <model name="cargo_dropoff_6">
+      <static>true</static>
+      <pose>22.100 5.000 0.0 0 0 0.0000</pose>
+      <link name="link">
+        <!-- Wooden Euro Pallet Base (0.8m x 1.0m x 0.14m) -->
+        <visual name="pallet_base">
+          <pose>0 0 0.07 0 0 0</pose>
+          <geometry><box><size>0.80 1.00 0.14</size></box></geometry>
+          <material><ambient>0.58 0.46 0.30 1</ambient><diffuse>0.72 0.58 0.38 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Lower Left -->
+        <visual name="box_ll">
+          <pose>-0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Cargo Box Lower Right -->
+        <visual name="box_lr">
+          <pose>0.18 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.36 0.44 0.36</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Cargo Box Top Container -->
+        <visual name="box_top">
+          <pose>0 0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.74 0.44 0.36</size></box></geometry>
+          <material><ambient>0.12 0.38 0.72 1</ambient><diffuse>0.15 0.48 0.88 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+        <!-- Upper Stacked Tote -->
+        <visual name="box_upper">
+          <pose>-0.10 0.0 0.62 0 0 0</pose>
+          <geometry><box><size>0.48 0.52 0.24</size></box></geometry>
+          <material><ambient>0.88 0.70 0.08 1</ambient><diffuse>0.96 0.80 0.12 1</diffuse></material>
+        </visual>
+        <!-- Barcode / Placard Label -->
+        <visual name="placard">
+          <pose>0.402 -0.22 0.32 0 0 0</pose>
+          <geometry><box><size>0.005 0.24 0.16</size></box></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_charge_nw">
+      <static>true</static>
+      <pose>1.500 18.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.40 0.15 0.65 1</ambient><diffuse>0.65 0.25 0.95 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.80 0.35 1.0 1</ambient><diffuse>0.85 0.40 1.0 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_h_left"><pose>-0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_right"><pose>0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_mid"><pose>0 0 0.005 0 0 0</pose><geometry><box><size>0.22 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Charging Kiosk: kiosk_charge_nw -->
+    <model name="kiosk_charge_nw">
+      <static>true</static>
+      <pose>1.500 18.000 0.0 0 0 0.7850</pose>
+      <link name="link">
+        <!-- Main Pillar -->
+        <visual name="pillar">
+          <pose>0 0 0.80 0 0 0</pose>
+          <geometry><box><size>0.32 0.32 1.60</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Power Cap -->
+        <visual name="cap">
+          <pose>0 0 1.64 0 0 0</pose>
+          <geometry><box><size>0.38 0.38 0.08</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Glowing Purple Status Ring -->
+        <visual name="halo_ring">
+          <pose>0 0 1.61 0 0 0</pose>
+          <geometry><cylinder><radius>0.22</radius><length>0.05</length></cylinder></geometry>
+          <material><ambient>0.75 0.25 0.95 1</ambient><diffuse>0.85 0.35 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+        <!-- Diagnostic Telemetry Display Screen -->
+        <visual name="screen">
+          <pose>0.162 0 1.10 0 0 0</pose>
+          <geometry><box><size>0.008 0.22 0.32</size></box></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>0.8 0.8 0.8 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_charge_sw">
+      <static>true</static>
+      <pose>1.500 1.500 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.40 0.15 0.65 1</ambient><diffuse>0.65 0.25 0.95 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.80 0.35 1.0 1</ambient><diffuse>0.85 0.40 1.0 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_h_left"><pose>-0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_right"><pose>0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_mid"><pose>0 0 0.005 0 0 0</pose><geometry><box><size>0.22 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Charging Kiosk: kiosk_charge_sw -->
+    <model name="kiosk_charge_sw">
+      <static>true</static>
+      <pose>1.500 1.500 0.0 0 0 -0.7850</pose>
+      <link name="link">
+        <!-- Main Pillar -->
+        <visual name="pillar">
+          <pose>0 0 0.80 0 0 0</pose>
+          <geometry><box><size>0.32 0.32 1.60</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Power Cap -->
+        <visual name="cap">
+          <pose>0 0 1.64 0 0 0</pose>
+          <geometry><box><size>0.38 0.38 0.08</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Glowing Purple Status Ring -->
+        <visual name="halo_ring">
+          <pose>0 0 1.61 0 0 0</pose>
+          <geometry><cylinder><radius>0.22</radius><length>0.05</length></cylinder></geometry>
+          <material><ambient>0.75 0.25 0.95 1</ambient><diffuse>0.85 0.35 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+        <!-- Diagnostic Telemetry Display Screen -->
+        <visual name="screen">
+          <pose>0.162 0 1.10 0 0 0</pose>
+          <geometry><box><size>0.008 0.22 0.32</size></box></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>0.8 0.8 0.8 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_charge_ne">
+      <static>true</static>
+      <pose>22.500 18.000 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.40 0.15 0.65 1</ambient><diffuse>0.65 0.25 0.95 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.80 0.35 1.0 1</ambient><diffuse>0.85 0.40 1.0 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_h_left"><pose>-0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_right"><pose>0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_mid"><pose>0 0 0.005 0 0 0</pose><geometry><box><size>0.22 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Charging Kiosk: kiosk_charge_ne -->
+    <model name="kiosk_charge_ne">
+      <static>true</static>
+      <pose>22.500 18.000 0.0 0 0 2.3560</pose>
+      <link name="link">
+        <!-- Main Pillar -->
+        <visual name="pillar">
+          <pose>0 0 0.80 0 0 0</pose>
+          <geometry><box><size>0.32 0.32 1.60</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Power Cap -->
+        <visual name="cap">
+          <pose>0 0 1.64 0 0 0</pose>
+          <geometry><box><size>0.38 0.38 0.08</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Glowing Purple Status Ring -->
+        <visual name="halo_ring">
+          <pose>0 0 1.61 0 0 0</pose>
+          <geometry><cylinder><radius>0.22</radius><length>0.05</length></cylinder></geometry>
+          <material><ambient>0.75 0.25 0.95 1</ambient><diffuse>0.85 0.35 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+        <!-- Diagnostic Telemetry Display Screen -->
+        <visual name="screen">
+          <pose>0.162 0 1.10 0 0 0</pose>
+          <geometry><box><size>0.008 0.22 0.32</size></box></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>0.8 0.8 0.8 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pad_charge_se">
+      <static>true</static>
+      <pose>22.500 1.500 0.003 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_surface">
+          <geometry><box><size>1.10 1.10 0.004</size></box></geometry>
+          <material><ambient>0.40 0.15 0.65 1</ambient><diffuse>0.65 0.25 0.95 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+        </visual>
+        <visual name="pad_border">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><box><size>1.20 1.20 0.002</size></box></geometry>
+          <material><ambient>0.80 0.35 1.0 1</ambient><diffuse>0.85 0.40 1.0 1</diffuse></material>
+        </visual>
+
+        <visual name="stencil_h_left"><pose>-0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_right"><pose>0.12 0 0.005 0 0 0</pose><geometry><box><size>0.07 0.42 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="stencil_h_mid"><pose>0 0 0.005 0 0 0</pose><geometry><box><size>0.22 0.07 0.003</size></box></geometry><material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+      </link>
+    </model>
+
+    <!-- Charging Kiosk: kiosk_charge_se -->
+    <model name="kiosk_charge_se">
+      <static>true</static>
+      <pose>22.500 1.500 0.0 0 0 -2.3560</pose>
+      <link name="link">
+        <!-- Main Pillar -->
+        <visual name="pillar">
+          <pose>0 0 0.80 0 0 0</pose>
+          <geometry><box><size>0.32 0.32 1.60</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Power Cap -->
+        <visual name="cap">
+          <pose>0 0 1.64 0 0 0</pose>
+          <geometry><box><size>0.38 0.38 0.08</size></box></geometry>
+          <material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.16 0.18 0.24 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+        <!-- Glowing Purple Status Ring -->
+        <visual name="halo_ring">
+          <pose>0 0 1.61 0 0 0</pose>
+          <geometry><cylinder><radius>0.22</radius><length>0.05</length></cylinder></geometry>
+          <material><ambient>0.75 0.25 0.95 1</ambient><diffuse>0.85 0.35 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+        <!-- Diagnostic Telemetry Display Screen -->
+        <visual name="screen">
+          <pose>0.162 0 1.10 0 0 0</pose>
+          <geometry><box><size>0.008 0.22 0.32</size></box></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>0.8 0.8 0.8 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_right_north -->
+    <model name="rack_right_north">
+      <static>true</static>
+      <pose>17.500 18.400 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-3.460 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-3.460 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>3.460 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>3.460 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-1.730 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-1.730 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>1.730 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>1.730 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.410 0.550 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.410 0.550 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-2.100 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.700 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.700 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>2.100 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>3.460 0.450 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.410 1.350 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.410 1.350 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-2.100 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.700 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.700 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>2.100 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>3.460 0.450 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.410 2.150 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.410 2.150 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-2.100 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.700 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.700 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>2.100 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>3.460 0.450 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_right_south -->
+    <model name="rack_right_south">
+      <static>true</static>
+      <pose>17.500 0.800 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-3.460 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-3.460 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>3.460 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>3.460 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-1.730 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-1.730 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>1.730 -0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>1.730 0.410 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.410 0.550 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.410 0.550 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-2.100 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.700 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.700 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>2.100 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>3.460 0.450 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.410 1.350 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.410 1.350 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-2.100 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.700 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.700 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>2.100 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>3.460 0.450 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.410 2.150 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.410 2.150 0 0 0</pose>
+          <geometry><box><size>7.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>6.900 0.840 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-2.100 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.700 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.700 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>2.100 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.312 0.675 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>3.460 0.450 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_right_east_hi -->
+    <model name="rack_right_east_hi">
+      <static>true</static>
+      <pose>23.200 9.500 0.000 0 0 1.5708</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-5.960 -0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-5.960 0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>5.960 -0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>5.960 0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-2.980 -0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-2.980 0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>2.980 -0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>2.980 0.360 1.400 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.800</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.360 0.550 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.360 0.550 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-3.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-1.200 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>1.200 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>3.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>5.960 0.400 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.360 1.350 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.360 1.350 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-3.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-1.200 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>1.200 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>3.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>5.960 0.400 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.360 2.150 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.360 2.150 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-3.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-1.200 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>1.200 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>3.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>5.960 0.400 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_right_center -->
+    <model name="rack_right_center">
+      <static>true</static>
+      <pose>16.500 9.500 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-1.760 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-1.760 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>1.760 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>1.760 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.460 0.550 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.460 0.550 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>3.500 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-1.080 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.360 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.360 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>1.080 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>1.760 0.500 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.460 1.350 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.460 1.350 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>3.500 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-1.080 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.360 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.360 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>1.080 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>1.760 0.500 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.460 2.150 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.460 2.150 0 0 0</pose>
+          <geometry><box><size>3.600 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>3.500 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-1.080 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.360 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.360 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>1.080 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.675 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>1.760 0.500 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_left_center -->
+    <model name="rack_left_center">
+      <static>true</static>
+      <pose>7.500 9.500 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-2.060 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-2.060 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>2.060 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>2.060 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.460 1.200 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.400</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.460 0.550 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.460 0.550 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>4.100 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-1.260 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.420 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.420 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>1.260 0 0.825 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>2.060 0.500 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.460 1.350 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.460 1.350 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>4.100 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-1.260 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.420 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.420 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>1.260 0 1.625 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>2.060 0.500 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.460 2.150 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.460 2.150 0 0 0</pose>
+          <geometry><box><size>4.200 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>4.100 0.940 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-1.260 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.420 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.420 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>1.260 0 2.425 0 0 0</pose>
+          <geometry><box><size>0.788 0.750 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>2.060 0.500 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_left_west_hi -->
+    <model name="rack_left_west_hi">
+      <static>true</static>
+      <pose>0.800 9.500 0.000 0 0 1.5708</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-5.960 -0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-5.960 0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>5.960 -0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>5.960 0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-2.980 -0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-2.980 0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>2.980 -0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>2.980 0.360 1.300 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.600</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.360 0.550 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.360 0.550 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-3.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-1.200 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>1.200 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>3.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>5.960 0.400 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.360 1.350 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.360 1.350 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-3.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-1.200 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>1.200 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>3.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>5.960 0.400 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.360 2.150 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.360 2.150 0 0 0</pose>
+          <geometry><box><size>12.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>11.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-3.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-1.200 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>1.200 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>3.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>2.250 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>5.960 0.400 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_left_north -->
+    <model name="rack_left_north">
+      <static>true</static>
+      <pose>7.000 18.400 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-2.960 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-2.960 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>2.960 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>2.960 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-1.480 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-1.480 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>1.480 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>1.480 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.360 0.550 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.360 0.550 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-1.800 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>1.800 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>2.960 0.400 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.360 1.350 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.360 1.350 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-1.800 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>1.800 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>2.960 0.400 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.360 2.150 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.360 2.150 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-1.800 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>1.800 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>2.960 0.400 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Industrial Storage Rack: rack_left_south -->
+    <model name="rack_left_south">
+      <static>true</static>
+      <pose>7.000 0.800 0.000 0 0 0.0000</pose>
+      <link name="link">
+
+        <visual name="post_1">
+          <pose>-2.960 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_2">
+          <pose>-2.960 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_3">
+          <pose>2.960 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_4">
+          <pose>2.960 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_5">
+          <pose>0.000 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_6">
+          <pose>0.000 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_7">
+          <pose>-1.480 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_8">
+          <pose>-1.480 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_9">
+          <pose>1.480 -0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="post_10">
+          <pose>1.480 0.360 1.100 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 2.200</size></box></geometry>
+          <material><ambient>0.10 0.20 0.45 1</ambient><diffuse>0.15 0.32 0.68 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_1">
+          <pose>0 -0.360 0.550 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_1">
+          <pose>0 0.360 0.550 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_1">
+          <pose>0 0 0.580 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t1_b1">
+          <pose>-1.800 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b2">
+          <pose>-0.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b3">
+          <pose>0.600 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t1_b4">
+          <pose>1.800 0 0.825 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_1">
+          <pose>2.960 0.400 0.600 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_2">
+          <pose>0 -0.360 1.350 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_2">
+          <pose>0 0.360 1.350 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_2">
+          <pose>0 0 1.380 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t2_b1">
+          <pose>-1.800 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b2">
+          <pose>-0.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b3">
+          <pose>0.600 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t2_b4">
+          <pose>1.800 0 1.625 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_2">
+          <pose>2.960 0.400 1.400 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+
+        <visual name="beam_front_3">
+          <pose>0 -0.360 2.150 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="beam_back_3">
+          <pose>0 0.360 2.150 0 0 0</pose>
+          <geometry><box><size>6.000 0.05 0.08</size></box></geometry>
+          <material><ambient>0.85 0.35 0.05 1</ambient><diffuse>0.95 0.45 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+        </visual>
+        <visual name="deck_3">
+          <pose>0 0 2.180 0 0 0</pose>
+          <geometry><box><size>5.900 0.740 0.02</size></box></geometry>
+          <material><ambient>0.60 0.48 0.32 1</ambient><diffuse>0.75 0.60 0.42 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+
+        <visual name="cargo_t3_b1">
+          <pose>-1.800 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.65 0.45 0.25 1</ambient><diffuse>0.78 0.56 0.32 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b2">
+          <pose>-0.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.20 0.45 0.70 1</ambient><diffuse>0.25 0.55 0.85 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b3">
+          <pose>0.600 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.75 0.55 0.10 1</ambient><diffuse>0.90 0.70 0.15 1</diffuse></material>
+        </visual>
+
+        <visual name="cargo_t3_b4">
+          <pose>1.800 0 2.425 0 0 0</pose>
+          <geometry><box><size>1.125 0.600 0.450</size></box></geometry>
+          <material><ambient>0.15 0.60 0.35 1</ambient><diffuse>0.20 0.75 0.45 1</diffuse></material>
+        </visual>
+
+        <visual name="led_indicator_3">
+          <pose>2.960 0.400 2.200 0 0 0</pose>
+          <geometry><sphere><radius>0.035</radius></sphere></geometry>
+          <material><ambient>0.0 0.85 1.0 1</ambient><diffuse>0.0 0.95 1.0 1</diffuse><specular>1 1 1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="sign_inbound">
+      <static>true</static>
+      <pose>0.22 9.5 2.0 0 0 1.5708</pose>
+      <link name="link">
+        <visual name="v">
+          <geometry><box><size>5.0 0.04 0.50</size></box></geometry>
+          <material><ambient>0.08 0.35 0.75 1</ambient><diffuse>0.12 0.50 0.95 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="sign_outbound">
+      <static>true</static>
+      <pose>23.78 9.5 2.0 0 0 1.5708</pose>
+      <link name="link">
+        <visual name="v">
+          <geometry><box><size>5.0 0.04 0.50</size></box></geometry>
+          <material><ambient>0.05 0.60 0.25 1</ambient><diffuse>0.08 0.80 0.35 1</diffuse><specular>0.4 0.4 0.4 1</specular></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

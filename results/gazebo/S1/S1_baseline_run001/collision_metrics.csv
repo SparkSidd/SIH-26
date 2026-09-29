@@ -1,0 +1,3 @@
+sim_time,robot_i,robot_j,separation_m,event
+9.000,R05,R04,0.5666,NEAR_MISS
+9.100,R05,R04,0.5288,NEAR_MISS
