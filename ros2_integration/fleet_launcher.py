@@ -61,6 +61,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("fleet_launcher")
 
+from safety.invariants import SafetyInvariants
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Scenario definitions  (grid positions, task lists, fleet sizes)
 # These mirror the benchmark scenarios from the frozen test suite.
@@ -92,6 +94,7 @@ def _make_choke_grid() -> np.ndarray:
 
 
 SCENARIOS = {
+    # ── Live Demonstration Modes ──────────────────────────────────────────────
     "LIVE_TEST_SINGLE": {
         "name": "Live Single Robot Continuous Demo",
         "grid_fn": _make_open_grid,
@@ -128,6 +131,104 @@ SCENARIOS = {
         ],
         "timeout_steps": 300,
     },
+
+    # ── Official SIH Presentation Scenarios (Section 28) ──────────────────────
+    "SCENARIO_A": {
+        "name": "Scenario A — Normal Operation (6 AMRs)",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
+        "tasks": [
+            ("T01", (5, 2), (20, 17)),
+            ("T02", (5, 10), (20, 5)),
+            ("T03", (5, 17), (20, 10)),
+            ("T04", (10, 5), (15, 15)),
+            ("T05", (15, 2), (5, 17)),
+            ("T06", (15, 17), (5, 2)),
+        ],
+        "timeout_steps": 200,
+    },
+    "SCENARIO_B": {
+        "name": "Scenario B — Congestion at Choke Points",
+        "grid_fn": _make_choke_grid,
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (2, 7), (2, 12), (2, 17), (5, 5), (5, 14)],
+        "tasks": [
+            ("T01", (3, 3), (20, 16)),
+            ("T02", (3, 8), (20, 3)),
+            ("T03", (3, 13), (20, 8)),
+            ("T04", (3, 16), (20, 13)),
+            ("T05", (6, 5), (21, 5)),
+            ("T06", (6, 14), (21, 14)),
+        ],
+        "timeout_steps": 350,
+    },
+    "SCENARIO_C": {
+        "name": "Scenario C — Blockage Recovery & Space-Time A* Detour",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
+        "tasks": [
+            ("T01", (5, 2), (20, 17)),
+            ("T02", (5, 10), (20, 5)),
+            ("T03", (5, 17), (20, 10)),
+            ("T04", (10, 5), (15, 15)),
+            ("T05", (15, 2), (5, 17)),
+            ("T06", (15, 17), (5, 2)),
+        ],
+        "blockage_step": 10,
+        "blockage_cells": [(12, 10), (12, 11)],
+        "timeout_steps": 250,
+    },
+    "SCENARIO_D": {
+        "name": "Scenario D — Multi-Robot Contention & PIBT Yielding",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(4, 5), (4, 14), (10, 5), (10, 14), (16, 5), (16, 14)],
+        "tasks": [
+            ("T01", (6, 5), (18, 14)),
+            ("T02", (18, 14), (6, 5)),
+            ("T03", (6, 14), (18, 5)),
+            ("T04", (18, 5), (6, 14)),
+            ("T05", (10, 5), (15, 14)),
+            ("T06", (15, 14), (10, 5)),
+        ],
+        "timeout_steps": 300,
+    },
+    "SCENARIO_E": {
+        "name": "Scenario E — Deadlock Stress & Wait-For Graph Recovery",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (22, 17), (2, 17), (22, 2), (12, 2), (12, 17)],
+        "tasks": [
+            ("T01", (2, 2), (22, 17)),
+            ("T02", (22, 17), (2, 2)),
+            ("T03", (2, 17), (22, 2)),
+            ("T04", (22, 2), (2, 17)),
+            ("T05", (12, 2), (12, 17)),
+            ("T06", (12, 17), (12, 2)),
+        ],
+        "timeout_steps": 400,
+    },
+    "SCENARIO_F": {
+        "name": "Scenario F — AMR Failure & Dynamic Task Reassignment",
+        "grid_fn": _make_open_grid,
+        "num_robots": 6,
+        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
+        "tasks": [
+            ("T01", (5, 2), (20, 17)),
+            ("T02", (5, 10), (20, 5)),
+            ("T03", (5, 17), (20, 10)),
+            ("T04", (10, 5), (15, 15)),
+            ("T05", (15, 2), (5, 17)),
+            ("T06", (15, 17), (5, 2)),
+        ],
+        "failure_step": 12,
+        "failure_robot": "R04",
+        "timeout_steps": 300,
+    },
+
+    # ── Legacy Numerical Aliases (Frozen test backward compatibility) ─────────
     "S1": {
         "name": "Open Warehouse — Basic Navigation",
         "grid_fn": _make_open_grid,
@@ -381,6 +482,30 @@ class ScenarioRunner:
             # ── 1. Task lifecycle (assign queued tasks BEFORE coordinator runs) ─
             self._tick_task_lifecycle(step)
 
+            # ── Dynamic Scenario Events (Blockage / AMR Failure) ──────────────
+            if "blockage_step" in self.cfg and step == self.cfg["blockage_step"]:
+                for bc in self.cfg.get("blockage_cells", []):
+                    logger.info("[%s] [INJECTED_BLOCKAGE] Dynamic blockage introduced at cell %s",
+                                self.scenario_name, bc)
+                    for node in self._nodes.values():
+                        node._blocked_cells.add(bc)
+
+            if "failure_step" in self.cfg and step == self.cfg["failure_step"]:
+                fail_id = self.cfg["failure_robot"]
+                if fail_id in self._nodes:
+                    failed_node = self._nodes[fail_id]
+                    failed_node.robot.set_state(RobotState.FAILED, reason="Emulated hardware fault")
+                    reclaim_task_id = failed_node.robot.current_task_id
+                    if reclaim_task_id and reclaim_task_id in self._tasks:
+                        rt = self._tasks[reclaim_task_id]
+                        rt.state = TaskState.QUEUED
+                        rt.assigned_robot_id = None
+                        rt.priority += 2.0
+                        failed_node.robot.current_task_id = None
+                        failed_node.robot.target_position = None
+                        logger.info("[%s] [AMR_FAILURE] %s marked FAILED — task %s requeued for fleet reallocation",
+                                    self.scenario_name, fail_id, reclaim_task_id)
+
             # ── 2. Build combined fleet snapshot for coordinator ───────────────
             fleet_snapshot: Dict[str, Robot] = {
                 rid: node.robot for rid, node in self._nodes.items()
@@ -410,16 +535,17 @@ class ScenarioRunner:
                 if action is None:
                     continue
                 robot = node.robot
+                if not robot.is_healthy:
+                    continue  # Failed robot remains stationary (Invariant 1)
+
                 if action.action_type == ActionType.MOVE:
                     target = action.target_cell
-                    # Validate move (only 1 cell, must be walkable)
+                    # Validate move (only 1 cell, must be walkable and unblocked)
                     dc = abs(target[0] - robot.position[0])
                     dr = abs(target[1] - robot.position[1])
-                    if (dc + dr) == 1 and is_walkable(target):
+                    if (dc + dr) == 1 and is_walkable(target) and target not in blocked:
                         node._motion_model.step_discrete_motion(robot, target, SIL_STEP_DT)
-                        # Update stored yaw for cmd_vel translation
                         node._world_yaw = heading_to_yaw(robot.previous_position, robot.position)
-                        # Feed synthetic odom to keep internal state consistent
                         odom = _make_odom(robot.position, node._world_yaw, robot.velocity)
                         node._on_odom(odom)
                 elif action.action_type == ActionType.WAIT:
@@ -431,11 +557,24 @@ class ScenarioRunner:
                 elif action.action_type == ActionType.ESTOP:
                     robot.set_state(RobotState.FAILED, reason="E-stop")
 
-                # Record cmd_vel latency
-                node._cmd_vel_latencies.append(0.1)  # SIL placeholder: ~0.1ms
+                node._cmd_vel_latencies.append(0.1)
                 node._step_count += 1
 
-            # ── 5. Collision check ────────────────────────────────────────────
+            # ── 5. Formal Invariant & Collision Verification ──────────────────
+            curr_positions = {rid: node.robot.position for rid, node in self._nodes.items()}
+            failed_ids = {rid for rid, node in self._nodes.items() if not node.robot.is_healthy}
+            inv_report = SafetyInvariants.verify_action_batch(
+                candidate_actions=actions,
+                current_positions=curr_positions,
+                blocked_cells=blocked,
+                failed_robot_ids=failed_ids,
+            )
+            if not inv_report.is_safe:
+                self.total_collisions += 1
+                collision_log.append({"step": step, "type": inv_report.violation_type, "details": inv_report.details})
+                logger.error("[%s] [INVARIANT_BREACH] at step %d: %s (%s)",
+                             self.scenario_name, step, inv_report.violation_type, inv_report.details)
+
             collisions = _check_collisions(self._nodes)
             if collisions:
                 for r1, r2 in collisions:

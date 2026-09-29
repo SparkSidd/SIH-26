@@ -38,6 +38,8 @@ setup(
             "fleet_launcher = ros2_integration.fleet_launcher:main",
             "gazebo_data_logger = ros2_integration.gazebo_data_logger:main",
             "live_demo_task_generator = ros2_integration.live_demo_task_generator:main",
+            "fleet_safety_hud = ros2_integration.fleet_safety_hud:main",
+            "camera_controller = ros2_integration.camera_controller:main",
         ],
     },
 )

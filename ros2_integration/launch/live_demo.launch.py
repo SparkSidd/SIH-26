@@ -58,13 +58,28 @@ _TMP_DIR     = tempfile.mkdtemp(prefix="sih26_livedemo_")
 
 # -- Robot counts per scenario ------------------------------------------------
 _SCENARIO_ROBOTS = {
+    # Live Demo modes
     "LIVE_TEST_SINGLE": 1,
     "LIVE_TEST_TWO":    2,
     "LIVE_DEMO":        6,
+    # Official SIH Presentation Scenarios (A–F)
+    "SCENARIO_A":       6,
+    "SCENARIO_B":       6,
+    "SCENARIO_C":       6,
+    "SCENARIO_D":       6,
+    "SCENARIO_E":       6,
+    "SCENARIO_F":       6,
+    # Legacy numerical aliases
+    "S1":               6,
+    "S4":               6,
+    "S5":               6,
+    "S8":               6,
 }
 
-# -- World SDF (use open floor for all live demo scenarios) -------------------
-_WORLD_SDF = os.path.join(_WORLDS_DIR, "warehouse_s1.sdf")
+# -- World SDF: choke scenarios use warehouse_s4.sdf (dividing wall + choke) --
+_WORLD_SDF_DEFAULT = os.path.join(_WORLDS_DIR, "warehouse_s1.sdf")
+_WORLD_SDF_CHOKE   = os.path.join(_WORLDS_DIR, "warehouse_s4.sdf")
+_CHOKE_SCENARIOS   = {"SCENARIO_B", "SCENARIO_D", "S4", "S8"}
 
 # -- Per-robot colors (same as amr_fleet.launch.py) ---------------------------
 _ROBOT_COLORS = {
@@ -129,14 +144,23 @@ def generate_launch_description() -> LaunchDescription:
         "policy", default_value="proposed",
         description="Coordination policy: proposed | baseline",
     )
+    hud_arg = DeclareLaunchArgument(
+        "hud", default_value="true",
+        description="Enable real-time Safety Supervisor HUD and invariant assertion",
+    )
+    recording_arg = DeclareLaunchArgument(
+        "recording", default_value="false",
+        description="Enable clean presentation recording mode",
+    )
 
-    # -- Gazebo world ---------------------------------------------------------
+    # -- Gazebo world (resolved at launch time via OpaqueFunction) -------------
+    # World selection is done inside launch_fleet() so SCENARIO determines SDF.
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join("/opt/ros/jazzy/share/ros_gz_sim/launch", "gz_sim.launch.py")
         ),
         launch_arguments={
-            "gz_args": f"-r {_WORLD_SDF}",
+            "gz_args": f"-r {_WORLD_SDF_DEFAULT}",
             "on_exit_shutdown": "true",
         }.items(),
     )
@@ -159,12 +183,22 @@ def generate_launch_description() -> LaunchDescription:
         inject_interval = float(LaunchConfiguration("inject_interval").perform(context))
         seed = int(LaunchConfiguration("seed").perform(context))
 
-        num_robots = _SCENARIO_ROBOTS.get(scenario, 1)
+        num_robots = _SCENARIO_ROBOTS.get(scenario, 6)
         robot_ids  = [f"R{i:02d}" for i in range(1, num_robots + 1)]
 
-        # Import scenario robot starts
+        # Choose world based on scenario type
+        world_sdf = _WORLD_SDF_CHOKE if scenario in _CHOKE_SCENARIOS else _WORLD_SDF_DEFAULT
+
+        # CRITICAL: Propagate live-source PYTHONPATH into all spawned nodes.
+        # The ament overlay may have prepended a stale colcon-built egg. By
+        # re-inserting the project dir here, all ROS2 nodes use the live source.
         import sys, os as _os
         _proj = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
+        _sih26_env = {
+            "PYTHONPATH": f"{_proj}:{_os.environ.get('PYTHONPATH', '')}",
+            "SIH26_PROJECT_DIR": _proj,
+            "LIVE_TELEMETRY": _os.environ.get("LIVE_TELEMETRY", "0"),
+        }
         if _proj not in sys.path:
             sys.path.insert(0, _proj)
 
@@ -229,7 +263,7 @@ def generate_launch_description() -> LaunchDescription:
                     "map_height":  20,
                     "continuous":  True,   # always continuous in live demo
                 }],
-                additional_env={"LIVE_TELEMETRY": os.environ.get("LIVE_TELEMETRY", "0")},
+                additional_env=_sih26_env,
             )
 
             spawn_delay = i * 1.5 + 3.0
@@ -252,8 +286,28 @@ def generate_launch_description() -> LaunchDescription:
                 "max_queued":  num_robots,
                 "use_sim_time": use_sim_time,
             }],
+            additional_env=_sih26_env,
         )
         actions.append(TimerAction(period=task_gen_delay, actions=[task_gen]))
+
+        # Safety HUD node (renders real-time mathematical assertions & status banner)
+        enable_hud = LaunchConfiguration("hud").perform(context).lower() in ("true", "1")
+        recording_val = LaunchConfiguration("recording").perform(context).lower() in ("true", "1")
+        if enable_hud:
+            hud_node = Node(
+                package="ros2_integration",
+                executable="fleet_safety_hud",
+                name="fleet_safety_hud",
+                output="screen",
+                parameters=[{
+                    "scenario":    scenario,
+                    "robots":      num_robots,
+                    "use_sim_time": use_sim_time,
+                    "recording":   recording_val,
+                }],
+                additional_env=_sih26_env,
+            )
+            actions.append(TimerAction(period=task_gen_delay + 1.0, actions=[hud_node]))
 
         return actions
 
@@ -265,6 +319,8 @@ def generate_launch_description() -> LaunchDescription:
         use_sim_time_arg,
         inject_interval_arg,
         seed_arg,
+        hud_arg,
+        recording_arg,
         LogInfo(msg="[SIH26123] Live Demo launching — FUNCTION FIRST"),
         LogInfo(msg=f"[SIH26123] Temp SDF dir: {_TMP_DIR}"),
         gz_sim,

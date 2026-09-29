@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-# run_live_fleet.sh -- LIVE_DEMO: 6 robots, continuous fleet demo
-# Usage (in WSL2): bash run_live_fleet.sh
-# Usage with telemetry: LIVE_TELEMETRY=1 bash run_live_fleet.sh
+# run_live_fleet.sh -- SIH26123 Gazebo Live Fleet Launcher with Real-Time Safety HUD
+# Usage (in WSL2):
+#   bash run_live_fleet.sh [SCENARIO] [POLICY] [RECORDING]
+# Examples:
+#   bash run_live_fleet.sh                           # 6 robots, LIVE_DEMO, proposed policy, HUD on
+#   bash run_live_fleet.sh SCENARIO_B proposed       # Congestion at choke points
+#   bash run_live_fleet.sh SCENARIO_C proposed       # Dynamic blockage & STA* replanning
+#   bash run_live_fleet.sh LIVE_DEMO proposed true   # Presentation Recording mode (clean banner)
+
+SCENARIO="${1:-LIVE_DEMO}"
+POLICY="${2:-proposed}"
+RECORDING="${3:-false}"
 
 if [ -d "/home/siddharth/sih26" ]; then
     PROJECT_DIR="/home/siddharth/sih26"
@@ -30,11 +39,32 @@ if [ ! -d "/mnt/shared_memory" ] || ! mountpoint -q /mnt/shared_memory; then
 fi
 
 export SIH26_PROJECT_DIR="$PROJECT_DIR"
+# CRITICAL: Re-prepend project source AFTER any ROS2 overlay sourcing.
+# The ament install/setup.bash may re-inject the colcon-built egg at the front
+# of PYTHONPATH via local_setup.bash. We override it here to ensure the live
+# source tree always takes precedence over any stale installed package.
 export PYTHONPATH="$PROJECT_DIR:${PYTHONPATH:-}"
 export LIVE_TELEMETRY="${LIVE_TELEMETRY:-0}"
 
-echo "=== SIH26123 LIVE 6-ROBOT FLEET DEMO ==="
-echo "Scenario: LIVE_DEMO | LIVE_TELEMETRY=$LIVE_TELEMETRY"
-echo "Project : $PROJECT_DIR"
+echo "======================================================================"
+echo "  SIH26123 — DECENTRALIZED AMR FLEET COORDINATION (GAZEBO/ROS 2)"
+echo "  Scenario:  $SCENARIO"
+echo "  Policy:    $POLICY (PIBT + Space-Time A* + Hungarian Allocation)"
+echo "  Recording: $RECORDING"
+echo "  Project:   $PROJECT_DIR"
+echo "======================================================================"
+
 cd "$PROJECT_DIR"
-ros2 launch ros2_integration live_demo.launch.py scenario:=LIVE_DEMO use_sim_time:=true inject_interval:=8.0 seed:=42
+
+# Re-assert project source precedence immediately before launch.
+# This is the final defence against any overlay that injected itself into PYTHONPATH.
+export PYTHONPATH="$PROJECT_DIR:${PYTHONPATH}"
+
+ros2 launch ros2_integration live_demo.launch.py \
+    scenario:="$SCENARIO" \
+    policy:="$POLICY" \
+    use_sim_time:=true \
+    inject_interval:=8.0 \
+    seed:=42 \
+    hud:=true \
+    recording:="$RECORDING"

@@ -677,51 +677,64 @@ class AMRNode(Node):
         Translate a RobotAction from the coordination stack into a ROS 2
         geometry_msgs/Twist velocity command.
 
-        Mapping:
-          MOVE    → linear.x = max_velocity, angular.z = required heading change
-          WAIT    → all zeros
-          ROTATE  → linear.x = 0, angular.z = angular velocity to reach target
-          PICK    → all zeros (arm/gripper handled separately)
-          DROP    → all zeros
-          CHARGE  → all zeros
-          ESTOP   → all zeros (safety-critical)
+        Implements smooth unicycle control with lookahead trajectory blending,
+        proportional-saturating heading damping, docking deceleration, and
+        physical safety buffer enforcement.
         """
         twist = Twist()
 
         if action.action_type == ActionType.MOVE:
             target = action.target_cell
-            target_yaw = heading_to_yaw(self.robot.position, target)
-            yaw_error = _normalize_angle(target_yaw - self._world_yaw)
-
             tx, ty, _ = grid_to_world(target[0], target[1], self._map_height)
             dist_to_target = math.hypot(tx - self._world_x, ty - self._world_y)
+
+            # Lookahead heading: if close to target waypoint, point toward final destination
+            if dist_to_target < 0.40 and self.robot.target_position and self.robot.target_position != target:
+                gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
+                target_yaw = math.atan2(gy - self._world_y, gx - self._world_x)
+            else:
+                target_yaw = math.atan2(ty - self._world_y, tx - self._world_x)
+
+            yaw_error = _normalize_angle(target_yaw - self._world_yaw)
             base_speed = action.target_velocity * self.robot.geometry.max_velocity
+
+            # Check distance to final mission goal for smooth docking deceleration
+            if self.robot.target_position:
+                gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
+                dist_to_goal = math.hypot(gx - self._world_x, gy - self._world_y)
+            else:
+                dist_to_goal = dist_to_target
 
             # Proximity safety buffer: halt linear motion only if immediate bumper obstruction < 0.40m
             if self._min_forward_dist < 0.40:
                 twist.linear.x = 0.0
-                twist.angular.z = float(1.5 * yaw_error) if abs(yaw_error) > 0.05 else 0.5
-            elif abs(yaw_error) > math.radians(45.0):
-                # Rotate first if facing more than 45 degrees away
+                twist.angular.z = float(min(1.8, max(-1.8, 1.8 * yaw_error))) if abs(yaw_error) > 0.05 else 0.0
+            elif abs(yaw_error) > math.radians(55.0):
+                # Sharp heading discrepancy: pivot smoothly with proportional scaling
                 twist.linear.x = 0.0
-                twist.angular.z = float(2.0 * math.copysign(1.0, yaw_error))
+                pivot_w = min(2.2, max(0.8, abs(yaw_error) * 2.2))
+                twist.angular.z = float(pivot_w * math.copysign(1.0, yaw_error))
             else:
-                # Smooth unicycle control: blend speed with cosine of yaw error
-                cos_err = max(0.0, math.cos(yaw_error))
-                if dist_to_target < 0.35:
-                    speed = max(0.2, min(base_speed, dist_to_target * 2.0)) * cos_err
+                # Smooth continuous dynamic arc: maintain forward momentum while turning
+                cos_err = max(0.15, math.cos(yaw_error))
+                if dist_to_goal < 0.70:
+                    # Controlled docking approach
+                    speed = max(0.25, min(base_speed, dist_to_goal * 1.5)) * cos_err
+                elif dist_to_target < 0.30:
+                    speed = max(0.35, min(base_speed, dist_to_target * 2.2)) * cos_err
                 else:
                     speed = base_speed * cos_err
 
                 twist.linear.x = float(speed)
-                twist.angular.z = float(2.0 * yaw_error)
+                twist.angular.z = float(min(2.2, max(-2.2, 2.4 * yaw_error)))
 
         elif action.action_type == ActionType.ROTATE:
             if action.target_heading is not None:
                 yaw_error = _normalize_angle(action.target_heading - self._world_yaw)
-                twist.angular.z = float(2.0 * math.copysign(1.0, yaw_error))
+                rot_w = min(2.2, max(0.6, abs(yaw_error) * 2.2))
+                twist.angular.z = float(rot_w * math.copysign(1.0, yaw_error))
 
-        # WAIT, PICK, DROP, CHARGE, ESTOP → zero twist (robot stops)
+        # WAIT, PICK, DROP, CHARGE, ESTOP → zero twist (robot stops safely)
         return twist
 
     def _publish_estop(self) -> None:
