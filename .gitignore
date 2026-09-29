@@ -84,5 +84,6 @@ desktop.ini
 
 # Temporary scratch & logs
 *.log
-scratch/temp/
+scratch/
+
 

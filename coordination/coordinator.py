@@ -7,8 +7,6 @@ from coordination.priority import PriorityEngine
 from events.event import Event, EventType
 from events.event_bus import EventBus
 from execution.action import RobotAction, ActionType
-from learning.config import LearningConfig
-from learning.priority_policy import PriorityPolicy
 from planning.deadlock import DeadlockDetector
 from planning.multi_agent import MultiAgentPlanner
 from planning.astar import SpaceTimeAStarPlanner
@@ -45,8 +43,8 @@ class FleetCoordinator:
         self.reroute_astar = SpaceTimeAStarPlanner(heuristic_type="manhattan", max_horizon=200, timeout_ms=150.0)
         self.event_bus = event_bus
 
-        # Learning-guided priority advisor
-        self.learning_policy: Optional[PriorityPolicy] = None
+        # Learning-guided priority advisor (lazy loaded only if explicitly enabled)
+        self.learning_policy: Optional[Any] = None
         self.learning_telemetry: Dict[str, Any] = {
             "enabled": learning_enabled,
             "is_fallback": True,
@@ -55,6 +53,9 @@ class FleetCoordinator:
             "last_latency_ms": 0.0,
         }
         if learning_enabled:
+            from learning.config import LearningConfig
+            from learning.priority_policy import PriorityPolicy
+
             ckpt_path = learning_checkpoint or os.path.join("learning", "checkpoints", "fine_tuned", "best_model.pt")
             config = LearningConfig(enabled=True, checkpoint_path=ckpt_path)
             self.learning_policy = PriorityPolicy(config=config, deterministic_engine=self.priority_engine)
