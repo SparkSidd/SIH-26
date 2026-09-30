@@ -16,6 +16,9 @@ class RobotBelief:
     planned_path: List[Tuple[int, int]] = field(default_factory=list)
     current_task_id: Optional[str] = None
     priority: float = 1.0
+    has_payload: bool = False
+    task_state: Optional[str] = None
+    target_position: Optional[Tuple[int, int]] = None
     timestamp: float = 0.0
     sequence_number: int = 0
     confidence: float = 1.0

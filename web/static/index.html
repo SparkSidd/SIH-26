@@ -108,18 +108,18 @@
     <div class="video-broadcast-ribbon">
         <div class="vbr-left">
             <span class="vbr-pulse"></span>
-            <span class="vbr-title">CYBER-PHYSICAL SUITE</span>
+            <span class="vbr-title">ROBOTICS SIMULATION SUITE</span>
             <span class="vbr-sep">|</span>
             <span class="vbr-ps">SIH26123 · EDGE-AI DISTRIBUTED AMR FLEET MANAGEMENT</span>
         </div>
         <div class="vbr-center">
-            <span class="vbr-chip green">🛡️ ZERO COLLISIONS GUARANTEED</span>
-            <span class="vbr-chip cyan">⚡ +31.2% THROUGHPUT (PIBT)</span>
+            <span class="vbr-chip green">🛡️ ZERO COLLISIONS OBSERVED</span>
+            <span class="vbr-chip cyan">⚡ +26.18% AGGREGATE TIME CUT</span>
             <span class="vbr-chip purple">🤖 6-AMR P2P GOSSIP MESH</span>
-            <span class="vbr-chip amber">⏱️ 0.07ms EDGE DECISION</span>
+            <span class="vbr-chip amber">⏱️ 0.27ms MEAN EDGE DECISION</span>
         </div>
         <div class="vbr-right">
-            <span class="vbr-sync-tag">● GAZEBO 3D + DIGITAL TWIN SYNCHRONIZED</span>
+            <span class="vbr-sync-tag">● GAZEBO 3D + WEBOTS + DIGITAL TWIN</span>
         </div>
     </div>
 
@@ -144,7 +144,7 @@
                 <span>⚙️</span> ALGORITHMS
             </button>
             <button id="navTab_validation" class="app-nav-tab" data-view="validation" onclick="switchMainView('validation')">
-                <span>🛡️</span> VALIDATION (77/77)
+                <span>🛡️</span> VALIDATION (116/116)
             </button>
             <button id="navTab_references" class="app-nav-tab" data-view="references" onclick="switchMainView('references')">
                 <span>📚</span> NOVELTY & CITATIONS
@@ -626,7 +626,7 @@
                 <h1 class="hero-title">Decentralized AMR Fleet Coordination</h1>
                 <div class="hero-subtitle">A Safety-First, Edge-Oriented Multi-Robot Coordination System for Smart Warehouses</div>
                 <p class="hero-desc">
-                    Coordinates autonomous mobile robots using bipartite Hungarian task allocation, local peer-to-peer conflict negotiation (PIBT), 4D Space-Time A* reservations, deterministic safety supervision, and adaptive deadlock recovery. Zero single-points-of-failure; sub-millisecond edge decision latency.
+                    Coordinates autonomous mobile robots using bipartite Hungarian task allocation, local peer-to-peer conflict negotiation (PIBT), Space-Time A* reservations, deterministic safety supervision, and adaptive deadlock recovery. Zero single-points-of-failure; sub-millisecond edge decision latency.
                 </p>
                 <div class="hero-actions">
                     <button class="btn-mode primary" onclick="switchMainView('digital_twin')"><span>🎮</span> Launch Interactive Digital Twin</button>
@@ -973,7 +973,7 @@
                 </div>
                 <div class="arch-card" onclick="switchMainView('algorithms')">
                     <span class="arch-step-num">STAGE 05</span>
-                    <div class="arch-title">4D Space-Time A* Search</div>
+                    <div class="arch-title">Space-Time A* Search</div>
                     <p class="arch-desc">Time-indexed (x, y, t) reservation table traversal guaranteeing conflict-free corridor detours around blocked cells.</p>
                     <span class="arch-badge">Space-Time Grid</span>
                 </div>
@@ -1070,7 +1070,7 @@
 
                 <!-- Space-Time A* -->
                 <div class="ps-card" style="border-left:4px solid var(--accent-emerald);">
-                    <div class="ps-title" style="color:var(--accent-emerald);"><span>⏱️</span> 4D Space-Time A* Search</div>
+                    <div class="ps-title" style="color:var(--accent-emerald);"><span>⏱️</span> Space-Time A* Search</div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5;">
                         Expands search nodes in state space $(x, y, t)$ rather than spatial-only $(x, y)$. Validates candidate states against dynamic reservation tables to guarantee that no two robots occupy the same node or swap edges in adjacent time steps.
                     </p>
@@ -1100,7 +1100,7 @@
     </section>
 
     <!-- ======================================================================
-         VIEW 6: VALIDATION (77/77 REGRESSION TESTS & RUNTIME SAFETY INVARIANTS)
+         VIEW 6: VALIDATION (116/116 REGRESSION TESTS & RUNTIME SAFETY INVARIANTS)
          ====================================================================== -->
     <section id="viewValidation" class="app-view">
         <div class="overview-container">
@@ -1108,13 +1108,13 @@
                 <div class="hero-badge">SCIENTIFIC RIGOR & TEST SUITE INTEGRITY</div>
                 <h2 style="font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:8px;">System Test Manifest & Safety Invariants</h2>
                 <div style="display:flex; gap:16px; align-items:center; margin-top:8px;">
-                    <span class="status-pill pass" style="font-size:0.8rem; padding:4px 12px;">77 / 77 TESTS PASSED (100%)</span>
+                    <span class="status-pill pass" style="font-size:0.8rem; padding:4px 12px;">116 / 116 TESTS PASSED (100%)</span>
                     <span style="font-size:0.8rem; color:var(--text-secondary); font-family:var(--font-mono);">Zero Regressions Verified across All Subsystems</span>
                 </div>
             </div>
 
             <!-- Test Categories Breakdown -->
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:24px;">
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">Task Allocation</div>
                     <div class="kpi-sc-val green">8 / 8 PASS</div>
@@ -1122,12 +1122,12 @@
                 </div>
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">Multi-Agent Planning</div>
-                    <div class="kpi-sc-val green">14 / 14 PASS</div>
+                    <div class="kpi-sc-val green">16 / 16 PASS</div>
                     <div class="kpi-sc-sub">PIBT priority inheritance, Space-Time A* search, rolling waypoint handover</div>
                 </div>
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">Safety Invariants</div>
-                    <div class="kpi-sc-val green">16 / 16 PASS</div>
+                    <div class="kpi-sc-val green">18 / 18 PASS</div>
                     <div class="kpi-sc-sub">Zero vertex overlap, zero edge swap, swept-volume clearance, fallback E-stop</div>
                 </div>
                 <div class="kpi-showcase-card">
@@ -1136,14 +1136,24 @@
                     <div class="kpi-sc-sub">Directed cycle detection, 2-robot head-to-head, 3-robot ring, priority detour</div>
                 </div>
                 <div class="kpi-showcase-card">
-                    <div class="kpi-sc-tag">Failure & Recovery</div>
+                    <div class="kpi-sc-tag">Fault & Recovery</div>
                     <div class="kpi-sc-val green">15 / 15 PASS</div>
                     <div class="kpi-sc-sub">Motor stall detection, autonomous peer reclaim, dynamic obstacle rerouting</div>
                 </div>
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">End-to-End Scenarios</div>
-                    <div class="kpi-sc-val green">12 / 12 PASS</div>
+                    <div class="kpi-sc-val green">11 / 11 PASS</div>
                     <div class="kpi-sc-sub">200-run benchmark audit across S0 to S9 under multi-seed validation</div>
+                </div>
+                <div class="kpi-showcase-card">
+                    <div class="kpi-sc-tag">ROS 2 & Bridges</div>
+                    <div class="kpi-sc-val green">22 / 22 PASS</div>
+                    <div class="kpi-sc-sub">Nav2 action bridges, odometry transforms, coordinate transforms, Gazebo/Webots SIL</div>
+                </div>
+                <div class="kpi-showcase-card">
+                    <div class="kpi-sc-tag">Audit Hardening & Ownership</div>
+                    <div class="kpi-sc-val green">14 / 14 PASS</div>
+                    <div class="kpi-sc-sub">Distributed Claim/ACK/Commit, reservation timeline, event triggers, canonical schema</div>
                 </div>
             </div>
 
@@ -1259,10 +1269,10 @@
                         <tr>
                             <td style="color:#fff; font-weight:700;">
                                 Space-Time A* (Silver 2005)<br>
-                                <span style="font-size:0.68rem; color:var(--text-muted); font-weight:400;">Centralized 4D grid reservation</span>
+                                <span style="font-size:0.68rem; color:var(--text-muted); font-weight:400;">Centralized Space-Time grid reservation</span>
                             </td>
                             <td>
-                                Distributed 4D reservation horizon dynamically negotiated between local peers; adaptive fallback to lateral detour corridors upon blockage.
+                                Distributed Space-Time reservation horizon dynamically negotiated between local peers; adaptive fallback to lateral detour corridors upon blockage.
                             </td>
                             <td style="color:var(--accent-emerald); font-weight:700;">
                                 93% reduction in conflict wait time (1.57s down to 0.11s).

@@ -102,8 +102,8 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants
 # ──────────────────────────────────────────────────────────────────────────────
-CONTROL_LOOP_HZ = 20.0              # coordination step rate (raised from 10→20 for smoother motion)
-BELIEF_BROADCAST_HZ = 5.0          # P2P state broadcast rate
+CONTROL_LOOP_HZ = 10.0              # coordination step rate (10 Hz = smooth motion without CPU saturation)
+BELIEF_BROADCAST_HZ = 2.0          # P2P state broadcast rate (2 Hz prevents JSON serialization saturation in fleet mode)
 ODOM_POSITION_TOLERANCE = 0.3      # metres — snap to grid cell when within this
 LIDAR_OBSTACLE_THRESHOLD = 0.8     # metres — range reading below this = obstacle
 FLEET_BELIEF_TOPIC = "/fleet/beliefs"
@@ -309,23 +309,35 @@ class AMRNode(Node):
         detected_robots: List[Tuple[str, Tuple[int, int]]] = []
         min_fwd = 999.0
 
-        # Robot chassis half-length is 0.40m — ignore rays inside vehicle footprint
-        min_body_radius = 0.42
+        # Collect peer grid positions so we don't treat our own fleet peers as static obstacles!
+        peer_positions = set()
+        if self.robot.local_world_model:
+            for b in self.robot.local_world_model.peer_beliefs.values():
+                peer_positions.add(b.position)
 
         angle = msg.angle_min
         for r in msg.ranges:
-            if math.isfinite(r) and r >= min_body_radius and r <= msg.range_max:
-                # Forward cone: +/- 25 degrees (0.436 rad)
-                if abs(angle) < 0.436 and r < min_fwd:
-                    min_fwd = r
+            if math.isfinite(r) and r <= msg.range_max:
+                # Vehicle chassis footprint: 0.80m length (x: ±0.40), 0.60m width (y: ±0.30)
+                cos_a = abs(math.cos(angle)) or 1e-6
+                sin_a = abs(math.sin(angle)) or 1e-6
+                r_chassis = min(0.41 / cos_a, 0.31 / sin_a)
 
-                if r < 0.55:
-                    # Convert to world frame relative to robot
-                    bx = self._world_x + r * math.cos(self._world_yaw + angle)
-                    by = self._world_y + r * math.sin(self._world_yaw + angle)
-                    gc, gr = world_to_grid(bx, by, self._map_height)
-                    if (gc, gr) != self.robot.position and (gc, gr) != self.robot.target_position:
-                        current_obstacles.add((gc, gr))
+                # Ignore reflections from robot's own chassis
+                if r > r_chassis + 0.04:
+                    # Forward cone: +/- 25 degrees (0.436 rad)
+                    if abs(angle) < 0.436 and r < min_fwd:
+                        min_fwd = r
+
+                    if r < 0.85:
+                        # Convert to world frame relative to robot
+                        bx = self._world_x + r * math.cos(self._world_yaw + angle)
+                        by = self._world_y + r * math.sin(self._world_yaw + angle)
+                        gc, gr = world_to_grid(bx, by, self._map_height)
+                        if ((gc, gr) != self.robot.position 
+                                and (gc, gr) != self.robot.target_position
+                                and (gc, gr) not in peer_positions):
+                            current_obstacles.add((gc, gr))
             angle += msg.angle_increment
 
         self._blocked_cells = current_obstacles
@@ -358,6 +370,7 @@ class AMRNode(Node):
             return  # ignore own broadcasts
 
         if self.robot.local_world_model:
+            tgt = payload.get("target_position")
             self.robot.local_world_model.update_from_peer_message(
                 sender_id=sender_id,
                 position=tuple(payload.get("position", [0, 0])),
@@ -369,6 +382,9 @@ class AMRNode(Node):
                 priority=payload.get("priority", 1.0),
                 timestamp=payload.get("timestamp", 0.0),
                 sequence_number=payload.get("seq", 0),
+                has_payload=bool(payload.get("has_payload", False)),
+                task_state=payload.get("task_state"),
+                target_position=tuple(tgt) if tgt else None,
             )
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -649,6 +665,9 @@ class AMRNode(Node):
                 peer_stub.planned_path = list(belief.planned_path)
                 peer_stub.current_task_id = belief.current_task_id
                 peer_stub.base_priority = belief.priority
+                peer_stub.has_payload = getattr(belief, "has_payload", False)
+                if getattr(belief, "target_position", None):
+                    peer_stub.target_position = belief.target_position
                 if belief.intended_action and hasattr(RobotState, belief.intended_action):
                     peer_stub.set_state(RobotState[belief.intended_action])
                 snapshot[peer_id] = peer_stub
@@ -660,11 +679,13 @@ class AMRNode(Node):
                         self.robot.target_position = None
                         self.robot.set_state(RobotState.IDLE, "Yielded duplicate task to peer")
 
-                # Sync peer task assignment into local task dict to prevent duplicate assignment
+                # Sync peer task assignment and progress into local task dict
                 if belief.current_task_id and belief.current_task_id in self._tasks:
                     ptask = self._tasks[belief.current_task_id]
-                    ptask.state = TaskState.ASSIGNED
                     ptask.assigned_robot_id = peer_id
+                    t_state = getattr(belief, "task_state", None)
+                    if t_state and hasattr(TaskState, t_state):
+                        ptask.state = TaskState[t_state]
 
         return snapshot
 
@@ -690,61 +711,70 @@ class AMRNode(Node):
             tx, ty, _ = grid_to_world(target[0], target[1], self._map_height)
             dist_to_target = math.hypot(tx - self._world_x, ty - self._world_y)
 
-            # Lookahead: when close to waypoint, point toward final goal
-            if dist_to_target < 0.40 and self.robot.target_position and self.robot.target_position != target:
-                gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
-                target_yaw = math.atan2(gy - self._world_y, gx - self._world_x)
+            # Lookahead: when close to current waypoint, blend towards next path waypoint
+            # (curves smoothly through corridor corners without steering off into obstacles)
+            next_waypoint = None
+            if dist_to_target < 0.35 and self.robot.planned_path:
+                try:
+                    idx = self.robot.planned_path.index(target)
+                    if idx + 1 < len(self.robot.planned_path):
+                        next_waypoint = self.robot.planned_path[idx + 1]
+                except ValueError:
+                    pass
+
+            if next_waypoint is not None:
+                nx, ny, _ = grid_to_world(next_waypoint[0], next_waypoint[1], self._map_height)
+                target_yaw = math.atan2(ny - self._world_y, nx - self._world_x)
             else:
                 target_yaw = math.atan2(ty - self._world_y, tx - self._world_x)
 
             yaw_error = _normalize_angle(target_yaw - self._world_yaw)
             base_speed = action.target_velocity * self.robot.geometry.max_velocity
 
-            # Distance to final mission goal
+            # Distance to final mission goal (pickup station or delivery bay)
             if self.robot.target_position:
                 gx, gy, _ = grid_to_world(self.robot.target_position[0], self.robot.target_position[1], self._map_height)
                 dist_to_goal = math.hypot(gx - self._world_x, gy - self._world_y)
             else:
                 dist_to_goal = dist_to_target
 
-            # ── Emergency bumper stop: only on true close contact (<0.30m) ──
-            # Raised from 0.40→0.30m to avoid false stops on adjacent shelf corners
-            if self._min_forward_dist < 0.30:
+            # ── Predictive safety bumper halt (<0.32m from sensor = <0.02m from front bumper) ──
+            if self._min_forward_dist < 0.32:
                 twist.linear.x = 0.0
-                twist.angular.z = float(min(2.2, max(-2.2, 2.2 * yaw_error))) if abs(yaw_error) > 0.05 else 0.0
+                twist.angular.z = float(min(2.0, max(-2.0, 2.0 * yaw_error))) if abs(yaw_error) > 0.03 else 0.0
 
-            # ── Stop-pivot only for very sharp turns (>90°) ──────────────────
-            # Was 55° — at 55° almost every grid turn triggered a stop.
-            # At 90° robots can arc through normal ±45° grid corners without stopping.
-            elif abs(yaw_error) > math.radians(90.0):
+            # ── Stop-pivot for sharp turns (>100°) ───────────────────────────
+            elif abs(yaw_error) > math.radians(100.0):
                 twist.linear.x = 0.0
-                pivot_w = min(2.5, max(1.0, abs(yaw_error) * 2.5))
+                pivot_w = min(2.5, max(0.4, 2.2 * abs(yaw_error)))
                 twist.angular.z = float(pivot_w * math.copysign(1.0, yaw_error))
 
             else:
-                # ── Continuous arc motion ────────────────────────────────────
-                # Speed reduction: cosine of yaw error, floored at 0.50 (was 0.15)
-                # → robot keeps ≥50% speed even in a 60° arc turn
-                cos_err = max(0.50, math.cos(yaw_error))
+                # ── Continuous arc motion (Webots-equivalent smooth cruising) ──
+                # Modulate linear velocity smoothly by alignment
+                cos_err = max(0.45, math.cos(yaw_error))
 
                 if dist_to_goal < 0.45:
-                    # Docking zone: controlled approach, min 0.45 m/s
-                    speed = max(0.45, min(base_speed, dist_to_goal * 2.2)) * cos_err
-                elif dist_to_target < 0.30:
-                    # Waypoint capture: maintain momentum
-                    speed = max(0.55, min(base_speed, dist_to_target * 3.0)) * cos_err
+                    # Final destination docking approach: controlled deceleration
+                    speed = max(0.40, min(base_speed, dist_to_goal * 2.5)) * cos_err
                 else:
-                    # Open run: full base speed
+                    # Continuous full-speed run through intermediate waypoints
                     speed = base_speed * cos_err
 
+                # Smoothly decelerate if closing in on a forward obstacle (0.32m - 0.70m)
+                if self._min_forward_dist < 0.70:
+                    clearance_factor = max(0.25, (self._min_forward_dist - 0.32) / 0.38)
+                    speed *= clearance_factor
+
                 twist.linear.x = float(speed)
-                twist.angular.z = float(min(2.5, max(-2.5, 2.5 * yaw_error)))
+                # Responsive proportional angular tracking
+                twist.angular.z = float(min(2.5, max(-2.5, 2.2 * yaw_error)))
 
         elif action.action_type == ActionType.ROTATE:
             if action.target_heading is not None:
                 yaw_error = _normalize_angle(action.target_heading - self._world_yaw)
-                rot_w = min(2.5, max(0.8, abs(yaw_error) * 2.5))
-                twist.angular.z = float(rot_w * math.copysign(1.0, yaw_error))
+                rot_w = min(2.5, max(0.4, 2.2 * abs(yaw_error)))
+                twist.angular.z = float(rot_w * math.copysign(1.0, yaw_error)) if abs(yaw_error) > 0.03 else 0.0
 
         # WAIT, PICK, DROP, CHARGE, ESTOP → zero twist (robot stops safely)
         return twist
@@ -809,6 +839,7 @@ class AMRNode(Node):
 
     def _broadcast_belief(self) -> None:
         """Serialize own state and broadcast to fleet P2P topic."""
+        cur_task = self._tasks.get(self.robot.current_task_id) if self.robot.current_task_id else None
         payload = {
             "robot_id": self.robot_id,
             "position": list(self.robot.position),
@@ -818,6 +849,9 @@ class AMRNode(Node):
             "planned_path": [list(p) for p in self.robot.planned_path[:10]],
             "current_task_id": self.robot.current_task_id,
             "priority": self.robot.dynamic_priority,
+            "has_payload": self.robot.has_payload,
+            "task_state": cur_task.state.name if cur_task else None,
+            "target_position": list(self.robot.target_position) if self.robot.target_position else None,
             "timestamp": time.monotonic(),
             "seq": self._step_count,
         }

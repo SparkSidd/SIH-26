@@ -17,7 +17,7 @@
 SCENARIO="${1:-LIVE_DEMO}"
 POLICY="${2:-proposed}"
 RECORDING="${3:-false}"
-PROFILE="${4:-normal}"
+PROFILE="${4:-recording}"
 
 if [ -d "/home/siddharth/sih26" ]; then
     PROJECT_DIR="/home/siddharth/sih26"
@@ -65,12 +65,13 @@ else
 fi
 
 # Clean up any stale instances before starting fresh
-pkill -f "gz sim" 2>/dev/null || true
-pkill -f "parameter_bridge" 2>/dev/null || true
-pkill -f "amr_node" 2>/dev/null || true
-pkill -f "live_demo_task_generator" 2>/dev/null || true
-pkill -f "fleet_safety_hud" 2>/dev/null || true
-sleep 1
+pkill -9 -f "gz sim" 2>/dev/null || true
+pkill -9 -f "ruby" 2>/dev/null || true
+pkill -9 -f "parameter_bridge" 2>/dev/null || true
+pkill -9 -f "amr_node" 2>/dev/null || true
+pkill -9 -f "live_demo_task_generator" 2>/dev/null || true
+pkill -9 -f "fleet_safety_hud" 2>/dev/null || true
+sleep 0.5
 
 # Auto-activate & raise Gazebo GUI window onto Windows 11 foreground
 (

@@ -1,0 +1,2 @@
+scenario,baseline_mean_time_sec,proposed_mean_time_sec,reduction_percent,baseline_mean_waiting,proposed_mean_waiting,waiting_reduction_percent,baseline_mean_tasks,proposed_mean_tasks,throughput_gain_percent,baseline_bytes_sec,proposed_bytes_sec,bandwidth_reduction_percent,proposed_total_collisions,baseline_mean_deadlocks,proposed_mean_deadlocks,mean_p95_planning_latency_ms,status
+S0_NORMAL,5.62,6.21,-10.5,8.0,8.0,0.0,6.0,8.0,33.33,19264.1,19564.3,-1.56,0,0.0,0.0,0.94,SUB-TARGET

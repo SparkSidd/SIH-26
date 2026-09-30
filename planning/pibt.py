@@ -144,9 +144,9 @@ class PIBTPlanner:
                     step_dir = (c[0] - curr_pos[0], c[1] - curr_pos[1])
                     if step_dir == (-p_dir[0], -p_dir[1]):
                         goal_dist = abs(curr_pos[0] - goal_pos[0]) + abs(curr_pos[1] - goal_pos[1])
-                        flow_penalty = 2.4 if goal_dist > 2 else 0.3
+                        flow_penalty = 0.35 if goal_dist > 2 else 0.20
                     elif step_dir == (p_dir[0], p_dir[1]):
-                        flow_penalty = -0.3
+                        flow_penalty = -0.15
 
             # Safe waiting: penalize waiting in congested/chokepoint cells to encourage moving to clear havens
             wait_penalty = 0.0

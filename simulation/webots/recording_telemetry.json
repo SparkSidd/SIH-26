@@ -1,0 +1,3165 @@
+{
+  "scenario": "SIH-WEBOTS-REC-01",
+  "total_steps": 42,
+  "sim_time": 2.1,
+  "delivered": 6,
+  "min_separation": 1.0,
+  "collisions": 0,
+  "detours": [
+    "R06",
+    "R02",
+    "R05"
+  ],
+  "telemetry": [
+    {
+      "step": 1,
+      "sim_time": 0.05,
+      "delivered": 0,
+      "min_sep": 4.243,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            3,
+            2
+          ],
+          "world": [
+            3.0,
+            17.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R02": {
+          "grid": [
+            2,
+            10
+          ],
+          "world": [
+            2.0,
+            9.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R03": {
+          "grid": [
+            3,
+            17
+          ],
+          "world": [
+            3.0,
+            2.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R04": {
+          "grid": [
+            10,
+            9
+          ],
+          "world": [
+            10.0,
+            10.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R05": {
+          "grid": [
+            6,
+            5
+          ],
+          "world": [
+            6.0,
+            14.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            6,
+            14
+          ],
+          "world": [
+            6.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 2,
+      "sim_time": 0.1,
+      "delivered": 0,
+      "min_sep": 4.243,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            4,
+            2
+          ],
+          "world": [
+            4.0,
+            17.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R02": {
+          "grid": [
+            2,
+            10
+          ],
+          "world": [
+            2.0,
+            9.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R03": {
+          "grid": [
+            4,
+            17
+          ],
+          "world": [
+            4.0,
+            2.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R04": {
+          "grid": [
+            10,
+            8
+          ],
+          "world": [
+            10.0,
+            11.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R05": {
+          "grid": [
+            7,
+            5
+          ],
+          "world": [
+            7.0,
+            14.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            7,
+            14
+          ],
+          "world": [
+            7.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 3,
+      "sim_time": 0.15,
+      "delivered": 0,
+      "min_sep": 2.828,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            5,
+            2
+          ],
+          "world": [
+            5.0,
+            17.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R02": {
+          "grid": [
+            2,
+            10
+          ],
+          "world": [
+            2.0,
+            9.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R03": {
+          "grid": [
+            5,
+            17
+          ],
+          "world": [
+            5.0,
+            2.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R04": {
+          "grid": [
+            10,
+            7
+          ],
+          "world": [
+            10.0,
+            12.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R05": {
+          "grid": [
+            8,
+            5
+          ],
+          "world": [
+            8.0,
+            14.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            8,
+            14
+          ],
+          "world": [
+            8.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 4,
+      "sim_time": 0.2,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            6,
+            2
+          ],
+          "world": [
+            6.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            2,
+            10
+          ],
+          "world": [
+            2.0,
+            9.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R03": {
+          "grid": [
+            6,
+            17
+          ],
+          "world": [
+            6.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            10,
+            6
+          ],
+          "world": [
+            10.0,
+            13.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R05": {
+          "grid": [
+            9,
+            5
+          ],
+          "world": [
+            9.0,
+            14.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            9,
+            14
+          ],
+          "world": [
+            9.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 5,
+      "sim_time": 0.25,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            7,
+            2
+          ],
+          "world": [
+            7.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            2,
+            10
+          ],
+          "world": [
+            2.0,
+            9.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R03": {
+          "grid": [
+            7,
+            17
+          ],
+          "world": [
+            7.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            10,
+            5
+          ],
+          "world": [
+            10.0,
+            14.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R05": {
+          "grid": [
+            9,
+            4
+          ],
+          "world": [
+            9.0,
+            15.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            10,
+            14
+          ],
+          "world": [
+            10.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 6,
+      "sim_time": 0.3,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            8,
+            2
+          ],
+          "world": [
+            8.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            2,
+            11
+          ],
+          "world": [
+            2.0,
+            8.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R03": {
+          "grid": [
+            8,
+            17
+          ],
+          "world": [
+            8.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            11,
+            5
+          ],
+          "world": [
+            11.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            10,
+            4
+          ],
+          "world": [
+            10.0,
+            15.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            11,
+            14
+          ],
+          "world": [
+            11.0,
+            5.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 7,
+      "sim_time": 0.35,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            9,
+            2
+          ],
+          "world": [
+            9.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            3,
+            11
+          ],
+          "world": [
+            3.0,
+            8.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R03": {
+          "grid": [
+            9,
+            17
+          ],
+          "world": [
+            9.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            11,
+            6
+          ],
+          "world": [
+            11.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            10,
+            3
+          ],
+          "world": [
+            10.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            11,
+            15
+          ],
+          "world": [
+            11.0,
+            4.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 8,
+      "sim_time": 0.4,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            10,
+            2
+          ],
+          "world": [
+            10.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            4,
+            11
+          ],
+          "world": [
+            4.0,
+            8.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R03": {
+          "grid": [
+            10,
+            17
+          ],
+          "world": [
+            10.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            12,
+            6
+          ],
+          "world": [
+            12.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            11,
+            3
+          ],
+          "world": [
+            11.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            12,
+            15
+          ],
+          "world": [
+            12.0,
+            4.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 9,
+      "sim_time": 0.45,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            11,
+            2
+          ],
+          "world": [
+            11.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            5,
+            11
+          ],
+          "world": [
+            5.0,
+            8.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R03": {
+          "grid": [
+            11,
+            17
+          ],
+          "world": [
+            11.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            12,
+            7
+          ],
+          "world": [
+            12.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            12,
+            3
+          ],
+          "world": [
+            12.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            12,
+            16
+          ],
+          "world": [
+            12.0,
+            3.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 10,
+      "sim_time": 0.5,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            12,
+            2
+          ],
+          "world": [
+            12.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            5,
+            10
+          ],
+          "world": [
+            5.0,
+            9.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R03": {
+          "grid": [
+            11,
+            16
+          ],
+          "world": [
+            11.0,
+            3.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            13,
+            7
+          ],
+          "world": [
+            13.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            13,
+            3
+          ],
+          "world": [
+            13.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            13,
+            16
+          ],
+          "world": [
+            13.0,
+            3.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 11,
+      "sim_time": 0.55,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            13,
+            2
+          ],
+          "world": [
+            13.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            5,
+            9
+          ],
+          "world": [
+            5.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            11,
+            15
+          ],
+          "world": [
+            11.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            13,
+            8
+          ],
+          "world": [
+            13.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            14,
+            3
+          ],
+          "world": [
+            14.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            14,
+            16
+          ],
+          "world": [
+            14.0,
+            3.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 12,
+      "sim_time": 0.6,
+      "delivered": 0,
+      "min_sep": 1.414,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            14,
+            2
+          ],
+          "world": [
+            14.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            6,
+            9
+          ],
+          "world": [
+            6.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            11,
+            14
+          ],
+          "world": [
+            11.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            14,
+            8
+          ],
+          "world": [
+            14.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            15,
+            3
+          ],
+          "world": [
+            15.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            15,
+            16
+          ],
+          "world": [
+            15.0,
+            3.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 13,
+      "sim_time": 0.65,
+      "delivered": 0,
+      "min_sep": 1.0,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            15,
+            2
+          ],
+          "world": [
+            15.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            7,
+            9
+          ],
+          "world": [
+            7.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            12,
+            14
+          ],
+          "world": [
+            12.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            8
+          ],
+          "world": [
+            15.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            15,
+            3
+          ],
+          "world": [
+            15.0,
+            16.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            15,
+            17
+          ],
+          "world": [
+            15.0,
+            2.0
+          ],
+          "state": "TASK_ASSIGNED"
+        }
+      }
+    },
+    {
+      "step": 14,
+      "sim_time": 0.7,
+      "delivered": 0,
+      "min_sep": 1.0,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            16,
+            2
+          ],
+          "world": [
+            16.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            8,
+            9
+          ],
+          "world": [
+            8.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            12,
+            13
+          ],
+          "world": [
+            12.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            9
+          ],
+          "world": [
+            15.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            15,
+            2
+          ],
+          "world": [
+            15.0,
+            17.0
+          ],
+          "state": "TASK_ASSIGNED"
+        },
+        "R06": {
+          "grid": [
+            15,
+            16
+          ],
+          "world": [
+            15.0,
+            3.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 15,
+      "sim_time": 0.75,
+      "delivered": 0,
+      "min_sep": 2.236,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            17,
+            2
+          ],
+          "world": [
+            17.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            9,
+            9
+          ],
+          "world": [
+            9.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            13,
+            13
+          ],
+          "world": [
+            13.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            10
+          ],
+          "world": [
+            15.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            15,
+            3
+          ],
+          "world": [
+            15.0,
+            16.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 16,
+      "sim_time": 0.8,
+      "delivered": 0,
+      "min_sep": 2.236,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            18,
+            2
+          ],
+          "world": [
+            18.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            10,
+            9
+          ],
+          "world": [
+            10.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            13,
+            12
+          ],
+          "world": [
+            13.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            11
+          ],
+          "world": [
+            15.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            15,
+            4
+          ],
+          "world": [
+            15.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            14,
+            15
+          ],
+          "world": [
+            14.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 17,
+      "sim_time": 0.85,
+      "delivered": 0,
+      "min_sep": 1.0,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            19,
+            2
+          ],
+          "world": [
+            19.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            11,
+            9
+          ],
+          "world": [
+            11.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            12
+          ],
+          "world": [
+            14.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            12
+          ],
+          "world": [
+            15.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            14,
+            4
+          ],
+          "world": [
+            14.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            13,
+            15
+          ],
+          "world": [
+            13.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 18,
+      "sim_time": 0.9,
+      "delivered": 0,
+      "min_sep": 2.236,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            2
+          ],
+          "world": [
+            20.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            11,
+            8
+          ],
+          "world": [
+            11.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            11
+          ],
+          "world": [
+            14.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            13
+          ],
+          "world": [
+            15.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            13,
+            4
+          ],
+          "world": [
+            13.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            13,
+            14
+          ],
+          "world": [
+            13.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 19,
+      "sim_time": 0.95,
+      "delivered": 0,
+      "min_sep": 3.0,
+      "blockage_active": false,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            3
+          ],
+          "world": [
+            20.0,
+            16.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            11,
+            7
+          ],
+          "world": [
+            11.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            14
+          ],
+          "world": [
+            15.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            12,
+            4
+          ],
+          "world": [
+            12.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            12,
+            14
+          ],
+          "world": [
+            12.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 20,
+      "sim_time": 1.0,
+      "delivered": 0,
+      "min_sep": 2.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            4
+          ],
+          "world": [
+            20.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            11,
+            6
+          ],
+          "world": [
+            11.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R05": {
+          "grid": [
+            11,
+            4
+          ],
+          "world": [
+            11.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            12,
+            13
+          ],
+          "world": [
+            12.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 21,
+      "sim_time": 1.05,
+      "delivered": 1,
+      "min_sep": 2.828,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            12,
+            6
+          ],
+          "world": [
+            12.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            10,
+            4
+          ],
+          "world": [
+            10.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            11,
+            13
+          ],
+          "world": [
+            11.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 22,
+      "sim_time": 1.1,
+      "delivered": 1,
+      "min_sep": 3.162,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            6
+          ],
+          "world": [
+            20.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            13,
+            6
+          ],
+          "world": [
+            13.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            10,
+            5
+          ],
+          "world": [
+            10.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            10,
+            13
+          ],
+          "world": [
+            10.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 23,
+      "sim_time": 1.15,
+      "delivered": 1,
+      "min_sep": 4.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            7
+          ],
+          "world": [
+            20.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            13,
+            5
+          ],
+          "world": [
+            13.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            9,
+            5
+          ],
+          "world": [
+            9.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            10,
+            12
+          ],
+          "world": [
+            10.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 24,
+      "sim_time": 1.2,
+      "delivered": 1,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            8
+          ],
+          "world": [
+            20.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            14,
+            5
+          ],
+          "world": [
+            14.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            10
+          ],
+          "world": [
+            14.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            9,
+            6
+          ],
+          "world": [
+            9.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            9,
+            12
+          ],
+          "world": [
+            9.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 25,
+      "sim_time": 1.25,
+      "delivered": 1,
+      "min_sep": 4.123,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            9
+          ],
+          "world": [
+            20.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            15,
+            5
+          ],
+          "world": [
+            15.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            14,
+            9
+          ],
+          "world": [
+            14.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            8,
+            6
+          ],
+          "world": [
+            8.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            9,
+            11
+          ],
+          "world": [
+            9.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 26,
+      "sim_time": 1.3,
+      "delivered": 1,
+      "min_sep": 4.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            16,
+            5
+          ],
+          "world": [
+            16.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            15,
+            9
+          ],
+          "world": [
+            15.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            8,
+            7
+          ],
+          "world": [
+            8.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            8,
+            11
+          ],
+          "world": [
+            8.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 27,
+      "sim_time": 1.35,
+      "delivered": 1,
+      "min_sep": 4.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            11
+          ],
+          "world": [
+            20.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            17,
+            5
+          ],
+          "world": [
+            17.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            16,
+            9
+          ],
+          "world": [
+            16.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            7,
+            7
+          ],
+          "world": [
+            7.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            7,
+            11
+          ],
+          "world": [
+            7.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 28,
+      "sim_time": 1.4,
+      "delivered": 1,
+      "min_sep": 3.162,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            12
+          ],
+          "world": [
+            20.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            18,
+            5
+          ],
+          "world": [
+            18.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            17,
+            9
+          ],
+          "world": [
+            17.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            7,
+            8
+          ],
+          "world": [
+            7.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            6,
+            11
+          ],
+          "world": [
+            6.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 29,
+      "sim_time": 1.45,
+      "delivered": 1,
+      "min_sep": 2.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            13
+          ],
+          "world": [
+            20.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            19,
+            5
+          ],
+          "world": [
+            19.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            18,
+            9
+          ],
+          "world": [
+            18.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            6,
+            8
+          ],
+          "world": [
+            6.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            6,
+            10
+          ],
+          "world": [
+            6.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 30,
+      "sim_time": 1.5,
+      "delivered": 1,
+      "min_sep": 2.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            14
+          ],
+          "world": [
+            20.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R03": {
+          "grid": [
+            19,
+            9
+          ],
+          "world": [
+            19.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            8
+          ],
+          "world": [
+            5.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            10
+          ],
+          "world": [
+            5.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 31,
+      "sim_time": 1.55,
+      "delivered": 2,
+      "min_sep": 1.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            15
+          ],
+          "world": [
+            20.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            9
+          ],
+          "world": [
+            20.0,
+            10.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            9
+          ],
+          "world": [
+            5.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            10
+          ],
+          "world": [
+            5.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 32,
+      "sim_time": 1.6,
+      "delivered": 2,
+      "min_sep": 1.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            16
+          ],
+          "world": [
+            20.0,
+            3.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "REPLANNING"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            6,
+            9
+          ],
+          "world": [
+            6.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            9
+          ],
+          "world": [
+            5.0,
+            10.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 33,
+      "sim_time": 1.65,
+      "delivered": 3,
+      "min_sep": 2.236,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            6,
+            10
+          ],
+          "world": [
+            6.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            8
+          ],
+          "world": [
+            5.0,
+            11.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 34,
+      "sim_time": 1.7,
+      "delivered": 4,
+      "min_sep": 3.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            10
+          ],
+          "world": [
+            5.0,
+            9.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            7
+          ],
+          "world": [
+            5.0,
+            12.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 35,
+      "sim_time": 1.75,
+      "delivered": 4,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            11
+          ],
+          "world": [
+            5.0,
+            8.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            6
+          ],
+          "world": [
+            5.0,
+            13.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 36,
+      "sim_time": 1.8,
+      "delivered": 4,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            12
+          ],
+          "world": [
+            5.0,
+            7.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            5
+          ],
+          "world": [
+            5.0,
+            14.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 37,
+      "sim_time": 1.85,
+      "delivered": 4,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            13
+          ],
+          "world": [
+            5.0,
+            6.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            4
+          ],
+          "world": [
+            5.0,
+            15.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 38,
+      "sim_time": 1.9,
+      "delivered": 4,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            14
+          ],
+          "world": [
+            5.0,
+            5.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            3
+          ],
+          "world": [
+            5.0,
+            16.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 39,
+      "sim_time": 1.95,
+      "delivered": 4,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            15
+          ],
+          "world": [
+            5.0,
+            4.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            2
+          ],
+          "world": [
+            5.0,
+            17.0
+          ],
+          "state": "DELIVERING"
+        }
+      }
+    },
+    {
+      "step": 40,
+      "sim_time": 2.0,
+      "delivered": 5,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            16
+          ],
+          "world": [
+            5.0,
+            3.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            2
+          ],
+          "world": [
+            5.0,
+            17.0
+          ],
+          "state": "IDLE"
+        }
+      }
+    },
+    {
+      "step": 41,
+      "sim_time": 2.05,
+      "delivered": 5,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            17
+          ],
+          "world": [
+            5.0,
+            2.0
+          ],
+          "state": "DELIVERING"
+        },
+        "R06": {
+          "grid": [
+            5,
+            2
+          ],
+          "world": [
+            5.0,
+            17.0
+          ],
+          "state": "IDLE"
+        }
+      }
+    },
+    {
+      "step": 42,
+      "sim_time": 2.1,
+      "delivered": 6,
+      "min_sep": 5.0,
+      "blockage_active": true,
+      "poses": {
+        "R01": {
+          "grid": [
+            20,
+            17
+          ],
+          "world": [
+            20.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R02": {
+          "grid": [
+            20,
+            5
+          ],
+          "world": [
+            20.0,
+            14.0
+          ],
+          "state": "IDLE"
+        },
+        "R03": {
+          "grid": [
+            20,
+            10
+          ],
+          "world": [
+            20.0,
+            9.0
+          ],
+          "state": "IDLE"
+        },
+        "R04": {
+          "grid": [
+            15,
+            15
+          ],
+          "world": [
+            15.0,
+            4.0
+          ],
+          "state": "IDLE"
+        },
+        "R05": {
+          "grid": [
+            5,
+            17
+          ],
+          "world": [
+            5.0,
+            2.0
+          ],
+          "state": "IDLE"
+        },
+        "R06": {
+          "grid": [
+            5,
+            2
+          ],
+          "world": [
+            5.0,
+            17.0
+          ],
+          "state": "IDLE"
+        }
+      }
+    }
+  ]
+}

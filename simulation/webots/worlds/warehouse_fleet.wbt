@@ -1,0 +1,231 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "../protos/WarehouseAMR.proto"
+EXTERNPROTO "../protos/WarehouseShelf.proto"
+
+WorldInfo {
+  info [
+    "SIH26123 - Webots Multi-AMR Warehouse Simulation (Target 6-AMR Fleet)"
+    "Decentralized AMR Fleet Coordination for Smart Warehouses"
+  ]
+  title "SIH26123 Target 6-AMR Fleet Warehouse"
+  basicTimeStep 32
+  FPS 30
+  optimalThreadCount 4
+  coordinateSystem "ENU"
+}
+
+Viewpoint {
+  orientation 0.82 0.38 -0.42 1.88
+  position 12.0 -2.0 16.0
+  fieldOfView 0.85
+  near 0.1
+}
+
+Background {
+  skyColor [
+    0.18 0.20 0.24
+  ]
+}
+
+DirectionalLight {
+  direction -0.5 0.5 -1.0
+  intensity 2.0
+  castShadows FALSE
+}
+
+# ── Floor ──────────────────────────────────────────────────────────────────────
+Solid {
+  translation 12.0 9.5 -0.05
+  name "solid"
+  children [
+    Shape {
+      appearance Appearance {
+        material Material { diffuseColor 0.40 0.42 0.45 }
+      }
+      geometry Box { size 25.0 20.0 0.1 }
+    }
+    # Central E-W aisle line
+    Pose {
+      translation 0 0 0.051
+      children [
+        Shape {
+          appearance Appearance { material Material { diffuseColor 0.95 0.75 0.05 } }
+          geometry Box { size 24.0 0.12 0.002 }
+        }
+      ]
+    }
+    # N-S cross lines
+    Pose {
+      translation -7.0 0 0.051
+      children [
+        Shape {
+          appearance Appearance { material Material { diffuseColor 0.95 0.75 0.05 } }
+          geometry Box { size 0.10 18.0 0.002 }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0 0.051
+      children [
+        Shape {
+          appearance Appearance { material Material { diffuseColor 0.95 0.75 0.05 } }
+          geometry Box { size 0.10 18.0 0.002 }
+        }
+      ]
+    }
+    Pose {
+      translation 7.0 0 0.051
+      children [
+        Shape {
+          appearance Appearance { material Material { diffuseColor 0.95 0.75 0.05 } }
+          geometry Box { size 0.10 18.0 0.002 }
+        }
+      ]
+    }
+    # Charging bays (coloured pads)
+    Pose { translation -10.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.15 0.38 0.92 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+    Pose { translation -6.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.05 0.75 0.95 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+    Pose { translation -2.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.15 0.85 0.45 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+    Pose { translation  2.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.95 0.65 0.05 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+    Pose { translation  6.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.92 0.25 0.25 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+    Pose { translation 10.0 -7.5 0.052 children [ Shape { appearance Appearance { material Material { diffuseColor 0.68 0.25 0.95 } } geometry Box { size 1.2 1.2 0.003 } } ] }
+  ]
+  boundingObject Box { size 25.0 20.0 0.1 }
+}
+
+# ── Perimeter Walls ────────────────────────────────────────────────────────────
+Solid {
+  translation 12.0 19.6 1.0
+  name "wall_north"
+  children [
+    Shape {
+      appearance Appearance { material Material { diffuseColor 0.75 0.78 0.82 } }
+      geometry Box { size 25.4 0.22 2.0 }
+    }
+  ]
+  boundingObject Box { size 25.4 0.22 2.0 }
+}
+Solid {
+  translation 12.0 -0.6 1.0
+  name "wall_south"
+  children [
+    Shape {
+      appearance Appearance { material Material { diffuseColor 0.75 0.78 0.82 } }
+      geometry Box { size 25.4 0.22 2.0 }
+    }
+  ]
+  boundingObject Box { size 25.4 0.22 2.0 }
+}
+Solid {
+  translation -0.6 9.5 1.0
+  name "wall_west"
+  children [
+    Shape {
+      appearance Appearance { material Material { diffuseColor 0.75 0.78 0.82 } }
+      geometry Box { size 0.22 20.4 2.0 }
+    }
+  ]
+  boundingObject Box { size 0.22 20.4 2.0 }
+}
+Solid {
+  translation 24.6 9.5 1.0
+  name "wall_east"
+  children [
+    Shape {
+      appearance Appearance { material Material { diffuseColor 0.75 0.78 0.82 } }
+      geometry Box { size 0.22 20.4 2.0 }
+    }
+  ]
+  boundingObject Box { size 0.22 20.4 2.0 }
+}
+
+# ── Shelving Racks ─────────────────────────────────────────────────────────────
+WarehouseShelf { translation 6.0 2.0 1.0 name "shelf_A_01" }
+WarehouseShelf { translation 6.0 4.0 1.0 name "shelf_A_02" }
+WarehouseShelf { translation 6.0 6.0 1.0 name "shelf_A_03" }
+WarehouseShelf { translation 6.0 8.0 1.0 name "shelf_A_04" }
+WarehouseShelf { translation 6.0 10.0 1.0 name "shelf_B_01" }
+WarehouseShelf { translation 6.0 12.0 1.0 name "shelf_B_02" }
+WarehouseShelf { translation 6.0 14.0 1.0 name "shelf_B_03" }
+WarehouseShelf { translation 6.0 16.0 1.0 name "shelf_B_04" }
+WarehouseShelf { translation 12.0 2.0 1.0 name "shelf_C_01" }
+WarehouseShelf { translation 12.0 4.0 1.0 name "shelf_C_02" }
+WarehouseShelf { translation 12.0 6.0 1.0 name "shelf_C_03" }
+WarehouseShelf { translation 12.0 8.0 1.0 name "shelf_C_04" }
+WarehouseShelf { translation 12.0 10.0 1.0 name "shelf_D_01" }
+WarehouseShelf { translation 12.0 12.0 1.0 name "shelf_D_02" }
+WarehouseShelf { translation 12.0 14.0 1.0 name "shelf_D_03" }
+WarehouseShelf { translation 12.0 16.0 1.0 name "shelf_D_04" }
+WarehouseShelf { translation 18.0 2.0 1.0 name "shelf_E_01" }
+WarehouseShelf { translation 18.0 4.0 1.0 name "shelf_E_02" }
+WarehouseShelf { translation 18.0 6.0 1.0 name "shelf_E_03" }
+WarehouseShelf { translation 18.0 8.0 1.0 name "shelf_E_04" }
+WarehouseShelf { translation 18.0 10.0 1.0 name "shelf_F_01" }
+WarehouseShelf { translation 18.0 12.0 1.0 name "shelf_F_02" }
+WarehouseShelf { translation 18.0 14.0 1.0 name "shelf_F_03" }
+WarehouseShelf { translation 18.0 16.0 1.0 name "shelf_F_04" }
+
+# ── Dynamic Blockage ───────────────────────────────────────────────────────────
+DEF DYNAMIC_BLOCKAGE Solid {
+  translation 12.0 8.5 -5.0
+  name "dynamic_blockage_marker"
+  children [
+    Shape {
+      appearance Appearance { material Material { diffuseColor 1.0 0.35 0.0 emissiveColor 0.5 0.1 0.0 } }
+      geometry Box { size 0.85 1.8 0.8 }
+    }
+  ]
+  boundingObject Box { size 0.85 1.8 0.8 }
+}
+
+# ── 6-AMR Fleet ───────────────────────────────────────────────────────────────
+DEF R01 WarehouseAMR {
+  translation 2.0 17.0 0.12
+  rotation 0 0 1 0.0
+  name "R01"
+  bodyColor 0.15 0.38 0.92
+  controller "<none>"
+}
+DEF R02 WarehouseAMR {
+  translation 2.0 9.0 0.12
+  rotation 0 0 1 0.0
+  name "R02"
+  bodyColor 0.05 0.75 0.95
+  controller "<none>"
+}
+DEF R03 WarehouseAMR {
+  translation 2.0 2.0 0.12
+  rotation 0 0 1 0.0
+  name "R03"
+  bodyColor 0.15 0.85 0.45
+  controller "<none>"
+}
+DEF R04 WarehouseAMR {
+  translation 10.0 9.0 0.12
+  rotation 0 0 1 0.0
+  name "R04"
+  bodyColor 0.95 0.65 0.05
+  controller "<none>"
+}
+DEF R05 WarehouseAMR {
+  translation 5.0 14.0 0.12
+  rotation 0 0 1 0.0
+  name "R05"
+  bodyColor 0.92 0.25 0.25
+  controller "<none>"
+}
+DEF R06 WarehouseAMR {
+  translation 5.0 5.0 0.12
+  rotation 0 0 1 0.0
+  name "R06"
+  bodyColor 0.68 0.25 0.95
+  controller "<none>"
+}
+
+# ── Fleet Supervisor ───────────────────────────────────────────────────────────
+DEF FLEET_SUPERVISOR Robot {
+  name "fleet_supervisor"
+  controller "warehouse_fleet_supervisor"
+  supervisor TRUE
+}

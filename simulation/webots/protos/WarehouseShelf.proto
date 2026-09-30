@@ -1,59 +1,218 @@
 #VRML_SIM R2025a utf8
 # license: Apache License 2.0
 # tags: static
-# Industrial Warehouse Shelf Unit for SIH26123 Smart Warehouse Simulation.
-# Bounding object is a simple Box primitive for maximum ODE collision performance.
+# Industrial Heavy-Duty Warehouse Pallet Racking Unit for SIH26123.
+# Multi-tier shelving with structural steel uprights, shelf decks,
+# and high-density industrial cargo boxes (totes, crates, cartons).
+# Uses a single Box boundingObject for peak ODE collision efficiency.
 
 PROTO WarehouseShelf [
   field SFVec3f    translation 0 0 1.0
   field SFRotation rotation    0 0 1 0
   field SFString   name        "WarehouseShelf"
   field SFVec3f    size        0.8 0.8 2.0
-  field SFColor    rackColor   0.15 0.35 0.65
-  field SFColor    shelfColor  0.85 0.50 0.15
+  field SFColor    rackColor   0.18 0.22 0.28
+  field SFColor    shelfColor  0.88 0.45 0.12
 ]
 {
   Solid {
     translation IS translation
     rotation IS rotation
     name IS name
-    model "Warehouse_Industrial_Rack"
+    model "Industrial_Pallet_Rack"
 
     children [
-      # Upright structural frame (Visual)
+      # ── 1. Four Structural Steel Corner Uprights ─────────────────────────
+      # Front-Left Upright
       Pose {
+        translation 0.35 0.35 0.0
         children [
           Shape {
             appearance PBRAppearance {
               baseColor IS rackColor
               roughness 0.4
-              metalness 0.6
+              metalness 0.8
             }
-            geometry Box {
-              size IS size
-            }
+            geometry Box { size 0.06 0.06 2.0 }
           }
         ]
       }
-      # Pallet Cargo Visual Layer (Level 1)
+      # Front-Right Upright
       Pose {
-        translation 0 0 0.2
+        translation 0.35 -0.35 0.0
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS rackColor
+              roughness 0.4
+              metalness 0.8
+            }
+            geometry Box { size 0.06 0.06 2.0 }
+          }
+        ]
+      }
+      # Rear-Left Upright
+      Pose {
+        translation -0.35 0.35 0.0
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS rackColor
+              roughness 0.4
+              metalness 0.8
+            }
+            geometry Box { size 0.06 0.06 2.0 }
+          }
+        ]
+      }
+      # Rear-Right Upright
+      Pose {
+        translation -0.35 -0.35 0.0
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS rackColor
+              roughness 0.4
+              metalness 0.8
+            }
+            geometry Box { size 0.06 0.06 2.0 }
+          }
+        ]
+      }
+
+      # ── 2. Three Horizontal Shelf Decks (Safety Orange Steel) ────────────
+      # Tier 1 (Lower Deck)
+      Pose {
+        translation 0 0 -0.65
         children [
           Shape {
             appearance PBRAppearance {
               baseColor IS shelfColor
+              roughness 0.5
+              metalness 0.6
+            }
+            geometry Box { size 0.76 0.76 0.04 }
+          }
+        ]
+      }
+      # Tier 2 (Middle Deck)
+      Pose {
+        translation 0 0 0.0
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS shelfColor
+              roughness 0.5
+              metalness 0.6
+            }
+            geometry Box { size 0.76 0.76 0.04 }
+          }
+        ]
+      }
+      # Tier 3 (Upper Deck)
+      Pose {
+        translation 0 0 0.65
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS shelfColor
+              roughness 0.5
+              metalness 0.6
+            }
+            geometry Box { size 0.76 0.76 0.04 }
+          }
+        ]
+      }
+
+      # ── 3. Stored Cargo Goods (Realistic Multi-Material Distribution) ─────
+      # Tier 1 Cargo: Heavy Industrial Wooden Shipping Crate
+      Pose {
+        translation -0.08 -0.08 -0.42
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.55 0.40 0.24
+              roughness 0.9
+              metalness 0.05
+            }
+            geometry Box { size 0.46 0.46 0.40 }
+          }
+        ]
+      }
+      # Tier 1 Cargo: Medium Kraft Corrugated Shipping Carton
+      Pose {
+        translation 0.20 0.18 -0.47
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.72 0.54 0.36
+              roughness 0.85
+              metalness 0.0
+            }
+            geometry Box { size 0.28 0.28 0.30 }
+          }
+        ]
+      }
+
+      # Tier 2 Cargo: Industrial Heavy-Duty Storage Tote (Cobalt Blue)
+      Pose {
+        translation 0.10 -0.10 0.21
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.10 0.38 0.82
+              roughness 0.3
+              metalness 0.2
+            }
+            geometry Box { size 0.48 0.48 0.36 }
+          }
+        ]
+      }
+      # Tier 2 Cargo: Barcode Label on Blue Tote
+      Pose {
+        translation 0.345 -0.10 0.25
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.95 0.95
+              roughness 0.9
+            }
+            geometry Box { size 0.01 0.20 0.10 }
+          }
+        ]
+      }
+
+      # Tier 3 Cargo: Yellow Hazardous Material / Spec Container
+      Pose {
+        translation -0.12 0.10 0.84
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.75 0.08
+              roughness 0.4
+              metalness 0.3
+            }
+            geometry Box { size 0.38 0.38 0.32 }
+          }
+        ]
+      }
+      # Tier 3 Cargo: Small Electronics Parcel (White Carton)
+      Pose {
+        translation 0.18 -0.15 0.80
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.92 0.92 0.92
               roughness 0.7
-              metalness 0.1
+              metalness 0.0
             }
-            geometry Box {
-              size 0.7 0.7 0.3
-            }
+            geometry Box { size 0.24 0.30 0.24 }
           }
         ]
       }
     ]
 
-    # Simplified Box collision object (Crucial for high Webots simulation FPS)
+    # Optimized Single-Box Bounding Object for High-Performance Collision
     boundingObject Box {
       size IS size
     }

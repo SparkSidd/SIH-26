@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-09-30T23:21:23.129477+00:00",
+  "git_commit": "572659382f62619a28776b0e080841b0e544ff81",
+  "test_runner": "pytest",
+  "total_collected": 116,
+  "total_passed": 116,
+  "total_failed": 0,
+  "total_skipped": 0,
+  "pass_rate_percent": 100.0,
+  "command": "python -m pytest -q",
+  "categories": [
+    {
+      "category": "Task Allocation",
+      "tests": 8,
+      "status": "PASS"
+    },
+    {
+      "category": "Multi-Agent Planning (PIBT & Space-Time A*)",
+      "tests": 16,
+      "status": "PASS"
+    },
+    {
+      "category": "Safety & Invariant Supervision",
+      "tests": 18,
+      "status": "PASS"
+    },
+    {
+      "category": "Wait-For Graph & Deadlock Handling",
+      "tests": 12,
+      "status": "PASS"
+    },
+    {
+      "category": "Fault & Obstacle Resilience",
+      "tests": 15,
+      "status": "PASS"
+    },
+    {
+      "category": "E2E Scenarios (S0-S9)",
+      "tests": 11,
+      "status": "PASS"
+    },
+    {
+      "category": "ROS 2 & Coordinate Bridge Adapters",
+      "tests": 22,
+      "status": "PASS"
+    },
+    {
+      "category": "Audit Hardening & Distributed Ownership",
+      "tests": 14,
+      "status": "PASS"
+    }
+  ]
+}

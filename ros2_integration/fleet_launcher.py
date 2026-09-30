@@ -93,15 +93,26 @@ def _make_choke_grid() -> np.ndarray:
     return grid
 
 
+def _make_warehouse_grid() -> np.ndarray:
+    """25×20 warehouse grid with shelves marked as static obstacles."""
+    grid = _make_open_grid()
+    # 6 shelf rows at cols 6, 12, 18
+    for col in (6, 12, 18):
+        for cy in (2, 4, 6, 8, 10, 12, 14, 16):
+            row = 19 - cy
+            grid[col, row] = 1
+    return grid
+
+
 SCENARIOS = {
     # ── Live Demonstration Modes ──────────────────────────────────────────────
     "LIVE_TEST_SINGLE": {
         "name": "Live Single Robot Continuous Demo",
         "grid_fn": _make_open_grid,
         "num_robots": 1,
-        "robot_starts": [(6, 9)],
+        "robot_starts": [(2, 10)],
         "tasks": [
-            ("T01", (6, 5), (18, 14)),
+            ("T01", (5, 10), (20, 10)),
         ],
         "timeout_steps": 200,
     },
@@ -109,10 +120,10 @@ SCENARIOS = {
         "name": "Live Two Robot Yielding Demo",
         "grid_fn": _make_open_grid,
         "num_robots": 2,
-        "robot_starts": [(6, 9), (18, 9)],
+        "robot_starts": [(2, 10), (20, 10)],
         "tasks": [
-            ("T01", (6, 5), (18, 14)),
-            ("T02", (18, 14), (6, 5)),
+            ("T01", (5, 10), (20, 10)),
+            ("T02", (20, 10), (5, 10)),
         ],
         "timeout_steps": 200,
     },
@@ -120,14 +131,14 @@ SCENARIOS = {
         "name": "Live Fleet 6-Robot Continuous Demo",
         "grid_fn": _make_open_grid,
         "num_robots": 6,
-        "robot_starts": [(4, 5), (4, 14), (10, 5), (10, 14), (16, 5), (16, 14)],
+        "robot_starts": [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
         "tasks": [
-            ("T01", (6, 5), (18, 14)),
-            ("T02", (18, 14), (6, 5)),
-            ("T03", (6, 14), (18, 5)),
-            ("T04", (18, 5), (6, 14)),
-            ("T05", (10, 5), (15, 14)),
-            ("T06", (15, 14), (10, 5)),
+            ("T01", (5, 2), (20, 17)),
+            ("T02", (5, 10), (20, 5)),
+            ("T03", (5, 17), (20, 10)),
+            ("T04", (10, 5), (15, 15)),
+            ("T05", (15, 2), (5, 17)),
+            ("T06", (15, 17), (5, 2)),
         ],
         "timeout_steps": 300,
     },

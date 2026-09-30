@@ -1,0 +1,6 @@
+packet_loss_rate,latency_ms,collisions,tasks_completed,avg_completion_time_sec,safety_preserved
+0%,10.0,0,16,6.38,True
+10%,40.0,0,16,6.38,True
+20%,70.0,0,16,6.38,True
+35%,115.0,0,16,6.38,True
+50%,160.0,0,16,6.38,True

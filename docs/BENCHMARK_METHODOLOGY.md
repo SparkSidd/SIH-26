@@ -1,60 +1,115 @@
-# Benchmark Methodology & Experimental Rigor (SIH26123)
+# SIH26123 Rigorous Benchmark Methodology & Reproducibility Guide
 
-## 1. Objective and Evaluation Standard
-The evaluation framework is designed to provide **100% reproducible, mathematically verifiable, and scientifically defensible** metrics comparing:
-1. **Baseline System**: Centralized Stop-and-Wait coordination with static greedy shortest path A* planning and Nearest-Robot task allocation. Lower-priority robots immediately yield and wait if their next step is occupied or reserved.
-2. **Proposed System**: Edge-AI Distributed Fleet Coordination consisting of Priority Inheritance Backtracking (PIBT) with Space-Time A* waypoint fallback, Fleet-Aware Task Allocation (Congestion + Battery + Travel Cost), Adaptive Coordination Mode Switching (LOCAL / NEIGHBOR / CLUSTER), and an Invariant-Checking Safety Supervisor.
+**Project**: Decentralized AMR Fleet Coordination for Smart Warehouses  
+**Submission**: Smart India Hackathon 2026 (Problem Statement: SIH26123)  
+**Canonical Dataset Reference**: `results/CANONICAL_SIH_METRICS.json`  
+
+---
+
+## 1. Experimental Objectives & Core Hypothesis
+
+The benchmark evaluates the hypothesis that a **decentralized, edge-native coordination architecture** (synthesizing Hungarian allocation, Priority Inheritance with Backtracking [PIBT], Space-Time A*, and a deterministic Safety Supervisor) reduces average mission task completion time by $\ge 20\%$ relative to traditional Stop-and-Wait baselines, while observing zero inter-robot collisions and zero unhandled deadlocks under realistic warehouse disturbances.
 
 ---
 
 ## 2. Experimental Controls & Fairness Guarantees
-To ensure strict scientific parity, every baseline run and proposed run are **paired identically**:
-- **Random Seeds (10 Seeds)**: `[42, 101, 202, 303, 404, 505, 606, 707, 808, 909]`.
-- **Warehouse Grid Layout**: Identical $24 \times 16$ grid with 12 rack zones, 4 charging stations, 2 pickup zones, and 2 dropoff stations.
-- **Fleet Size**: Exactly 6 Autonomous Mobile Robots (AMRs) with identical kinematics (max velocity $1.0\text{ cell/sec}$, acceleration $1.0\text{ cell/s}^2$, turning cost $0.5\text{ s}$).
-- **Task Stream & Workload**: Identical arrival schedule, pickup/dropoff coordinates, priority levels, and deadlines across paired runs.
-- **Disturbance Timing**: Identical step triggers for corridor blockages (e.g., step 15 in S4/S7/S9), robot failure (e.g., AMR_02 fault at step 20 in S5/S8/S9), and communication latency/packet loss (S2, S3, S7, S9).
-- **Termination Conditions**: Exactly 120 discrete simulation timesteps ($120.0\text{ s}$ wall-clock equivalent at $\Delta t = 1.0\text{ s}$).
-- **Independent Hardware Isolation**: All latency measurements isolate planner compute from browser rendering, WebSockets, and logging overhead using monotonic microsecond timers (`time.perf_counter()`).
+
+Every comparison in the benchmark suite executes under strict paired-sample isolation:
+
+1. **Warehouse Environment**:
+   - Discrete grid layout: $30 \times 20$ cells ($1.0\text{ m}$ per grid cell).
+   - Industrial heavy-corridor warehouse layout with designated pickup bays, dropoff stations, and charging kiosks.
+2. **Fleet Kinematics**:
+   - 6 active AMRs with identical differential-drive kinematic profiles.
+   - Maximum linear speed: $1.5\text{ m/s}$; Maximum rotational velocity: $2.0\text{ rad/s}$.
+   - Safety bounding radius: $0.45\text{ m}$.
+3. **Identical Task Streams & Seeds**:
+   - 10 deterministic pseudo-random seeds: `[42, 101, 202, 303, 404, 505, 606, 707, 808, 909]`.
+   - For every seed, both the baseline and proposed systems receive the exact same task arrivals, pickup locations, dropoff targets, and injected disturbances.
+4. **Execution Scale & Pairing**:
+   - **$100\text{ Paired Experiments}$** = $10\text{ Scenarios} \times 10\text{ Seeds}$.
+   - **$200\text{ Total Simulation Executions}$** = $100\text{ Baseline Executions} + 100\text{ Proposed Executions}$.
+   - Simulations run for a fixed duration of $350$ steps per execution ($0.1\text{ s}$ per discrete clock tick).
 
 ---
 
-## 3. Evaluated Scenario Taxonomy (S0–S9)
-| Scenario | Category | Description & Disturbance Injected |
-|---|---|---|
-| **S0_NORMAL** | Baseline Flow | Standard warehouse distribution, 12 nominal tasks, steady Poisson arrival. |
-| **S1_HIGH_CONGESTION** | Bottleneck Stress | 24 tasks concentrated in central cross-aisle corridors; high interaction density. |
-| **S2_COMM_LATENCY** | Degraded Network | $150\text{ ms}$ transmission delay, $50\text{ ms}$ jitter on peer-to-peer heartbeat mesh. |
-| **S3_PACKET_LOSS** | Degraded Network | $20\%$ uniform random packet drop across local peer broadcasts. |
-| **S4_AISLE_BLOCKAGE** | Dynamic Obstacle | Unscheduled physical corridor blockage injected across primary aisle at $t = 15\text{ s}$. |
-| **S5_ROBOT_FAILURE** | Hardware Fault | AMR_02 suffers unrecoverable motor fault mid-delivery at $t = 20\text{ s}$. |
-| **S6_TASK_SURGE** | Demand Spike | Sudden $3\times$ surge in task arrivals at $t = 10\text{ s}$ across dual pickup zones. |
-| **S7_COMM_AND_BLOCKAGE** | Compound Fault | Simultaneous $150\text{ ms}$ latency + $20\%$ packet drop + physical corridor blockage. |
-| **S8_FAILURE_AND_CONGESTION** | Compound Fault | AMR hardware failure mid-aisle under peak $24$-task congestion. |
-| **S9_FULL_COMBINED_DISTURBANCE** | Worst-Case Stress | Simultaneous aisle blockage + robot failure + high network latency + packet loss. |
+## 3. System Configurations Under Test
+
+### Baseline System (Centralized Stop-and-Wait)
+- **Task Allocation**: Greedy nearest-robot assignment (Manhattan distance).
+- **Motion Strategy**: Uncoordinated A* shortest path search.
+- **Conflict Resolution**: Stop-and-Wait (when two robots contest an edge or vertex, both robots halt or wait until clear, with no priority inheritance or lateral detour routing).
+
+### Proposed System (Decentralized Fleet Coordination)
+- **Task Allocation**: Hungarian bipartite minimum-cost matching factoring distance, spatial congestion index, and battery reserves.
+- **Task Ownership**: Distributed Claim/ACK/Commit protocol with monotonic assignment epochs (`coordination/task_ownership.py`).
+- **Local MAPF**: Priority Inheritance with Backtracking (PIBT) with traffic flow alignment (`planning/pibt.py`).
+- **Path Repair**: Event-driven Space-Time A* dynamic detour rerouting (`planning/replanning.py`).
+- **Deadlock Handling**: Tarjan strongly connected components cycle detection over the Wait-For Graph (WFG) with automated lateral yielding.
+- **Safety**: Authoritative runtime safety supervisor gating all motor commands at the actuator boundary (`safety/supervisor.py`).
 
 ---
 
-## 4. Primary Mathematical Formulas
+## 4. Scenario Taxonomy (S0 – S9)
 
-### 4.1 Task Completion Time Reduction
-For any paired run with seed $s$ in scenario $c$:
-$$\text{Reduction}(s, c) = \frac{T_{\text{baseline}}(s, c) - T_{\text{proposed}}(s, c)}{T_{\text{baseline}}(s, c)} \times 100\%$$
+| Scenario ID | Operational Disturbance Profile | Description & Injection Parameters |
+| :--- | :--- | :--- |
+| **`S0_NORMAL`** | Nominal Poisson Task Stream | Baseline warehouse operations with task arrival rate $\lambda = 0.2$ tasks/sec. |
+| **`S1_HIGH_CONGESTION`** | Choke-Point Bottleneck | Heavy task arrival stream ($\lambda = 0.6$ tasks/sec) converging on central warehouse aisles. |
+| **`S2_COMM_LATENCY`** | High Wireless Latency | $250\text{ ms}$ fixed transport delay injected across all P2P gossip mesh broadcasts. |
+| **`S3_PACKET_LOSS`** | Severe Packet Drop Rate | $25\%$ uniform random wireless packet loss across the peer communication mesh. |
+| **`S4_AISLE_BLOCKAGE`** | Dynamic Corridor Blockage | Obstacle injected at cell $(7, 10)$ at $t = 20.0\text{s}$, blocking primary transit artery. |
+| **`S5_ROBOT_FAILURE`** | Catastrophic Motor Stall | AMR R02 suffers a hardware stall at $t = 25.0\text{s}$; active task reclaimed by healthy peer. |
+| **`S6_TASK_SURGE`** | Burst Task Arrivals | Arrival bursts of 3–5 concurrent urgent orders injected simultaneously at peak timesteps. |
+| **`S7_COMM_AND_BLOCKAGE`** | Compound Loss & Obstacle | Simultaneous $20\%$ packet drop rate and aisle blockage at cell $(12, 10)$. |
+| **`S8_FAILURE_AND_CONGESTION`** | Choke-Point + Hardware Stall | Choke-point layout with AMR R03 failing in the narrow bottleneck corridor. |
+| **`S9_FULL_DISTURBANCE`** | Combined Multi-Disturbance Matrix | Simultaneous communication latency ($200\text{ms}$), packet loss ($25\%$), blockage, and motor failure. |
 
-For aggregate reduction across all $N = 100$ paired runs:
-$$\text{Aggregate Reduction} = \frac{\bar{T}_{\text{baseline}} - \bar{T}_{\text{proposed}}}{\bar{T}_{\text{baseline}}} \times 100\%$$
-Where:
-- $\bar{T}_{\text{baseline}} = \frac{1}{N} \sum_{i=1}^N T_{\text{baseline}}(i) = 9.21\text{ s}$
-- $\bar{T}_{\text{proposed}} = \frac{1}{N} \sum_{i=1}^N T_{\text{proposed}}(i) = 8.10\text{ s}$
-- $\text{Aggregate Reduction} = 12.06\%$
+---
 
-### 4.2 Statistical Confidence Interval (95% CI)
-For sample standard deviation $s = 16.11\%$ across $N = 100$ paired trials:
-$$\text{CI}_{95\%} = \bar{x} \pm 1.96 \cdot \frac{s}{\sqrt{N}} = 10.36\% \pm 3.16\% \implies [7.20\%, 13.52\%]$$
+## 5. Mathematical Formulations & Metric Definitions
 
-### 4.3 Ground-Truth Collision Auditor
-At every tick $t$, the simulation environment evaluates physical ground-truth invariant checks:
-1. **Vertex Collision**: $\exists i \neq j \text{ s.t. } p_i(t) = p_j(t)$.
-2. **Edge-Swap Collision**: $\exists i \neq j \text{ s.t. } p_i(t) = p_j(t-1) \land p_j(t) = p_i(t-1)$.
-3. **Obstacle Violation**: $\exists i \text{ s.t. } p_i(t) \in \mathcal{O}_{\text{static}} \cup \mathcal{O}_{\text{dynamic}}(t)$.
-4. **Continuous Swept Volume**: Euclidean distance $\lVert p_i(t) - p_j(t) \rVert \ge 2 \cdot r_{\text{robot}}$ where $r_{\text{robot}} = 0.4\text{ m}$.
+### 1. Task Completion Time Reduction (%)
+Calculated across paired seeds and aggregate scenario averages:
+$$\text{Reduction (\%)} = \left(\frac{T_{\text{baseline}} - T_{\text{proposed}}}{T_{\text{baseline}}}\right) \times 100$$
+- $T_{\text{baseline}}$: Mean task completion duration (seconds) under Stop-and-Wait.
+- $T_{\text{proposed}}$: Mean task completion duration (seconds) under our decentralized coordination.
+
+### 2. Collision Classification & Observation
+Evaluated at every simulation step:
+- **Vertex Conflict**: $\exists i \neq j : \mathbf{p}_i(t) = \mathbf{p}_j(t)$ (two robots occupying the exact same cell).
+- **Edge Swap Conflict**: $\exists i \neq j : \mathbf{p}_i(t) = \mathbf{p}_j(t+1) \land \mathbf{p}_j(t) = \mathbf{p}_i(t+1)$ (two robots traversing the same corridor in opposing directions).
+- **Obstacle Conflict**: $\exists i : \mathbf{p}_i(t) \in \mathcal{B}_{\text{blocked}}$ (robot entering a blocked cell).
+- *Scientific standard*: Reported as **observed empirical collisions** (0 across all 200 executions), rather than claiming unproven mathematical formal proofs.
+
+### 3. Deadlock Classification
+A true deadlock is defined as a cyclic waiting condition in the directed dependency graph:
+$$G = (V, E), \quad (R_i, R_j) \in E \iff R_i \text{ is waiting for a cell reserved by } R_j$$
+Cycles are detected via Tarjan's SCC algorithm. Transient yields or yielding to a moving agent are **not** counted as deadlocks.
+
+### 4. Latency Taxonomy
+- **Algorithmic Planning Latency**: Wall-clock time required for PIBT and Space-Time A* decision routines (measured via `time.perf_counter()`).
+- **Simulation Step Latency**: Total time per discrete step including physics integration, network delay simulation, and metric serialization.
+- **Web Telemetry Latency**: WebSocket serialization and transport duration.
+
+### 5. Memory Taxonomy
+- **Core Planner Memory**: Resident set size (RSS) of the standalone Python coordination runtime without GUI dependencies ($\approx 54.0\text{ MB}$).
+- **Total Digital Twin Process Memory**: Full process memory including Uvicorn, FastAPI, WebSocket streaming buffers, and history caches ($\approx 238.7\text{ MB}$).
+
+---
+
+## 6. How to Reproduce the Benchmark
+
+To regenerate the complete canonical benchmark suite from scratch:
+
+```bash
+# 1. Run the canonical report generator
+python -m benchmark.generate_canonical_report
+
+# 2. Run the 116-test regression suite
+python -m pytest -q
+
+# 3. Inspect generated canonical files
+cat results/CANONICAL_SIH_METRICS.json
+cat results/canonical/benchmark_summary.md
+```

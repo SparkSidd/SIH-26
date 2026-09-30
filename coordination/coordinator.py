@@ -612,7 +612,10 @@ class FleetCoordinator:
             else:
                 goal = target_goals.get(r_id, robot.position)
                 if goal != robot.position:
-                    if not robot.planned_path or robot.planned_path[-1] != goal or robot.planned_path[0] != robot.position:
+                    if robot.planned_path and goal == robot.planned_path[-1] and robot.position in robot.planned_path:
+                        idx = robot.planned_path.index(robot.position)
+                        robot.planned_path = robot.planned_path[idx:]
+                    else:
                         plan_res = self.multi_agent_planner.astar.plan(
                             robot_id=r_id,
                             start_pos=robot.position,

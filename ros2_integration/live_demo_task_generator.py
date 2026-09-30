@@ -63,24 +63,24 @@ from simulator.task import Task, TaskState
 
 # LIVE_TEST_SINGLE -- 1 robot, open floor, repeating mission loop
 LIVE_TEST_SINGLE_TASKS = [
-    ((6, 5),   (18, 14)),
-    ((18, 14), (6, 5)),
-    ((6, 14),  (18, 5)),
-    ((18, 5),  (6, 14)),
+    ((5, 5),   (16, 14)),
+    ((16, 14), (5, 5)),
+    ((5, 14),  (16, 5)),
+    ((16, 5),  (5, 14)),
     ((10, 5),  (15, 14)),
 ]
 
 # LIVE_TEST_TWO -- 2 robots, opposing routes to test head-on yielding
 LIVE_TEST_TWO_TASKS = [
+    ((5, 10),  (16, 10)),
+    ((16, 10), (5, 10)),
     ((3, 3),   (20, 16)),
     ((20, 16), (3, 3)),
     ((3, 16),  (20, 3)),
     ((20, 3),  (3, 16)),
-    ((3, 10),  (20, 10)),
-    ((20, 10), (3, 10)),
 ]
 
-# LIVE_DEMO -- 6 robots, continuous high-density task stream
+# LIVE_DEMO -- 6 robots, continuous high-density task stream (all open-aisle coordinates)
 LIVE_DEMO_TASKS = [
     ((3, 2),   (21, 17)),
     ((3, 5),   (21, 14)),
@@ -88,15 +88,15 @@ LIVE_DEMO_TASKS = [
     ((3, 11),  (21, 8)),
     ((3, 14),  (21, 5)),
     ((3, 17),  (21, 2)),
-    ((6, 3),   (18, 16)),
-    ((6, 16),  (18, 3)),
+    ((5, 3),   (17, 16)),
+    ((5, 16),  (17, 3)),
     ((8, 5),   (16, 14)),
     ((8, 14),  (16, 5)),
     ((5, 10),  (19, 10)),
     ((10, 3),  (14, 17)),
     ((10, 17), (14, 3)),
-    ((12, 6),  (8, 13)),
-    ((12, 13), (8, 6)),
+    ((10, 6),  (8, 13)),
+    ((10, 13), (8, 6)),
     ((15, 2),  (5, 17)),
 ]
 
@@ -108,27 +108,27 @@ SCENARIO_TASK_POOLS = {
 
 # Robot start positions per live scenario (grid coords)
 SCENARIO_ROBOT_STARTS = {
-    "LIVE_TEST_SINGLE": [(6, 9)],
-    "LIVE_TEST_TWO":    [(6, 9), (18, 9)],
-    "LIVE_DEMO":        [(4, 5), (4, 14), (10, 5), (10, 14), (16, 5), (16, 14)],
+    "LIVE_TEST_SINGLE": [(2, 10)],
+    "LIVE_TEST_TWO":    [(2, 10), (20, 10)],
+    "LIVE_DEMO":        [(2, 2), (2, 10), (2, 17), (10, 10), (5, 5), (5, 14)],
 }
 
 # Pre-assigned initial tasks (ASSIGNED state so coordinator sees them immediately)
 SCENARIO_INITIAL_ASSIGNMENTS = {
     "LIVE_TEST_SINGLE": [
-        ("T_LIVE_001", (6, 5), (18, 14)),
+        ("T01", (5, 10), (20, 10)),
     ],
     "LIVE_TEST_TWO": [
-        ("T_LIVE_001", (3, 3),  (20, 16)),
-        ("T_LIVE_002", (20, 16), (3, 3)),
+        ("T01", (5, 10),  (20, 10)),
+        ("T02", (20, 10), (5, 10)),
     ],
     "LIVE_DEMO": [
-        ("T_LIVE_001", (3, 2),  (21, 17)),
-        ("T_LIVE_002", (3, 5),  (21, 14)),
-        ("T_LIVE_003", (3, 8),  (21, 11)),
-        ("T_LIVE_004", (3, 11), (21, 8)),
-        ("T_LIVE_005", (3, 14), (21, 5)),
-        ("T_LIVE_006", (3, 17), (21, 2)),
+        ("T01", (5,  2),  (20, 17)),
+        ("T02", (5, 10),  (20,  5)),
+        ("T03", (5, 17),  (20, 10)),
+        ("T04", (10,  5), (15, 15)),
+        ("T05", (15,  2), ( 5, 17)),
+        ("T06", (15, 17), ( 5,  2)),
     ],
 }
 

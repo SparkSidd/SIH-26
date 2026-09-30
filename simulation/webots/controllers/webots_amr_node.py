@@ -323,7 +323,25 @@ class WebotsAMRNode(Node):
         twist = self._action_to_cmd_vel(action)
         self._pub_cmd_vel.publish(twist)
         self._on_cmd_vel(twist)
-        if self.wb_robot is None:
+        if self.wb_robot is not None:
+            # Advance Webots physics and integrate wheel sensor odometry
+            ret = self.wb_robot.step(self.timestep)
+            if ret != -1 and self.left_sensor and self.right_sensor:
+                cur_l = self.left_sensor.getValue()
+                cur_r = self.right_sensor.getValue()
+                if not math.isnan(cur_l) and not math.isnan(cur_r):
+                    dl = (cur_l - self._last_left_pos) * WHEEL_RADIUS_M
+                    dr = (cur_r - self._last_right_pos) * WHEEL_RADIUS_M
+                    self._last_left_pos = cur_l
+                    self._last_right_pos = cur_r
+                    d_center = (dl + dr) / 2.0
+                    d_yaw = (dr - dl) / WHEEL_BASE_M
+                    self._world_yaw = _normalize_angle(self._world_yaw + d_yaw)
+                    self._world_x += d_center * math.cos(self._world_yaw)
+                    self._world_y += d_center * math.sin(self._world_yaw)
+                    col, row = world_to_grid(self._world_x, self._world_y, self._map_height)
+                    self.sim_robot.position = (col, row)
+        else:
             self._update_simulated_kinematics(twist)
         return twist
 

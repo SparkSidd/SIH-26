@@ -4,17 +4,18 @@
 # Autonomous Mobile Robot (AMR) designed for SIH26123 Smart Warehouse Simulation.
 # Bounding radius: 0.45 m (matching RobotGeometry authoritative physical footprint).
 # Differential drive with 2 active drive wheels and 2 low-friction spherical caster bearings.
+# High-fidelity visual styling: dual-tone industrial chassis, 3D Lidar puck,
+# 360-degree high-intensity LED halo, forward LED headlights, and top cargo bed.
 
 PROTO WarehouseAMR [
   field SFVec3f    translation         0 0 0.12
   field SFRotation rotation            0 0 1 0
   field SFString   name                "WarehouseAMR"
   field SFColor    bodyColor           0.15 0.38 0.92
-  field SFString   controller          "<extern>"
+  field SFString   controller          "<none>"
   field MFString   controllerArgs      []
   field SFString   customData          ""
-  field SFFloat    wheelDistance       0.60
-  field SFFloat    wheelRadius         0.10
+  field SFBool     synchronization     FALSE
 ]
 {
   Robot {
@@ -24,37 +25,111 @@ PROTO WarehouseAMR [
     controller IS controller
     controllerArgs IS controllerArgs
     customData IS customData
-    model "SIH26123_Industrial_AMR"
+    synchronization IS synchronization
+    model "SIH26123_Industrial_AMR_Pro"
     description "Autonomous Mobile Robot with 0.45m bounding radius differential drive"
 
     children [
-      # Main Chassis Visual Geometry
+      # ── 1. Lower Impact-Resistant Bumper Skirt (Charcoal Matte) ───────────
       Pose {
-        translation 0 0 0.08
+        translation 0 0 0.05
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor IS bodyColor
-              roughness 0.3
-              metalness 0.7
+              baseColor 0.12 0.14 0.17
+              roughness 0.6
+              metalness 0.2
             }
             geometry Cylinder {
-              height 0.20
+              height 0.10
               radius 0.45
             }
           }
         ]
       }
 
-      # Top Cargo Turntable / Cargo Bed
+      # ── 2. Upper Metallic Body Cowling (Vibrant Team Color) ───────────────
       Pose {
-        translation 0 0 0.19
+        translation 0 0 0.13
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.12 0.14 0.18
+              baseColor IS bodyColor
+              roughness 0.25
+              metalness 0.75
+            }
+            geometry Cylinder {
+              height 0.07
+              radius 0.43
+            }
+          }
+        ]
+      }
+
+      # ── 3. High-Intensity 360-Degree LED Halo Status Ring ─────────────────
+      Pose {
+        translation 0 0 0.098
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS bodyColor
+              emissiveColor IS bodyColor
+              roughness 0.1
+              metalness 0.1
+            }
+            geometry Cylinder {
+              height 0.016
+              radius 0.442
+            }
+          }
+        ]
+      }
+
+      # ── 4. Twin Forward High-Lumen Headlights (Front Bumper) ──────────────
+      # Left Headlight
+      Pose {
+        translation 0.43 0.14 0.06
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.98 1.0
+              emissiveColor 0.9 0.95 1.0
+              roughness 0.1
+            }
+            geometry Cylinder {
+              height 0.03
+              radius 0.03
+            }
+          }
+        ]
+      }
+      # Right Headlight
+      Pose {
+        translation 0.43 -0.14 0.06
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.98 1.0
+              emissiveColor 0.9 0.95 1.0
+              roughness 0.1
+            }
+            geometry Cylinder {
+              height 0.03
+              radius 0.03
+            }
+          }
+        ]
+      }
+
+      # ── 5. Top Cargo Turntable / Loading Bed ──────────────────────────────
+      Pose {
+        translation 0 0 0.17
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.18 0.20 0.24
               roughness 0.8
-              metalness 0.2
+              metalness 0.3
             }
             geometry Cylinder {
               height 0.02
@@ -64,25 +139,78 @@ PROTO WarehouseAMR [
         ]
       }
 
-      # Status Beacon LED Strip (Cyan / Orange indicator ring)
+      # ── 6. Directional Heading Indicator Arrow on Top Bed ─────────────────
       Pose {
-        translation 0 0 0.205
+        translation 0.15 0 0.182
+        rotation 0 0 1 0
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.0 0.8 1.0
-              emissiveColor 0.0 0.6 0.9
-              roughness 0.1
+              baseColor 0.95 0.95 0.95
+              roughness 0.3
+              metalness 0.1
             }
-            geometry Cylinder {
-              height 0.01
-              radius 0.30
+            geometry Box {
+              size 0.18 0.05 0.005
             }
           }
         ]
       }
 
-      # Left Drive Wheel
+      # ── 7. Central 3D LiDAR Sensor Turret (Puck) ──────────────────────────
+      # Turret Riser Base
+      Pose {
+        translation 0 0 0.20
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.1 0.1 0.12
+              roughness 0.3
+              metalness 0.8
+            }
+            geometry Cylinder {
+              height 0.04
+              radius 0.08
+            }
+          }
+        ]
+      }
+      # LiDAR Optical Glass Ring (Glowing Blue Sensor Core)
+      Pose {
+        translation 0 0 0.225
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.0 0.8 1.0
+              emissiveColor 0.0 0.5 0.9
+              roughness 0.1
+            }
+            geometry Cylinder {
+              height 0.015
+              radius 0.075
+            }
+          }
+        ]
+      }
+      # LiDAR Top Cap Dome
+      Pose {
+        translation 0 0 0.24
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.15 0.16 0.18
+              roughness 0.4
+              metalness 0.6
+            }
+            geometry Cylinder {
+              height 0.015
+              radius 0.078
+            }
+          }
+        ]
+      }
+
+      # ── 8. Left Differential Drive Wheel with Hub ─────────────────────────
       HingeJoint {
         jointParameters HingeJointParameters {
           axis 0 1 0
@@ -99,22 +227,40 @@ PROTO WarehouseAMR [
           }
         ]
         endPoint Solid {
+          name "left_wheel"
           translation 0 0.30 0
           rotation 1 0 0 1.5708
           children [
+            # Rubber Tire Tread
             Shape {
               appearance PBRAppearance {
-                baseColor 0.1 0.1 0.1
+                baseColor 0.08 0.08 0.08
                 roughness 0.9
               }
               geometry Cylinder {
-                height 0.04
+                height 0.045
                 radius 0.10
               }
             }
+            # Metallic Center Wheel Hub
+            Pose {
+              children [
+                Shape {
+                  appearance PBRAppearance {
+                    baseColor 0.7 0.72 0.75
+                    roughness 0.2
+                    metalness 0.9
+                  }
+                  geometry Cylinder {
+                    height 0.048
+                    radius 0.05
+                  }
+                }
+              ]
+            }
           ]
           boundingObject Cylinder {
-            height 0.04
+            height 0.045
             radius 0.10
           }
           physics Physics {
@@ -124,7 +270,7 @@ PROTO WarehouseAMR [
         }
       }
 
-      # Right Drive Wheel
+      # ── 9. Right Differential Drive Wheel with Hub ────────────────────────
       HingeJoint {
         jointParameters HingeJointParameters {
           axis 0 1 0
@@ -141,22 +287,40 @@ PROTO WarehouseAMR [
           }
         ]
         endPoint Solid {
+          name "right_wheel"
           translation 0 -0.30 0
           rotation 1 0 0 1.5708
           children [
+            # Rubber Tire Tread
             Shape {
               appearance PBRAppearance {
-                baseColor 0.1 0.1 0.1
+                baseColor 0.08 0.08 0.08
                 roughness 0.9
               }
               geometry Cylinder {
-                height 0.04
+                height 0.045
                 radius 0.10
               }
             }
+            # Metallic Center Wheel Hub
+            Pose {
+              children [
+                Shape {
+                  appearance PBRAppearance {
+                    baseColor 0.7 0.72 0.75
+                    roughness 0.2
+                    metalness 0.9
+                  }
+                  geometry Cylinder {
+                    height 0.048
+                    radius 0.05
+                  }
+                }
+              ]
+            }
           ]
           boundingObject Cylinder {
-            height 0.04
+            height 0.045
             radius 0.10
           }
           physics Physics {
@@ -166,53 +330,42 @@ PROTO WarehouseAMR [
         }
       }
 
-      # Front Low-Friction Passive Caster
+      # ── 10. Front and Rear Ball Caster Bearings ───────────────────────────
       Solid {
+        name "front_caster"
         translation 0.32 0 -0.06
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.3 0.3 0.3
-              metalness 0.8
+              baseColor 0.3 0.32 0.35
+              metalness 0.9
+              roughness 0.2
             }
-            geometry Sphere {
-              radius 0.04
-            }
+            geometry Sphere { radius 0.04 }
           }
         ]
-        boundingObject Sphere {
-          radius 0.04
-        }
-        physics Physics {
-          density -1
-          mass 0.8
-        }
+        boundingObject Sphere { radius 0.04 }
+        physics Physics { density -1 mass 0.8 }
       }
 
-      # Rear Low-Friction Passive Caster
       Solid {
+        name "rear_caster"
         translation -0.32 0 -0.06
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.3 0.3 0.3
-              metalness 0.8
+              baseColor 0.3 0.32 0.35
+              metalness 0.9
+              roughness 0.2
             }
-            geometry Sphere {
-              radius 0.04
-            }
+            geometry Sphere { radius 0.04 }
           }
         ]
-        boundingObject Sphere {
-          radius 0.04
-        }
-        physics Physics {
-          density -1
-          mass 0.8
-        }
+        boundingObject Sphere { radius 0.04 }
+        physics Physics { density -1 mass 0.8 }
       }
 
-      # Front Lidar / Proximity Sensor
+      # ── 11. Front Solid-State LiDAR / Proximity Sensor ────────────────────
       DistanceSensor {
         translation 0.44 0 0.10
         rotation 0 0 1 0

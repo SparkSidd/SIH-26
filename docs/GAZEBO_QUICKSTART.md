@@ -157,9 +157,10 @@ gz sim -r warehouse_s1.sdf --headless-rendering
 ```
 CHECKPOINT_FINAL_PRE_GAZEBO (FROZEN):
   26.18% task-completion-time reduction
-  77/77 original tests
-  25/25 ROS/SIL tests
-  102/102 total
+  77/77 core simulation & algorithm tests
+  25/25 ROS/SIL adapter tests
+  14/14 audit hardening & ownership tests
+  116/116 total tests passing (100%)
 
 Gazebo validation is SEPARATE from the benchmark.
 Do NOT report Gazebo results as the 26.18% result.

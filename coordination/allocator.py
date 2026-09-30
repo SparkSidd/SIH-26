@@ -33,6 +33,8 @@ def _generate_manhattan_path(start: Tuple[int, int], end: Tuple[int, int]) -> Li
     return path
 
 
+_PATH_CACHE: Dict[Tuple[Tuple[int, int], Tuple[int, int]], List[Tuple[int, int]]] = {}
+
 def _generate_walkable_path(
     start: Tuple[int, int],
     end: Tuple[int, int],
@@ -41,6 +43,10 @@ def _generate_walkable_path(
     """Generate shortest obstacle-aware walkable path between two points, falling back to rectilinear."""
     if is_walkable_fn is None or start == end:
         return _generate_manhattan_path(start, end)
+
+    cache_key = (start, end)
+    if cache_key in _PATH_CACHE:
+        return list(_PATH_CACHE[cache_key])
 
     queue = deque([start])
     visited: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {start: None}
@@ -68,7 +74,8 @@ def _generate_walkable_path(
         path.append(curr)
         curr = visited[curr]
     path.reverse()
-    return path
+    _PATH_CACHE[cache_key] = path
+    return list(path)
 
 
 class BaselineNearestAllocator:

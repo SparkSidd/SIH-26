@@ -223,13 +223,16 @@ def generate_launch_description() -> LaunchDescription:
         world_path = SCENARIO_WORLDS.get(scenario.upper())
         if world_path is None:
             world_path = SCENARIO_WORLDS["S1"]  # fallback
+        import shutil
+        clean_world = os.path.join(_TMP_SDF_DIR, os.path.basename(world_path))
+        shutil.copyfile(world_path, clean_world)
         return [
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     os.path.join("/opt/ros/jazzy/share/ros_gz_sim/launch", "gz_sim.launch.py")
                 ),
                 launch_arguments={
-                    "gz_args": f"-r --render-engine-gui ogre2 --gui-config /home/siddharth/.gz/sim/8/gui.config {world_path}",
+                    "gz_args": f"-r --render-engine-gui ogre2 --gui-config /home/siddharth/.gz/sim/8/gui.config {clean_world}",
                     "on_exit_shutdown": "true",
                 }.items(),
             )

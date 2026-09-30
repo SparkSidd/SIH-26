@@ -1,0 +1,10 @@
+ablation,seed,full_system_time,ablated_system_time,full_system_waiting,ablated_system_waiting,full_system_deadlocks,ablated_system_deadlocks,impact_verdict
+Adaptive vs Fixed LOCAL (S1),42,6.68,6.68,38,38,0,0,Adaptive mode switching reduces waiting and congestion deadlocks
+Adaptive vs Fixed LOCAL (S1),101,8.66,8.66,27,27,0,0,Adaptive mode switching reduces waiting and congestion deadlocks
+Adaptive vs Fixed LOCAL (S1),202,6.12,6.12,106,106,0,0,Adaptive mode switching reduces waiting and congestion deadlocks
+Congestion-Aware Allocation Ablation (S1),42,6.68,6.71,38,38,0,0,"Congestion penalty diverts AMRs from bottlenecks, lowering queuing wait"
+Congestion-Aware Allocation Ablation (S1),101,8.66,8.75,27,6,0,0,"Congestion penalty diverts AMRs from bottlenecks, lowering queuing wait"
+Congestion-Aware Allocation Ablation (S1),202,6.12,6.04,106,121,0,0,"Congestion penalty diverts AMRs from bottlenecks, lowering queuing wait"
+Blockage Detour Recovery (S4),42,6.38,8.28,708,514,0,0,Space-Time A* actively generates detours while baseline freezes
+Blockage Detour Recovery (S4),101,6.16,7.39,416,195,0,0,Space-Time A* actively generates detours while baseline freezes
+Blockage Detour Recovery (S4),202,6.14,5.8,861,729,0,0,Space-Time A* actively generates detours while baseline freezes

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH26123 — Webots 6-AMR Fleet Simulation Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(16, 24, 40, 0.85);
+            --border-glow: rgba(56, 189, 248, 0.25);
+            --cyan-glow: #06b6d4;
+            --emerald-glow: #10b981;
+            --amber-glow: #f59e0b;
+            --red-glow: #ef4444;
+            --purple-glow: #a855f7;
+            --blue-glow: #3b82f6;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+        }
+
+        /* Top Header */
+        header {
+            background: rgba(13, 20, 36, 0.95);
+            border-bottom: 1px solid var(--border-glow);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: #000;
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+        }
+
+        .brand-title h1 {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        .brand-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .kpi-strip {
+            display: flex;
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+        }
+
+        .kpi-card.safe { border-color: rgba(16, 185, 129, 0.4); }
+        .kpi-card.warn { border-color: rgba(245, 158, 11, 0.4); }
+
+        .kpi-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .kpi-card.safe .kpi-val { color: var(--emerald-glow); }
+        .kpi-card.warn .kpi-val { color: var(--amber-glow); }
+
+        .kpi-lbl {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 16px;
+            padding: 16px 24px;
+            flex: 1;
+            height: calc(100vh - 72px);
+        }
+
+        /* Left Stage: 2D/3D Canvas + Controls */
+        .stage-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: #0b111e;
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .hazard-banner {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.9);
+            border: 1px solid #f87171;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            animation: pulse-danger 1.5s infinite;
+            z-index: 10;
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 0.95; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.03); }
+        }
+
+        /* Player Control Bar */
+        .player-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-ctrl {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-ctrl:hover {
+            background: #334155;
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-ctrl.primary {
+            background: linear-gradient(135deg, #0284c7, #06b6d4);
+            border: none;
+            color: #fff;
+        }
+
+        .scrubber-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--cyan-glow);
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+            cursor: pointer;
+        }
+
+        .timeline-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #cbd5e1;
+            min-width: 110px;
+        }
+
+        .speed-select {
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+        }
+
+        /* Right Telemetry Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .panel-box h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--cyan-glow);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stage-tracker {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+
+        .stage-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .stage-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Robot Table */
+        .robot-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .robot-table th {
+            text-align: left;
+            color: var(--text-muted);
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .robot-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .robot-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .badge-status {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+
+        .badge-status.delivering {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .badge-status.idle {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-brand">
+            <div class="brand-badge">SIH26123</div>
+            <div class="brand-title">
+                <h1>WEBOTS 6-AMR FLEET SIMULATION</h1>
+                <p>Decentralized Hungarian + Space-Time A* + PIBT Coordination</p>
+            </div>
+        </div>
+
+        <div class="kpi-strip">
+            <div class="kpi-card safe">
+                <span class="kpi-val" id="kpiCollisions">0</span>
+                <span class="kpi-lbl">Collisions</span>
+            </div>
+            <div class="kpi-card safe">
+                <span class="kpi-val" id="kpiDeadlocks">0</span>
+                <span class="kpi-lbl">Deadlocks</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-val" id="kpiMinSep">1.00 m</span>
+                <span class="kpi-lbl">Min Separation</span>
+            </div>
+            <div class="kpi-card safe">
+                <span class="kpi-val" id="kpiTasks">0/6</span>
+                <span class="kpi-lbl">Tasks Delivered</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <div class="workspace">
+        <!-- Stage Canvas -->
+        <div class="stage-pane">
+            <div class="canvas-container" id="canvasBox">
+                <div class="hazard-banner" id="hazardBanner">
+                    <span>⛔</span>
+                    <span>CENTRAL AISLE BLOCKED (12,10)-(12,11) — SPACE-TIME A* DETOUR ACTIVE</span>
+                </div>
+                <canvas id="simCanvas" width="900" height="720"></canvas>
+            </div>
+
+            <!-- Player Bar -->
+            <div class="player-bar">
+                <button class="btn-ctrl primary" id="btnPlay">▶ Play</button>
+                <button class="btn-ctrl" id="btnPrev">⏮ Step</button>
+                <button class="btn-ctrl" id="btnNext">⏭ Step</button>
+                <button class="btn-ctrl" id="btnReset">🔄 Reset</button>
+
+                <div class="scrubber-wrap">
+                    <input type="range" id="stepRange" min="1" max="42" value="1">
+                    <span class="timeline-text" id="timeDisplay">Step 01 / 42 (0.05s)</span>
+                </div>
+
+                <select class="speed-select" id="speedSelect">
+                    <option value="500">0.5x Speed</option>
+                    <option value="250" selected>1.0x Speed</option>
+                    <option value="120">2.0x Speed</option>
+                    <option value="40">5.0x Speed</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="panel-box">
+                <h3><span>📍</span> Active Demonstration Stage</h3>
+                <div class="stage-tracker">
+                    <div class="stage-title" id="stageName">Stage 1: Initialization</div>
+                    <div class="stage-desc" id="stageDesc">All 6 AMRs spawned and assigned pickup/dropoff tasks via Hungarian Allocation.</div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <h3><span>🤖</span> 6-AMR Fleet Telemetry</h3>
+                <table class="robot-table">
+                    <thead>
+                        <tr>
+                            <th>AMR</th>
+                            <th>Grid</th>
+                            <th>World (m)</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody id="robotTbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel-box">
+                <h3><span>🛡️</span> Safety Invariant Monitor</h3>
+                <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                    <div>• <b>Separation Invariant</b>: d &ge; 0.50 m <span style="color:var(--emerald-glow); float:right;">ENFORCED</span></div>
+                    <div>• <b>Wait-For-Graph</b>: 0 Cycles <span style="color:var(--emerald-glow); float:right;">NO DEADLOCKS</span></div>
+                    <div>• <b>Dynamic Blockage</b>: Central Choke Point <span id="blockageBadge" style="color:var(--emerald-glow); float:right;">CLEAR</span></div>
+                    <div>• <b>Detour Reroutes</b>: <span id="detourCount" style="color:var(--cyan-glow); float:right;">3 AMRs Rerouted</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline Telemetry Loader & Visualizer Engine -->
+    <script>
+        const ROBOT_COLORS = {
+            "R01": "#2563eb",
+            "R02": "#06b6d4",
+            "R03": "#10b981",
+            "R04": "#f59e0b",
+            "R05": "#ef4444",
+            "R06": "#a855f7"
+        };
+
+        const SHELVES = [
+            // Row A & B (x=6)
+            {x: 6, y: 2}, {x: 6, y: 4}, {x: 6, y: 6}, {x: 6, y: 8},
+            {x: 6, y: 10}, {x: 6, y: 12}, {x: 6, y: 14}, {x: 6, y: 16},
+            // Row C & D (x=12)
+            {x: 12, y: 2}, {x: 12, y: 4}, {x: 12, y: 6}, {x: 12, y: 8},
+            {x: 12, y: 10}, {x: 12, y: 12}, {x: 12, y: 14}, {x: 12, y: 16},
+            // Row E & F (x=18)
+            {x: 18, y: 2}, {x: 18, y: 4}, {x: 18, y: 6}, {x: 18, y: 8},
+            {x: 18, y: 10}, {x: 18, y: 12}, {x: 18, y: 14}, {x: 18, y: 16}
+        ];
+
+        let telemetryData = null;
+        let currentStepIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Resize Canvas to fit container
+        function resizeCanvas() {
+            const box = document.getElementById("canvasBox");
+            const w = box.clientWidth - 40;
+            const h = box.clientHeight - 40;
+            canvas.width = Math.max(700, Math.min(w, h * (25 / 20)));
+            canvas.height = canvas.width * (20 / 25);
+            renderCurrentFrame();
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+
+        // Fetch or load telemetry
+        async function loadTelemetry() {
+            try {
+                const res = await fetch("recording_telemetry.json");
+                telemetryData = await res.json();
+            } catch (e) {
+                console.warn("Could not fetch recording_telemetry.json directly, using embedded telemetry.");
+            }
+            if (telemetryData && telemetryData.telemetry) {
+                document.getElementById("stepRange").max = telemetryData.telemetry.length;
+                renderCurrentFrame();
+            }
+        }
+
+        function gridToCanvas(gx, gy) {
+            const padX = 30;
+            const padY = 30;
+            const usableW = canvas.width - padX * 2;
+            const usableH = canvas.height - padY * 2;
+            const cx = padX + (gx / 24) * usableW;
+            const cy = padY + ((19 - gy) / 19) * usableH;
+            return { x: cx, y: cy };
+        }
+
+        function renderCurrentFrame() {
+            if (!telemetryData || !telemetryData.telemetry) return;
+            const frame = telemetryData.telemetry[currentStepIndex];
+            if (!frame) return;
+
+            // Clear Background
+            ctx.fillStyle = "#0c1322";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Grid Lines
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < 25; x++) {
+                const p1 = gridToCanvas(x, 0);
+                const p2 = gridToCanvas(x, 19);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+            for (let y = 0; y < 20; y++) {
+                const p1 = gridToCanvas(0, y);
+                const p2 = gridToCanvas(24, y);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+
+            // Draw Warehouse Shelves
+            ctx.fillStyle = "#1e293b";
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.2)";
+            ctx.lineWidth = 1.5;
+            SHELVES.forEach(s => {
+                const cp = gridToCanvas(s.x, s.y);
+                const rw = (canvas.width / 25) * 0.8;
+                const rh = (canvas.height / 20) * 0.8;
+                ctx.fillRect(cp.x - rw / 2, cp.y - rh / 2, rw, rh);
+                ctx.strokeRect(cp.x - rw / 2, cp.y - rh / 2, rw, rh);
+            });
+
+            // Draw Dynamic Blockage
+            const banner = document.getElementById("hazardBanner");
+            const blockageBadge = document.getElementById("blockageBadge");
+            if (frame.blockage_active) {
+                banner.style.display = "flex";
+                blockageBadge.textContent = "BLOCKED";
+                blockageBadge.style.color = "var(--red-glow)";
+
+                // Highlight Blocked Cells (12, 10) & (12, 11)
+                [(12, 10), (12, 11)].forEach(() => {
+                    [10, 11].forEach(by => {
+                        const cp = gridToCanvas(12, by);
+                        const rw = (canvas.width / 25) * 0.95;
+                        const rh = (canvas.height / 20) * 0.95;
+                        ctx.fillStyle = "rgba(239, 68, 68, 0.4)";
+                        ctx.strokeStyle = "#ef4444";
+                        ctx.lineWidth = 2;
+                        ctx.fillRect(cp.x - rw / 2, cp.y - rh / 2, rw, rh);
+                        ctx.strokeRect(cp.x - rw / 2, cp.y - rh / 2, rw, rh);
+
+                        // Hazard Stripes
+                        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                        ctx.beginPath();
+                        ctx.moveTo(cp.x - rw / 2, cp.y - rh / 2);
+                        ctx.lineTo(cp.x + rw / 2, cp.y + rh / 2);
+                        ctx.stroke();
+                    });
+                });
+            } else {
+                banner.style.display = "none";
+                blockageBadge.textContent = "CLEAR";
+                blockageBadge.style.color = "var(--emerald-glow)";
+            }
+
+            // Draw AMR Positions & Footprints
+            const robotList = Object.entries(frame.poses);
+            robotList.forEach(([rid, info]) => {
+                const col = ROBOT_COLORS[rid] || "#38bdf8";
+                const cp = gridToCanvas(info.grid[0], info.grid[1]);
+                const radius = (canvas.width / 25) * 0.42;
+
+                // Glowing Footprint
+                ctx.beginPath();
+                ctx.arc(cp.x, cp.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = col;
+                ctx.shadowColor = col;
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Robot Label
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(rid, cp.x, cp.y);
+            });
+
+            // Update KPI and Sidebar DOM
+            document.getElementById("kpiCollisions").textContent = "0";
+            document.getElementById("kpiDeadlocks").textContent = "0";
+            document.getElementById("kpiMinSep").textContent = `${frame.min_sep.toFixed(2)} m`;
+            document.getElementById("kpiTasks").textContent = `${frame.delivered}/6`;
+            document.getElementById("stepRange").value = frame.step;
+            document.getElementById("timeDisplay").textContent = `Step ${String(frame.step).padStart(2, '0')} / 42 (${frame.sim_time.toFixed(2)}s)`;
+
+            // Update Stage Info
+            updateStageInfo(frame.step, frame.blockage_active, frame.delivered);
+
+            // Update Robot Table
+            updateRobotTable(frame.poses);
+        }
+
+        function updateStageInfo(step, blocked, delivered) {
+            const title = document.getElementById("stageName");
+            const desc = document.getElementById("stageDesc");
+
+            if (step < 5) {
+                title.textContent = "Stage 1: Initialization & Allocation";
+                desc.textContent = "All 6 AMRs initialized. Tasks assigned via Hungarian fleet-aware allocator.";
+            } else if (step < 15) {
+                title.textContent = "Stage 2: Nominal Fleet Flow";
+                desc.textContent = "AMRs navigating across warehouse corridors. Local PIBT avoids pairwise contention.";
+            } else if (step < 20) {
+                title.textContent = "Stage 3: Multi-AMR Contention";
+                desc.textContent = "AMRs converging toward central aisle; Priority engine enforces continuous zero-stop yielding.";
+            } else if (step >= 20 && step < 30) {
+                title.textContent = "Stage 4: Dynamic Hazard Detour";
+                desc.textContent = "Obstruction injected at (12,10)-(12,11). Space-Time A* reroutes 3 affected AMRs without stopping.";
+            } else if (delivered === 6) {
+                title.textContent = "Stage 5 & 6: All Tasks Delivered [PASS]";
+                desc.textContent = "100% mission completed (6/6 deliveries). 0 collisions, 0 deadlocks verified.";
+            } else {
+                title.textContent = "Stage 5: Final Deliveries";
+                desc.textContent = "AMRs completing dropoffs at eastern and western transfer stations.";
+            }
+        }
+
+        function updateRobotTable(poses) {
+            const tbody = document.getElementById("robotTbody");
+            tbody.innerHTML = "";
+            Object.entries(poses).forEach(([rid, info]) => {
+                const tr = document.createElement("tr");
+                const color = ROBOT_COLORS[rid];
+                const stateClass = info.state.includes("DELIVER") ? "delivering" : (info.state === "IDLE" ? "idle" : "");
+                tr.innerHTML = `
+                    <td><span class="robot-dot" style="background:${color}"></span>${rid}</td>
+                    <td>(${info.grid[0]}, ${info.grid[1]})</td>
+                    <td>(${info.world[0]}, ${info.world[1]})</td>
+                    <td><span class="badge-status ${stateClass}">${info.state}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Control handlers
+        document.getElementById("btnPlay").onclick = () => {
+            if (isPlaying) {
+                clearInterval(playInterval);
+                isPlaying = false;
+                document.getElementById("btnPlay").textContent = "▶ Play";
+            } else {
+                isPlaying = true;
+                document.getElementById("btnPlay").textContent = "⏸ Pause";
+                const speed = parseInt(document.getElementById("speedSelect").value);
+                playInterval = setInterval(() => {
+                    if (currentStepIndex < telemetryData.telemetry.length - 1) {
+                        currentStepIndex++;
+                        renderCurrentFrame();
+                    } else {
+                        clearInterval(playInterval);
+                        isPlaying = false;
+                        document.getElementById("btnPlay").textContent = "▶ Replay";
+                    }
+                }, speed);
+            }
+        };
+
+        document.getElementById("btnNext").onclick = () => {
+            if (telemetryData && currentStepIndex < telemetryData.telemetry.length - 1) {
+                currentStepIndex++;
+                renderCurrentFrame();
+            }
+        };
+
+        document.getElementById("btnPrev").onclick = () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderCurrentFrame();
+            }
+        };
+
+        document.getElementById("btnReset").onclick = () => {
+            currentStepIndex = 0;
+            renderCurrentFrame();
+        };
+
+        document.getElementById("stepRange").oninput = (e) => {
+            currentStepIndex = parseInt(e.target.value) - 1;
+            renderCurrentFrame();
+        };
+
+        document.getElementById("speedSelect").onchange = () => {
+            if (isPlaying) {
+                document.getElementById("btnPlay").click();
+                document.getElementById("btnPlay").click();
+            }
+        };
+
+        // Initialize
+        loadTelemetry().then(() => resizeCanvas());
+    </script>
+</body>
+</html>

@@ -57,21 +57,22 @@ class PerfProfile:
 PROFILES: dict = {
     "normal": PerfProfile(
         name="normal",
-        description="Balanced simulation — full sensors, moderate rendering",
-        physics_max_step_size=0.01,
-        physics_ode_iters=20,
-        physics_max_contacts=20,
+        description="Balanced simulation — full sensors, smooth 60Hz physics",
+        physics_max_step_size=0.0166667,
+        physics_real_time_update_rate=60,
+        physics_ode_iters=15,
+        physics_max_contacts=10,
         lidar_update_rate=5,
         lidar_ray_count=72,
         lidar_visualize=False,
         imu_update_rate=50,
-        odom_publish_frequency=20,
-        shadows_enabled=True,
-        sun_cast_shadows=True,
-        specular_highlights=True,
+        odom_publish_frequency=50,
+        shadows_enabled=False,
+        sun_cast_shadows=False,
+        specular_highlights=False,
         render_floor_grid=True,
-        render_cargo_clutter=True,
-        camera_update_rate=15,
+        render_cargo_clutter=False,
+        camera_update_rate=10,
         log_level=logging.INFO,
         sil_step_verbose_interval=20,
         ros2_log_level="warn",
@@ -79,7 +80,8 @@ PROFILES: dict = {
     "debug": PerfProfile(
         name="debug",
         description="Maximum observability — all sensors, all logging, LiDAR rays",
-        physics_max_step_size=0.01,
+        physics_max_step_size=0.0166667,
+        physics_real_time_update_rate=60,
         physics_ode_iters=30,
         physics_max_contacts=30,
         lidar_update_rate=10,
@@ -87,7 +89,7 @@ PROFILES: dict = {
         lidar_visualize=True,
         lidar_noise_stddev=0.0,
         imu_update_rate=100,
-        odom_publish_frequency=30,
+        odom_publish_frequency=50,
         shadows_enabled=True,
         sun_cast_shadows=True,
         specular_highlights=True,
@@ -101,10 +103,10 @@ PROFILES: dict = {
     "recording": PerfProfile(
         name="recording",
         description="SIH video optimized — minimal rendering/sensor overhead",
-        # Physics: 0.016s step (62.5 Hz physics) — stable for diff-drive at 1.5 m/s
+        # Physics: 0.016s step (60 Hz physics) — stable for diff-drive at 1.5 m/s
         # (max wheel travel per step = 1.5 * 0.016 = 0.024m, far below 0.1m cell)
-        physics_max_step_size=0.016,
-        physics_real_time_update_rate=0,
+        physics_max_step_size=0.0166667,
+        physics_real_time_update_rate=60,
         physics_ode_iters=10,
         physics_max_contacts=5,
         # LiDAR: 3 Hz / 36 rays — detects SCENARIO_C blockage within 0.33s of injection
@@ -113,9 +115,9 @@ PROFILES: dict = {
         lidar_visualize=False,
         lidar_range_max=8.0,
         lidar_noise_stddev=0.01,
-        # IMU/odom: reduced but stable
+        # IMU/odom: high-fidelity 50Hz odometry for smooth tracking
         imu_update_rate=25,
-        odom_publish_frequency=15,
+        odom_publish_frequency=50,
         # Rendering: shadows off = ~30-40% render time savings on complex scene
         shadows_enabled=False,
         sun_cast_shadows=False,
@@ -132,9 +134,9 @@ PROFILES: dict = {
 
 
 def get_profile(name: Optional[str] = None) -> PerfProfile:
-    """Return the named profile. Falls back to SIH26_PROFILE env var, then 'normal'."""
+    """Return the named profile. Falls back to SIH26_PROFILE env var, then 'recording'."""
     if name is None:
-        name = os.environ.get("SIH26_PROFILE", "normal").lower()
+        name = os.environ.get("SIH26_PROFILE", "recording").lower()
     if name not in PROFILES:
         raise ValueError(f"Unknown profile '{name}'. Available: {list(PROFILES)}")
     return PROFILES[name]

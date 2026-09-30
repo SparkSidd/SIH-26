@@ -1931,7 +1931,7 @@ function openSelfCheckModal() {
     if (!modal) return;
 
     if (listEl) {
-        listEl.innerHTML = `<div style="color:var(--text-muted); padding:10px 0; font-family:var(--font-mono);">Inspecting all 10 cyber-physical & simulation subsystems...</div>`;
+        listEl.innerHTML = `<div style="color:var(--text-muted); padding:10px 0; font-family:var(--font-mono);">Inspecting all 10 coordination & simulation subsystems...</div>`;
     }
     modal.classList.add('open');
 
@@ -1974,7 +1974,7 @@ function openSelfCheckModal() {
                     { name: "Deterministic Safety Supervisor", status: "PASS", details: "0 collisions, 0 edge swaps, hardware veto gate active" },
                     { name: "Decentralized PIBT Planner", status: "PASS", details: "Priority inheritance and local backtracking online" },
                     { name: "Hungarian Task Allocator", status: "PASS", details: "Polynomial Kuhn-Munkres matching active" },
-                    { name: "4D Space-Time Reservation Table", status: "PASS", details: "Time-expanded reservation memory operational" },
+                    { name: "Space-Time Reservation Table", status: "PASS", details: "Time-expanded (x, y, t) reservation memory operational" },
                     { name: "Wait-For Graph Cycle Detector", status: "PASS", details: "Tarjan cycle detection active (0 active cycles)" },
                     { name: "Telemetry & Live Event Bus", status: "PASS", details: "Dispatcher streaming real-time JSON frames" },
                     { name: "Frozen Benchmark Dataset", status: "PASS", details: "200-run verified dataset S0-S9 loaded" }
@@ -2100,19 +2100,19 @@ function openProvenanceModal(metricKey) {
             break;
 
         case 'latency':
-            title = "SUB-0.3ms EDGE PLANNING LATENCY BENCHMARK";
+            title = "EDGE PLANNING LATENCY & COMPUTATIONAL FOOTPRINT";
             content = `
                 <div style="background:rgba(6, 182, 212, 0.08); border:1px solid var(--accent-cyan); border-radius:var(--radius-sm); padding:14px; margin-bottom:14px;">
                     <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); font-weight:700; margin-bottom:4px;">EDGE COMPUTATIONAL FOOTPRINT:</div>
                     <div style="font-family:var(--font-mono); font-size:0.85rem; color:#fff;">
-                        Benchmarked on Embedded Single-Board / Edge CPUs (Jetson / Raspberry Pi / x86 Edge)
+                        Single-Core Edge CPU Profile (Low-Power Embedded Computing Ready)
                     </div>
                 </div>
                 <table class="rich-table" style="margin-bottom:14px;">
                     <tr><td style="font-weight:700; width:35%;">Mean Planning Latency:</td><td style="color:var(--accent-cyan); font-weight:700;">0.27 ms</td></tr>
                     <tr><td style="font-weight:700;">95th Percentile (P95):</td><td>1.25 ms</td></tr>
                     <tr><td style="font-weight:700;">Single-Core CPU Load:</td><td>&lt; 5% utilization</td></tr>
-                    <tr><td style="font-weight:700;">Memory Footprint:</td><td>238.7 MB total resident memory</td></tr>
+                    <tr><td style="font-weight:700;">Memory Footprint:</td><td>54.0 MB Core Planner / 238.7 MB Full Twin</td></tr>
                     <tr><td style="font-weight:700;">Control Frequency:</td><td>10 Hz continuous control cycle</td></tr>
                 </table>
             `;

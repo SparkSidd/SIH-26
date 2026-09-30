@@ -1,0 +1,2 @@
+Scenario,Baseline_Time_s,Proposed_Time_s,Reduction_Pct,Baseline_Waiting,Proposed_Waiting,Throughput_Gain_Pct,Bandwidth_Red_Pct
+S0_NORMAL,5.62,6.21,-10.5,8.0,8.0,33.33,-1.56

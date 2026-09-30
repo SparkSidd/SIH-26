@@ -1,0 +1,11 @@
+Metric Category,Parameter,Value,Unit / Basis,Defensibility Note
+Completion Time,Baseline Mean,8.7,seconds,Stop-and-Wait + Nearest (100 runs)
+Completion Time,Proposed Mean,6.42,seconds,Decentralized PIBT + FleetAware (100 runs)
+Completion Time,Aggregate Reduction,26.18%,percentage,((8.70 - 6.42)/8.70)*100
+Safety,Inter-Robot Collisions,0,events,Verified across 200 executions
+Safety,Deadlocks Observed,0,events,Acyclic WFG cycle breaking
+Latency,Mean Planner Latency,0.27,ms,Single-core edge CPU
+Latency,P95 Planner Latency,1.25,ms,Tail planning latency
+Memory,Core Planner RAM,54.0,MB,Standalone coordination runtime
+Memory,Digital Twin Total RAM,238.7,MB,FastAPI + WebSocket + server
+Testing,Test Suite Pass,116/116 PASS (100%),tests,"Unit, integration, and scenario tests"

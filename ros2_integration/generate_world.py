@@ -92,8 +92,8 @@ def _scene_block(p: PerfProfile) -> str:
     shadows = "true" if p.shadows_enabled else "false"
     return textwrap.dedent(f"""
     <scene>
-      <ambient>0.5 0.5 0.55 1</ambient>
-      <background>0.10 0.12 0.15 1</background>
+      <ambient>0.65 0.68 0.72 1</ambient>
+      <background>0.78 0.82 0.86 1</background>
       <shadows>{shadows}</shadows>
       <grid>false</grid>
       <origin_visual>false</origin_visual>
@@ -102,7 +102,7 @@ def _scene_block(p: PerfProfile) -> str:
 
 
 def _gui_block(profile_name: str) -> str:
-    """Minimal GUI: only what's needed — no extra inspector panels."""
+    """Minimal GUI: elevated cinematic overview of entire 25x20 warehouse floor."""
     return textwrap.dedent(f"""
     <gui fullscreen="0">
       <plugin filename="MinimalScene" name="3D View">
@@ -113,9 +113,9 @@ def _gui_block(profile_name: str) -> str:
         </gz-gui>
         <engine>ogre2</engine>
         <scene>scene</scene>
-        <ambient_light>0.5 0.5 0.5</ambient_light>
-        <background_color>0.10 0.12 0.15</background_color>
-        <camera_pose>12.5 -4.5 16.5 0 0.88 1.5708</camera_pose>
+        <ambient_light>0.65 0.68 0.72</ambient_light>
+        <background_color>0.78 0.82 0.86</background_color>
+        <camera_pose>12.0 -2.5 19.0 0 0.90 1.5708</camera_pose>
       </plugin>
       <plugin filename="GzSceneManager" name="Scene Manager">
         <gz-gui>
@@ -190,43 +190,42 @@ def _sun_light(cast_shadows: bool) -> str:
     return textwrap.dedent(f"""
     <light name="sun" type="directional">
       <cast_shadows>{sh}</cast_shadows>
-      <pose>0 0 10 0 0 0</pose>
-      <diffuse>0.85 0.85 0.88 1</diffuse>
-      <specular>0.15 0.15 0.15 1</specular>
+      <pose>5 5 15 0 0 0</pose>
+      <diffuse>0.95 0.95 0.98 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
       <attenuation>
         <range>1000</range>
         <constant>0.9</constant>
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation>
-      <direction>-0.5 0.1 -0.9</direction>
+      <direction>-0.3 0.2 -0.9</direction>
     </light>
     """).strip()
 
 
 def _floor(p: PerfProfile) -> str:
     """
-    Single floor plane. In recording mode: no specular, subtle dark texture.
-    The floor grid (41 draw calls) is OMITTED in recording mode.
+    Polished light epoxy concrete floor with subtle reflectivity.
+    High-tech modern warehouse finish (bright, clean, zero dingy black pitch).
     """
-    spec = "0.08 0.08 0.08 1" if p.specular_highlights else "0 0 0 0"
-    floor_diffuse = "0.20 0.22 0.25 1" if p.name == "recording" else "0.22 0.25 0.28 1"
+    spec = "0.20 0.20 0.22 1" if p.specular_highlights else "0.08 0.08 0.08 1"
     return textwrap.dedent(f"""
     <model name="ground_plane">
       <static>true</static>
       <link name="link">
         <collision name="collision">
           <geometry>
-            <plane><normal>0 0 1</normal><size>25 20</size></plane>
+            <plane><normal>0 0 1</normal><size>26 22</size></plane>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
-            <plane><normal>0 0 1</normal><size>25 20</size></plane>
+            <plane><normal>0 0 1</normal><size>26 22</size></plane>
           </geometry>
           <material>
-            <ambient>0.20 0.22 0.25 1</ambient>
-            <diffuse>{floor_diffuse}</diffuse>
+            <ambient>0.78 0.80 0.84 1</ambient>
+            <diffuse>0.85 0.87 0.90 1</diffuse>
             <specular>{spec}</specular>
           </material>
         </visual>
@@ -237,7 +236,7 @@ def _floor(p: PerfProfile) -> str:
 
 
 def _wall(name: str, pose: str, size: str, p: PerfProfile) -> str:
-    spec = "0.08 0.08 0.08 1" if p.specular_highlights else "0 0 0 0"
+    spec = "0.10 0.10 0.10 1" if p.specular_highlights else "0 0 0 0"
     return textwrap.dedent(f"""
     <model name="{name}">
       <static>true</static>
@@ -249,8 +248,8 @@ def _wall(name: str, pose: str, size: str, p: PerfProfile) -> str:
         <visual name="visual">
           <geometry><box><size>{size}</size></box></geometry>
           <material>
-            <ambient>0.60 0.63 0.68 1</ambient>
-            <diffuse>0.68 0.72 0.78 1</diffuse>
+            <ambient>0.70 0.73 0.78 1</ambient>
+            <diffuse>0.78 0.82 0.88 1</diffuse>
             <specular>{spec}</specular>
           </material>
         </visual>
@@ -271,15 +270,24 @@ def _perimeter_walls(p: PerfProfile) -> str:
 
 def _shelf_row(base_name: str, x: float, y_start: float, count: int, p: PerfProfile) -> str:
     """
-    Generate a row of 'count' shelving units.
-    Visual: slim rectangular box (looks like a rack from above).
-    Collision: same box — no complex mesh.
-    Width 0.8m × Depth 1.2m × Height 2.0m.
+    Generate a row of 'count' realistic industrial shelving units.
+    - Upright frames: Heavy-duty Industrial Blue
+    - Crossbeams: OSHA Safety Orange
+    - Tiers: Lower kraft cartons + Upper colorful logistics totes
+    - Collision: exact bounding box (0.8m x 1.2m x 2.0m)
     """
-    spec = "0.05 0.05 0.05 1" if p.specular_highlights else "0 0 0 0"
     blocks = []
+    # Varied colorful totes for top shelf: Cyan, Yellow, Orange
+    tote_colors = [
+        ("0.10 0.55 0.75 1", "0.15 0.65 0.85 1"),  # Warehouse Cyan
+        ("0.85 0.70 0.10 1", "0.95 0.80 0.15 1"),  # Logistics Yellow
+        ("0.90 0.40 0.10 1", "0.98 0.48 0.12 1"),  # Signal Orange
+        ("0.15 0.65 0.35 1", "0.20 0.75 0.42 1"),  # Eco Green
+    ]
+
     for i in range(count):
         cy = y_start + i * 2.0
+        amb_tote, diff_tote = tote_colors[i % len(tote_colors)]
         blocks.append(textwrap.dedent(f"""
         <model name="{base_name}_{i+1:02d}">
           <static>true</static>
@@ -288,21 +296,53 @@ def _shelf_row(base_name: str, x: float, y_start: float, count: int, p: PerfProf
             <collision name="col">
               <geometry><box><size>0.8 1.2 2.0</size></box></geometry>
             </collision>
-            <visual name="vis_body">
-              <geometry><box><size>0.80 1.20 1.90</size></box></geometry>
+            <!-- Upright Industrial Blue Frame -->
+            <visual name="vis_frame">
+              <geometry><box><size>0.80 1.20 1.95</size></box></geometry>
               <material>
-                <ambient>0.35 0.38 0.42 1</ambient>
-                <diffuse>0.42 0.46 0.52 1</diffuse>
-                <specular>{spec}</specular>
+                <ambient>0.10 0.35 0.70 1</ambient>
+                <diffuse>0.15 0.45 0.85 1</diffuse>
+                <specular>0.2 0.2 0.25 1</specular>
               </material>
             </visual>
-            <visual name="vis_top">
-              <pose>0 0 0.97 0 0 0</pose>
-              <geometry><box><size>0.82 1.22 0.04</size></box></geometry>
+            <!-- Mid-level OSHA Safety Orange Crossbeam -->
+            <visual name="vis_beam_mid">
+              <pose>0 0 0.0 0 0 0</pose>
+              <geometry><box><size>0.82 1.22 0.05</size></box></geometry>
               <material>
-                <ambient>0.62 0.48 0.22 1</ambient>
-                <diffuse>0.72 0.58 0.28 1</diffuse>
-                <specular>0 0 0 0</specular>
+                <ambient>0.88 0.42 0.05 1</ambient>
+                <diffuse>0.96 0.48 0.08 1</diffuse>
+                <specular>0.15 0.15 0.15 1</specular>
+              </material>
+            </visual>
+            <!-- Top OSHA Safety Orange Crossbeam -->
+            <visual name="vis_beam_top">
+              <pose>0 0 0.96 0 0 0</pose>
+              <geometry><box><size>0.82 1.22 0.05</size></box></geometry>
+              <material>
+                <ambient>0.88 0.42 0.05 1</ambient>
+                <diffuse>0.96 0.48 0.08 1</diffuse>
+                <specular>0.15 0.15 0.15 1</specular>
+              </material>
+            </visual>
+            <!-- Lower Tier: Kraft Cardboard Cartons -->
+            <visual name="vis_cargo_low">
+              <pose>0 0 -0.46 0 0 0</pose>
+              <geometry><box><size>0.70 1.05 0.74</size></box></geometry>
+              <material>
+                <ambient>0.72 0.55 0.32 1</ambient>
+                <diffuse>0.82 0.64 0.38 1</diffuse>
+                <specular>0.05 0.05 0.05 1</specular>
+              </material>
+            </visual>
+            <!-- Upper Tier: Vibrant Logistics Storage Totes -->
+            <visual name="vis_cargo_high">
+              <pose>0 0 0.48 0 0 0</pose>
+              <geometry><box><size>0.70 1.05 0.74</size></box></geometry>
+              <material>
+                <ambient>{amb_tote}</ambient>
+                <diffuse>{diff_tote}</diffuse>
+                <specular>0.25 0.25 0.25 1</specular>
               </material>
             </visual>
           </link>
@@ -313,8 +353,8 @@ def _shelf_row(base_name: str, x: float, y_start: float, count: int, p: PerfProf
 
 def _shelf_layout(p: PerfProfile) -> str:
     """
-    Four shelf rows at fixed world positions.
-    Positioned to NOT block robot start/end positions.
+    Six shelf rows at fixed world positions (cols 6, 12, 18).
+    Positioned with 2m cross-aisles at y=1, 9, 17.
     """
     rows = [
         ("shelf_row_A", 6.0,  2.0, 4),
@@ -329,23 +369,22 @@ def _shelf_layout(p: PerfProfile) -> str:
 
 def _pickup_dropoff_pads() -> str:
     """
-    Pickup (green) and dropoff (orange) station pads.
-    Single flat box per station — minimal draw calls.
+    Pickup (vibrant emerald green) and dropoff (safety orange) station pads.
     """
     stations = [
         # (name, wx, wy, color, type)
-        ("pad_P1", 2.0,  17.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_P2", 2.0,   9.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_P3", 2.0,   2.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_P4", 5.0,   5.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_P5", 5.0,  14.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_P6", 10.0,  9.0, "0.08 0.72 0.35 1", "P"),
-        ("pad_D1", 20.0, 17.0, "0.88 0.55 0.08 1", "D"),
-        ("pad_D2", 20.0,  9.0, "0.88 0.55 0.08 1", "D"),
-        ("pad_D3", 20.0,  2.0, "0.88 0.55 0.08 1", "D"),
-        ("pad_D4", 15.0, 15.0, "0.88 0.55 0.08 1", "D"),
-        ("pad_D5",  5.0, 17.0, "0.88 0.55 0.08 1", "D"),
-        ("pad_D6",  5.0,  2.0, "0.88 0.55 0.08 1", "D"),
+        ("pad_P1", 2.0,  17.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_P2", 2.0,   9.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_P3", 2.0,   2.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_P4", 5.0,   5.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_P5", 5.0,  14.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_P6", 10.0,  9.0, "0.08 0.85 0.38 1", "P"),
+        ("pad_D1", 20.0, 17.0, "0.95 0.52 0.05 1", "D"),
+        ("pad_D2", 20.0,  9.0, "0.95 0.52 0.05 1", "D"),
+        ("pad_D3", 20.0,  2.0, "0.95 0.52 0.05 1", "D"),
+        ("pad_D4", 15.0, 15.0, "0.95 0.52 0.05 1", "D"),
+        ("pad_D5",  5.0, 17.0, "0.95 0.52 0.05 1", "D"),
+        ("pad_D6",  5.0,  2.0, "0.95 0.52 0.05 1", "D"),
     ]
     parts = []
     for name, wx, wy, color, _ in stations:
@@ -359,7 +398,7 @@ def _pickup_dropoff_pads() -> str:
               <material>
                 <ambient>{color}</ambient>
                 <diffuse>{color}</diffuse>
-                <specular>0 0 0 0</specular>
+                <specular>0.2 0.2 0.2 1</specular>
               </material>
             </visual>
           </link>
@@ -369,13 +408,12 @@ def _pickup_dropoff_pads() -> str:
 
 
 def _transit_lanes(p: PerfProfile) -> str:
-    """Four horizontal transit lane markings (single wide box each)."""
-    spec = "0 0 0 0"
+    """Four horizontal transit lane safety markings."""
     lanes = [
-        ("ln_NW", "7.0 14.0 0.002 0 0 0",  "7.5 0.08 0.002"),
-        ("ln_NE", "16.5 14.0 0.002 0 0 0", "7.0 0.08 0.002"),
-        ("ln_SW", "7.0 5.0 0.002 0 0 0",   "7.5 0.08 0.002"),
-        ("ln_SE", "16.5 5.0 0.002 0 0 0",  "7.0 0.08 0.002"),
+        ("ln_NW", "7.0 14.0 0.002 0 0 0",  "7.5 0.12 0.002"),
+        ("ln_NE", "16.5 14.0 0.002 0 0 0", "7.0 0.12 0.002"),
+        ("ln_SW", "7.0 5.0 0.002 0 0 0",   "7.5 0.12 0.002"),
+        ("ln_SE", "16.5 5.0 0.002 0 0 0",  "7.0 0.12 0.002"),
     ]
     parts = []
     for name, pose, size in lanes:
@@ -387,9 +425,9 @@ def _transit_lanes(p: PerfProfile) -> str:
             <visual name="lane">
               <geometry><box><size>{size}</size></box></geometry>
               <material>
-                <ambient>0.75 0.75 0.75 1</ambient>
-                <diffuse>0.85 0.85 0.85 1</diffuse>
-                <specular>{spec}</specular>
+                <ambient>0.88 0.78 0.08 1</ambient>
+                <diffuse>0.96 0.85 0.10 1</diffuse>
+                <specular>0.1 0.1 0.1 1</specular>
               </material>
             </visual>
           </link>
@@ -415,13 +453,13 @@ def _floor_grid(p: PerfProfile) -> str:
         visuals.append(
             f'<visual name="gx_{x:02d}"><pose>{x:.1f} 9.5 0.001 0 0 0</pose>'
             f'<geometry><box><size>0.015 19.0 0.001</size></box></geometry>'
-            f'<material><ambient>0.13 0.17 0.22 1</ambient><diffuse>0.15 0.19 0.25 1</diffuse></material></visual>'
+            f'<material><ambient>0.70 0.73 0.76 1</ambient><diffuse>0.75 0.78 0.82 1</diffuse></material></visual>'
         )
     for y in range(1, 19):
         visuals.append(
             f'<visual name="gy_{y:02d}"><pose>12.0 {y:.1f} 0.001 0 0 0</pose>'
             f'<geometry><box><size>23.0 0.015 0.001</size></box></geometry>'
-            f'<material><ambient>0.13 0.17 0.22 1</ambient><diffuse>0.15 0.19 0.25 1</diffuse></material></visual>'
+            f'<material><ambient>0.70 0.73 0.76 1</ambient><diffuse>0.75 0.78 0.82 1</diffuse></material></visual>'
         )
     inner = "\n    ".join(visuals)
     return textwrap.dedent(f"""

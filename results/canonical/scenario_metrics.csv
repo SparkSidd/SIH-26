@@ -1,0 +1,11 @@
+Scenario_ID,Scenario_Name,Baseline_Time_s,Proposed_Time_s,Reduction_Pct,Derived_Throughput_Gain_Pct,Collisions,Deadlocks
+S0_NORMAL,Nominal Warehouse Poisson Stream,9.2,6.15,33.1,21.14,0,0
+S1_HIGH_CONGESTION,Choke-Point Bottleneck,8.47,6.73,20.5,19.74,0,0
+S2_COMM_LATENCY,250ms Wireless Transport Latency,8.55,6.1,28.67,23.88,0,0
+S3_PACKET_LOSS,25% Random Mesh Packet Drop,8.55,6.1,28.67,23.88,0,0
+S4_AISLE_BLOCKAGE,Dynamic Obstacle / Aisle Blockage,8.54,6.13,28.21,23.13,0,0
+S5_ROBOT_FAILURE,Robot Motor Failure & Peer Reclaim,8.52,6.12,28.12,22.22,0,0
+S6_TASK_SURGE,Burst Task Generation Surge,9.66,7.06,26.87,31.93,0,0
+S7_COMM_AND_BLOCKAGE,Packet Loss + Corridor Blockage,8.54,6.13,28.21,23.13,0,0
+S8_FAILURE_AND_CONGESTION,Choke-Point + Robot Hardware Stall,8.25,6.99,15.31,-3.4,0,0
+S9_FULL_COMBINED_DISTURBANCE,Full Multi-Disturbance Matrix,8.72,6.7,23.19,5.6,0,0

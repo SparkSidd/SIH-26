@@ -76,6 +76,9 @@ class LocalWorldModel:
         priority: float,
         timestamp: float,
         sequence_number: int,
+        has_payload: bool = False,
+        task_state: Optional[str] = None,
+        target_position: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Update local belief based on received P2P packet."""
         age = self.age_model.compute_confidence(0.0)
@@ -88,6 +91,9 @@ class LocalWorldModel:
             planned_path=list(planned_path),
             current_task_id=current_task_id,
             priority=priority,
+            has_payload=has_payload,
+            task_state=task_state,
+            target_position=target_position,
             timestamp=timestamp,
             sequence_number=sequence_number,
             confidence=age,

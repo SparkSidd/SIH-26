@@ -20,6 +20,6 @@ echo.
 echo   Launching via WSL2 (Ubuntu-24.04 with ROS 2 Jazzy + Gazebo Harmonic)...
 echo.
 
-wsl -d Ubuntu-24.04 -- bash -c "cd '/mnt/c/Users/thega/PROJECTS/SIH'\''26' && bash run_live_fleet.sh %SCENARIO% proposed false"
+wsl -d Ubuntu-24.04 -- bash -c "cd '/mnt/c/Users/thega/PROJECTS/SIH'\''26' && bash run_live_fleet.sh %SCENARIO% proposed false recording"
 
 pause

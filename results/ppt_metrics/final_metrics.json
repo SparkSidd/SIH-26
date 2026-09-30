@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-10-01T04:30:08.629227",
+  "git_commit": "sih2026-v1.0.0-final",
+  "total_benchmark_runs": 2,
+  "total_scenarios_evaluated": 1,
+  "total_seeds_evaluated": 1,
+  "seeds_list": [
+    42
+  ],
+  "robot_count": 6,
+  "baseline_system": "Stop-and-Wait + Nearest-Robot Task Allocation",
+  "proposed_system": "Edge-AI Decentralized Coordination (PIBT + FleetAware + Adaptive + SafetySupervisor)",
+  "primary_sih_target": ">= 20% Task Completion Time Reduction vs Baseline & Zero Collisions",
+  "overall_status": "FAIL",
+  "task_completion_time": {
+    "baseline_mean_sec": 5.62,
+    "proposed_mean_sec": 6.21,
+    "aggregate_reduction_percent": -10.5,
+    "mean_per_seed_reduction_percent": -10.5,
+    "median_reduction_percent": -10.5,
+    "std_reduction_percent": 0.0,
+    "ci_95_percent": 0.0,
+    "min_reduction_percent": -10.5,
+    "max_reduction_percent": -10.5
+  },
+  "safety_audit": {
+    "total_runs": 2,
+    "total_inter_robot_collisions": 0,
+    "runs_with_collisions": 0,
+    "vertex_collisions": 0,
+    "edge_swap_collisions": 0,
+    "continuous_swept_collisions": 0,
+    "verified_headline": "0 inter-robot collisions across all benchmark runs under the validated simulation and safety model."
+  },
+  "communication_audit": {
+    "metric_type": "P2P Wireless Message Load & Bandwidth (Bytes/sec)",
+    "baseline_mean_bytes_per_sec": 19264.1,
+    "proposed_mean_bytes_per_sec": 19564.3,
+    "bandwidth_reduction_percent": -1.56,
+    "measured_label": "P2P Localized Broadcast reduces communication volume by -1.6% vs Centralized Server Link"
+  },
+  "edge_computing_audit": {
+    "mean_planner_latency_ms": 0.3,
+    "p95_planner_latency_ms": 0.94,
+    "mean_memory_mb": 77.2,
+    "peak_memory_mb": 77.2,
+    "cpu_utilization_supported": "Sub-5% single-core on edge CPU"
+  }
+}

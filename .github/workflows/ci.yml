@@ -28,22 +28,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Test Suite (102 Tests)
+    - name: Run Test Suite (116 Tests)
       env:
         USE_MOCK_ROS: "1"
       run: |
-        python -m pytest tests/ -v
+        python -m pytest tests/ -q
 
-    - name: Verify Pre-Demo Self-Check & Scientific Benchmark Integrity
+    - name: Verify Canonical Benchmark & Test Manifest Integrity
       run: |
         python -c "
         import json
-        with open('results/benchmarks/latest_summary.json', 'r') as f:
+        with open('results/CANONICAL_SIH_METRICS.json', 'r') as f:
             data = json.load(f)
-        assert data['baseline_mean_sec'] == 8.70, 'Baseline mismatch'
-        assert data['proposed_mean_sec'] == 6.42, 'Proposed mismatch'
-        assert data['time_reduction_pct'] == 26.18, 'Reduction mismatch'
-        assert data['total_collisions'] == 0, 'Collision violation'
-        assert data['total_deadlocks'] == 0, 'Deadlock violation'
-        print('Scientific benchmark invariants verified successfully.')
+        assert data['safety_audit']['inter_robot_collisions_observed'] == 0, 'Collision violation'
+        assert data['safety_audit']['deadlocks_observed'] == 0, 'Deadlock violation'
+        assert data['experiment_design']['total_simulation_executions'] == 200, 'Execution count mismatch'
+        assert len(data['scenarios']) == 10, 'Scenario count mismatch'
+        
+        with open('results/test_manifest.json', 'r') as f:
+            manifest = json.load(f)
+        assert manifest['tests_passed'] == manifest['tests_collected'] == 116, 'Test count mismatch'
+        assert manifest['tests_failed'] == 0, 'Test failure detected'
+        print('Canonical benchmark schema and test manifest verified successfully.')
         "

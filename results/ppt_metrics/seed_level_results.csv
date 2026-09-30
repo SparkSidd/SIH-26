@@ -1,0 +1,2 @@
+scenario,seed,baseline_completion_time_sec,proposed_completion_time_sec,reduction_percent,baseline_waiting_steps,proposed_waiting_steps,waiting_reduction_percent,baseline_tasks,proposed_tasks,throughput_gain_percent,baseline_bytes_per_sec,proposed_bytes_per_sec,bandwidth_reduction_percent,proposed_collisions,proposed_deadlocks,baseline_deadlocks,p95_planning_latency_ms,peak_ram_mb
+S0_NORMAL,42,5.62,6.21,-10.5,8,8,0.0,6,8,33.33,19264.1,19564.3,-1.56,0,0,0,0.94,77.2
