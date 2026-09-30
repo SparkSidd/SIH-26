@@ -36,6 +36,8 @@ for _cand in [
         break
 
 # ── Ensure Webots Python Controller API is on PYTHONPATH ─────────────────────
+if "WEBOTS_HOME" not in os.environ and os.path.isdir("/usr/local/webots"):
+    os.environ["WEBOTS_HOME"] = "/usr/local/webots"
 webots_home = os.environ.get("WEBOTS_HOME", "/usr/local/webots")
 py_controller = os.path.join(webots_home, "lib", "controller", "python")
 if os.path.isdir(py_controller) and py_controller not in sys.path:
@@ -43,7 +45,7 @@ if os.path.isdir(py_controller) and py_controller not in sys.path:
 
 try:
     from controller import Robot as WebotsRobot
-except ImportError:
+except (ImportError, KeyError, OSError):
     WebotsRobot = None
 
 # ── ROS 2 Imports ────────────────────────────────────────────────────────────
@@ -91,6 +93,8 @@ def _normalize_angle(angle: float) -> float:
 class WebotsAMRNode(Node):
     """Webots AMR Controller wrapping the real SIH FleetCoordinator."""
 
+    _instances: List["WebotsAMRNode"] = []
+
     def __init__(
         self,
         robot_id: str = "R01",
@@ -100,6 +104,7 @@ class WebotsAMRNode(Node):
         policy: str = "proposed",
         shared_coordinator: Optional[FleetCoordinator] = None,
         tasks_dict: Optional[Dict[str, Task]] = None,
+        connect_hardware: Optional[bool] = None,
     ):
         super().__init__(f"amr_{robot_id}")
         self.robot_id = robot_id
@@ -125,6 +130,16 @@ class WebotsAMRNode(Node):
             geometry=RobotGeometry(radius=0.45, max_velocity=1.5),
         )
 
+        import numpy as np
+        from world_model.local_world import LocalWorldModel
+        self.sim_robot.local_world_model = LocalWorldModel(
+            self_id=robot_id,
+            map_width=map_width,
+            map_height=map_height,
+            static_grid=np.zeros((map_width, map_height), dtype=int),
+        )
+        WebotsAMRNode._instances.append(self)
+
         # World tracking
         wx, wy, _ = grid_to_world(initial_position[0], initial_position[1], map_height)
         self._world_x = wx
@@ -142,7 +157,16 @@ class WebotsAMRNode(Node):
         self.right_sensor = None
         self.timestep = 32
 
-        if WebotsRobot is not None:
+        # Auto-detect whether Webots hardware process is active
+        should_connect = connect_hardware
+        if should_connect is None:
+            should_connect = bool(
+                os.environ.get("WEBOTS_CONTROLLER_URL")
+                or os.environ.get("WEBOTS_SERVER")
+                or os.path.isdir("/tmp/webots")
+            )
+
+        if should_connect and WebotsRobot is not None:
             try:
                 # If WEBOTS_ROBOT_NAME is not set, set it to robot_id
                 if not os.environ.get("WEBOTS_ROBOT_NAME"):
@@ -211,14 +235,17 @@ class WebotsAMRNode(Node):
                 vel = float(data.get("velocity", 0.0))
                 head = float(data.get("heading", 0.0))
                 path = [tuple(p) for p in data.get("planned_path", [])]
-                self.sim_robot.local_world_model.update_peer_belief(
-                    peer_id=sender_id,
+                self.sim_robot.local_world_model.update_from_peer_message(
+                    sender_id=sender_id,
                     position=pos,
                     velocity=vel,
                     heading=head,
                     intended_action=data.get("intended_action", "WAIT"),
                     planned_path=path,
                     current_task_id=data.get("current_task_id"),
+                    priority=float(data.get("priority", 1.0)),
+                    timestamp=float(data.get("timestamp", 0.0)),
+                    sequence_number=int(data.get("seq", 0)),
                 )
         except Exception:
             pass
@@ -256,6 +283,9 @@ class WebotsAMRNode(Node):
                     self.sim_robot.set_state(RobotState.IDLE)
                     self.get_logger().info(f"[{self.robot_id}] DELIVERED task={task.id} at {task.dropoff}! Total={self.sim_robot.tasks_completed}")
 
+        # Broadcast state to peers so local world models stay synchronized
+        self._broadcast_belief()
+
         # Build fleet snapshot
         fleet_snapshot = {self.robot_id: self.sim_robot}
         if self.sim_robot.local_world_model:
@@ -286,13 +316,16 @@ class WebotsAMRNode(Node):
             return
 
         # Translate Action to cmd_vel Twist
-        twist = self._action_to_cmd_vel(my_action)
+        self.apply_action(my_action)
+
+    def apply_action(self, action: RobotAction) -> Twist:
+        """Apply an action produced by the coordinator."""
+        twist = self._action_to_cmd_vel(action)
         self._pub_cmd_vel.publish(twist)
         self._on_cmd_vel(twist)
-
-        # In SIL/standalone mode: integrate kinematics to update position
         if self.wb_robot is None:
             self._update_simulated_kinematics(twist)
+        return twist
 
     def _action_to_cmd_vel(self, action: RobotAction) -> Twist:
         """Translate coordinator RobotAction into smooth cmd_vel."""
@@ -361,10 +394,16 @@ class WebotsAMRNode(Node):
             "current_task_id": self.sim_robot.current_task_id,
             "priority": self.sim_robot.dynamic_priority,
             "timestamp": time.monotonic(),
+            "seq": self._step_count,
         }
         msg = String()
         msg.data = json.dumps(payload)
         self._pub_belief.publish(msg)
+
+        # In-process peer belief propagation for simulation harness & testing
+        for peer in list(WebotsAMRNode._instances):
+            if peer is not self:
+                peer._on_peer_belief(msg)
 
 
 def main(args=None):

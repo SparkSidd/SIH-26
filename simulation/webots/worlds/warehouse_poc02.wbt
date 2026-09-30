@@ -1,0 +1,132 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "../protos/WarehouseAMR.proto"
+EXTERNPROTO "../protos/WarehouseShelf.proto"
+
+WorldInfo {
+  info [
+    "SIH26123 - Webots Multi-AMR Warehouse Simulation (POC-02 Four-AMR Intersection)"
+  ]
+  title "SIH26123 Warehouse Arena (POC-02)"
+  basicTimeStep 16
+  FPS 60
+  optimalThreadCount 4
+  coordinateSystem "ENU"
+}
+
+Viewpoint {
+  orientation 0.82 0.38 -0.42 1.88
+  position 12.0 -2.0 16.0
+  fieldOfView 0.85
+}
+
+TexturedBackground {
+}
+
+TexturedBackgroundLight {
+}
+
+DirectionalLight {
+  direction -0.5 0.5 -1
+  intensity 1.2
+  castShadows FALSE
+}
+
+# Concrete Warehouse Arena Floor (25m x 20m)
+Solid {
+  translation 12.0 9.5 -0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.22 0.25 0.28
+        roughness 0.5
+        metalness 0.1
+      }
+      geometry Box {
+        size 25.0 20.0 0.1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 25.0 20.0 0.1
+  }
+}
+
+# Boundary Perimeter Walls
+Solid {
+  translation 12.0 19.6 1.0
+  name "wall_north"
+  children [
+    Shape { appearance PBRAppearance { baseColor 0.3 0.35 0.4 } geometry Box { size 25.4 0.2 2.0 } }
+  ]
+  boundingObject Box { size 25.4 0.2 2.0 }
+}
+
+Solid {
+  translation 12.0 -0.6 1.0
+  name "wall_south"
+  children [
+    Shape { appearance PBRAppearance { baseColor 0.3 0.35 0.4 } geometry Box { size 25.4 0.2 2.0 } }
+  ]
+  boundingObject Box { size 25.4 0.2 2.0 }
+}
+
+Solid {
+  translation -0.6 9.5 1.0
+  name "wall_west"
+  children [
+    Shape { appearance PBRAppearance { baseColor 0.3 0.35 0.4 } geometry Box { size 0.2 20.4 2.0 } }
+  ]
+  boundingObject Box { size 0.2 20.4 2.0 }
+}
+
+Solid {
+  translation 24.6 9.5 1.0
+  name "wall_east"
+  children [
+    Shape { appearance PBRAppearance { baseColor 0.3 0.35 0.4 } geometry Box { size 0.2 20.4 2.0 } }
+  ]
+  boundingObject Box { size 0.2 20.4 2.0 }
+}
+
+# Warehouse Storage Shelving Racks
+WarehouseShelf { translation 4.0 9.5 1.0 name "shelf_w" }
+WarehouseShelf { translation 16.0 9.5 1.0 name "shelf_e" }
+WarehouseShelf { translation 10.0 16.0 1.0 name "shelf_n" }
+WarehouseShelf { translation 10.0 3.0 1.0 name "shelf_s" }
+
+# R01 (Blue - Start: (4, 5) -> World: (4.0, 14.0))
+WarehouseAMR {
+  translation 4.0 14.0 0.12
+  rotation 0 0 1 0.0
+  name "R01"
+  bodyColor 0.15 0.38 0.92
+  controller "<extern>"
+}
+
+# R02 (Cyan - Start: (4, 14) -> World: (4.0, 5.0))
+WarehouseAMR {
+  translation 4.0 5.0 0.12
+  rotation 0 0 1 0.0
+  name "R02"
+  bodyColor 0.05 0.75 0.95
+  controller "<extern>"
+}
+
+# R03 (Green - Start: (16, 5) -> World: (16.0, 14.0))
+WarehouseAMR {
+  translation 16.0 14.0 0.12
+  rotation 0 0 1 3.14159
+  name "R03"
+  bodyColor 0.08 0.75 0.35
+  controller "<extern>"
+}
+
+# R04 (Yellow - Start: (16, 14) -> World: (16.0, 5.0))
+WarehouseAMR {
+  translation 16.0 5.0 0.12
+  rotation 0 0 1 3.14159
+  name "R04"
+  bodyColor 0.95 0.80 0.05
+  controller "<extern>"
+}
