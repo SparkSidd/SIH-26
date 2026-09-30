@@ -1,0 +1,141 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "../protos/WarehouseAMR.proto"
+EXTERNPROTO "../protos/WarehouseShelf.proto"
+
+WorldInfo {
+  info [
+    "SIH26123 - Webots Multi-AMR Warehouse Simulation (POC-01)"
+  ]
+  title "SIH26123 Warehouse Arena (POC-01)"
+  basicTimeStep 16
+  FPS 60
+  optimalThreadCount 4
+  coordinateSystem "ENU"
+}
+
+Viewpoint {
+  orientation 0.82 0.38 -0.42 1.88
+  position 12.0 -2.0 16.0
+  fieldOfView 0.85
+}
+
+TexturedBackground {
+}
+
+TexturedBackgroundLight {
+}
+
+DirectionalLight {
+  direction -0.5 0.5 -1
+  intensity 1.2
+  castShadows FALSE
+}
+
+# Concrete Warehouse Arena Floor (25m x 20m)
+Solid {
+  translation 12.0 9.5 -0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.22 0.25 0.28
+        roughness 0.5
+        metalness 0.1
+      }
+      geometry Box {
+        size 25.0 20.0 0.1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 25.0 20.0 0.1
+  }
+}
+
+# Boundary Perimeter Walls (North, South, East, West)
+Solid {
+  translation 12.0 19.6 1.0
+  name "wall_north"
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.3 0.35 0.4 }
+      geometry Box { size 25.4 0.2 2.0 }
+    }
+  ]
+  boundingObject Box { size 25.4 0.2 2.0 }
+}
+
+Solid {
+  translation 12.0 -0.6 1.0
+  name "wall_south"
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.3 0.35 0.4 }
+      geometry Box { size 25.4 0.2 2.0 }
+    }
+  ]
+  boundingObject Box { size 25.4 0.2 2.0 }
+}
+
+Solid {
+  translation -0.6 9.5 1.0
+  name "wall_west"
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.3 0.35 0.4 }
+      geometry Box { size 0.2 20.4 2.0 }
+    }
+  ]
+  boundingObject Box { size 0.2 20.4 2.0 }
+}
+
+Solid {
+  translation 24.6 9.5 1.0
+  name "wall_east"
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.3 0.35 0.4 }
+      geometry Box { size 0.2 20.4 2.0 }
+    }
+  ]
+  boundingObject Box { size 0.2 20.4 2.0 }
+}
+
+# Warehouse Storage Shelving Racks (Defining Corridors)
+WarehouseShelf {
+  translation 6.0 15.0 1.0
+  name "shelf_01"
+}
+
+WarehouseShelf {
+  translation 18.0 15.0 1.0
+  name "shelf_02"
+}
+
+WarehouseShelf {
+  translation 6.0 4.0 1.0
+  name "shelf_03"
+}
+
+WarehouseShelf {
+  translation 18.0 4.0 1.0
+  name "shelf_04"
+}
+
+# AMR 01 (Blue - Grid pos: 6, 9 -> World: 6.0, 10.0, heading East)
+WarehouseAMR {
+  translation 6.0 10.0 0.12
+  rotation 0 0 1 0.0
+  name "R01"
+  bodyColor 0.15 0.38 0.92
+  controller "<extern>"
+}
+
+# AMR 02 (Cyan - Grid pos: 18, 9 -> World: 18.0, 10.0, heading West)
+WarehouseAMR {
+  translation 18.0 10.0 0.12
+  rotation 0 0 1 3.14159
+  name "R02"
+  bodyColor 0.05 0.75 0.95
+  controller "<extern>"
+}

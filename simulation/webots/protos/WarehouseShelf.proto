@@ -1,0 +1,61 @@
+#VRML_SIM R2025a utf8
+# license: Apache License 2.0
+# tags: static
+# Industrial Warehouse Shelf Unit for SIH26123 Smart Warehouse Simulation.
+# Bounding object is a simple Box primitive for maximum ODE collision performance.
+
+PROTO WarehouseShelf [
+  field SFVec3f    translation 0 0 1.0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "WarehouseShelf"
+  field SFVec3f    size        0.8 0.8 2.0
+  field SFColor    rackColor   0.15 0.35 0.65
+  field SFColor    shelfColor  0.85 0.50 0.15
+]
+{
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    model "Warehouse_Industrial_Rack"
+
+    children [
+      # Upright structural frame (Visual)
+      Pose {
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS rackColor
+              roughness 0.4
+              metalness 0.6
+            }
+            geometry Box {
+              size IS size
+            }
+          }
+        ]
+      }
+      # Pallet Cargo Visual Layer (Level 1)
+      Pose {
+        translation 0 0 0.2
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS shelfColor
+              roughness 0.7
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.7 0.7 0.3
+            }
+          }
+        ]
+      }
+    ]
+
+    # Simplified Box collision object (Crucial for high Webots simulation FPS)
+    boundingObject Box {
+      size IS size
+    }
+  }
+}

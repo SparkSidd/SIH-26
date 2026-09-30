@@ -1,0 +1,246 @@
+#VRML_SIM R2025a utf8
+# license: Apache License 2.0
+# tags: static
+# Autonomous Mobile Robot (AMR) designed for SIH26123 Smart Warehouse Simulation.
+# Bounding radius: 0.45 m (matching RobotGeometry authoritative physical footprint).
+# Differential drive with 2 active drive wheels and 2 low-friction spherical caster bearings.
+
+PROTO WarehouseAMR [
+  field SFVec3f    translation         0 0 0.12
+  field SFRotation rotation            0 0 1 0
+  field SFString   name                "WarehouseAMR"
+  field SFColor    bodyColor           0.15 0.38 0.92
+  field SFString   controller          "<extern>"
+  field MFString   controllerArgs      []
+  field SFString   customData          ""
+  field SFFloat    wheelDistance       0.60
+  field SFFloat    wheelRadius         0.10
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    model "SIH26123_Industrial_AMR"
+    description "Autonomous Mobile Robot with 0.45m bounding radius differential drive"
+
+    children [
+      # Main Chassis Visual Geometry
+      Pose {
+        translation 0 0 0.08
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS bodyColor
+              roughness 0.3
+              metalness 0.7
+            }
+            geometry Cylinder {
+              height 0.20
+              radius 0.45
+            }
+          }
+        ]
+      }
+
+      # Top Cargo Turntable / Cargo Bed
+      Pose {
+        translation 0 0 0.19
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.12 0.14 0.18
+              roughness 0.8
+              metalness 0.2
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.38
+            }
+          }
+        ]
+      }
+
+      # Status Beacon LED Strip (Cyan / Orange indicator ring)
+      Pose {
+        translation 0 0 0.205
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.0 0.8 1.0
+              emissiveColor 0.0 0.6 0.9
+              roughness 0.1
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.30
+            }
+          }
+        ]
+      }
+
+      # Left Drive Wheel
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0 1 0
+          anchor 0 0.30 0
+        }
+        device [
+          RotationalMotor {
+            name "left wheel motor"
+            maxVelocity 15.0
+            maxTorque 50.0
+          }
+          PositionSensor {
+            name "left wheel sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0 0.30 0
+          rotation 1 0 0 1.5708
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.1 0.1 0.1
+                roughness 0.9
+              }
+              geometry Cylinder {
+                height 0.04
+                radius 0.10
+              }
+            }
+          ]
+          boundingObject Cylinder {
+            height 0.04
+            radius 0.10
+          }
+          physics Physics {
+            density -1
+            mass 2.5
+          }
+        }
+      }
+
+      # Right Drive Wheel
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0 1 0
+          anchor 0 -0.30 0
+        }
+        device [
+          RotationalMotor {
+            name "right wheel motor"
+            maxVelocity 15.0
+            maxTorque 50.0
+          }
+          PositionSensor {
+            name "right wheel sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0 -0.30 0
+          rotation 1 0 0 1.5708
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.1 0.1 0.1
+                roughness 0.9
+              }
+              geometry Cylinder {
+                height 0.04
+                radius 0.10
+              }
+            }
+          ]
+          boundingObject Cylinder {
+            height 0.04
+            radius 0.10
+          }
+          physics Physics {
+            density -1
+            mass 2.5
+          }
+        }
+      }
+
+      # Front Low-Friction Passive Caster
+      Solid {
+        translation 0.32 0 -0.06
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.3 0.3 0.3
+              metalness 0.8
+            }
+            geometry Sphere {
+              radius 0.04
+            }
+          }
+        ]
+        boundingObject Sphere {
+          radius 0.04
+        }
+        physics Physics {
+          density -1
+          mass 0.8
+        }
+      }
+
+      # Rear Low-Friction Passive Caster
+      Solid {
+        translation -0.32 0 -0.06
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.3 0.3 0.3
+              metalness 0.8
+            }
+            geometry Sphere {
+              radius 0.04
+            }
+          }
+        ]
+        boundingObject Sphere {
+          radius 0.04
+        }
+        physics Physics {
+          density -1
+          mass 0.8
+        }
+      }
+
+      # Front Lidar / Proximity Sensor
+      DistanceSensor {
+        translation 0.44 0 0.10
+        rotation 0 0 1 0
+        name "front_distance_sensor"
+        lookupTable [
+          0 0 0
+          2 2000 0
+        ]
+        type "laser"
+      }
+    ]
+
+    # Authoritative cylindrical bounding object for physics collision detection
+    boundingObject Pose {
+      translation 0 0 0.08
+      children [
+        Cylinder {
+          height 0.20
+          radius 0.45
+        }
+      ]
+    }
+
+    # AMR Physical Mass (40 kg payload chassis)
+    physics Physics {
+      density -1
+      mass 40.0
+      centerOfMass [0 0 0.05]
+    }
+  }
+}
