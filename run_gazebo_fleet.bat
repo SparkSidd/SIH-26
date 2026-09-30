@@ -9,7 +9,7 @@ set SCENARIO=%1
 if "%SCENARIO%"=="" set SCENARIO=LIVE_DEMO
 
 echo ======================================================================
-echo   SIH 2026 (SIH26123) - GAZEBO ROBOTICS SIMULATION & VALIDATION
+echo   SIH 2026 (SIH26123) - GAZEBO ROBOTICS SIMULATION ^& VALIDATION
 echo ======================================================================
 echo   Scenario Selected: %SCENARIO%
 echo   Algorithms:        Hungarian Allocation + PIBT + Space-Time A*

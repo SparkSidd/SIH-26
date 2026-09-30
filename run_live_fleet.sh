@@ -34,6 +34,8 @@ fi
 
 export DISPLAY="${DISPLAY:-:0}"
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+export QT_QPA_PLATFORM="xcb"
+export QSG_RENDER_LOOP="basic"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/mnt/wslg/runtime-dir}"
 export PULSE_SERVER="${PULSE_SERVER:-unix:/mnt/wslg/PulseServer}"
 export GALLIUM_DRIVER=d3d12
@@ -61,6 +63,27 @@ if command -v nvidia-smi &>/dev/null; then
 else
     export MESA_D3D12_DEFAULT_ADAPTER_NAME="Intel"
 fi
+
+# Clean up any stale instances before starting fresh
+pkill -f "gz sim" 2>/dev/null || true
+pkill -f "parameter_bridge" 2>/dev/null || true
+pkill -f "amr_node" 2>/dev/null || true
+pkill -f "live_demo_task_generator" 2>/dev/null || true
+pkill -f "fleet_safety_hud" 2>/dev/null || true
+sleep 1
+
+# Auto-activate & raise Gazebo GUI window onto Windows 11 foreground
+(
+    for i in {1..25}; do
+        sleep 1
+        WID=$(xdotool search --name "Gazebo Sim" 2>/dev/null | head -n 1)
+        if [ -n "$WID" ]; then
+            xdotool windowactivate "$WID" 2>/dev/null || true
+            xdotool windowraise "$WID" 2>/dev/null || true
+            break
+        fi
+    done
+) &
 
 echo "======================================================================"
 echo "  SIH26123 — DECENTRALIZED AMR FLEET COORDINATION (GAZEBO/ROS 2)"

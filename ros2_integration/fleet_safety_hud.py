@@ -39,6 +39,11 @@ except ImportError:
     from ros2_integration.mock_ros.rclpy_stub import Node
     from ros2_integration.mock_ros.nav_msgs import Odometry
     from ros2_integration.mock_ros.std_msgs import String
+    class Clock:
+        class ClockMsg:
+            sec: int = 0
+            nanosec: int = 0
+        clock = ClockMsg()
     _REAL_ROS = False
 
 import sys
@@ -75,10 +80,35 @@ class FleetSafetyHUD(Node):
         expected_robots: int = 6,
     ):
         super().__init__("fleet_safety_hud")
+        if _REAL_ROS:
+            self.declare_parameter("scenario", scenario_name)
+            self.declare_parameter("robots", expected_robots)
+            self.declare_parameter("recording", recording_mode)
+            try:
+                scenario_name = self.get_parameter("scenario").get_parameter_value().string_value or scenario_name
+                expected_robots = self.get_parameter("robots").get_parameter_value().integer_value or expected_robots
+                recording_mode = self.get_parameter("recording").get_parameter_value().bool_value
+            except Exception:
+                pass
+
         self.scenario_name = scenario_name
         self.recording_mode = recording_mode
         self.refresh_rate_hz = refresh_rate_hz
         self.expected_robots = expected_robots
+
+        # Compute initial spawn world coordinates for each robot.
+        # In Gazebo, diff_drive odometry is published relative to the spawn point (starts at 0,0).
+        # We must add each robot's initial world position to obtain its true world coordinates.
+        from ros2_integration.live_demo_task_generator import SCENARIO_ROBOT_STARTS
+        starts = SCENARIO_ROBOT_STARTS.get(self.scenario_name.upper(), SCENARIO_ROBOT_STARTS.get("LIVE_DEMO", []))
+        self.spawn_world_offsets: Dict[str, Tuple[float, float]] = {}
+        for i, rid in enumerate(ROBOT_IDS[:self.expected_robots]):
+            if i < len(starts):
+                scol, srow = starts[i]
+                swx, swy, _ = grid_to_world(scol, srow, GRID_ROWS)
+                self.spawn_world_offsets[rid] = (swx, swy)
+            else:
+                self.spawn_world_offsets[rid] = (0.0, 0.0)
 
         # Telemetry State
         self.sim_time: float = 0.0
@@ -142,12 +172,18 @@ class FleetSafetyHUD(Node):
             self.start_sim_time = t
 
     def _on_odom(self, msg: Odometry, robot_id: str) -> None:
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
+        raw_x = msg.pose.pose.position.x
+        raw_y = msg.pose.pose.position.y
         q = msg.pose.pose.orientation
         siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
         cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
         yaw = math.atan2(siny_cosp, cosy_cosp)
+
+        # Gazebo DiffDrive odom starts at (0,0) relative to spawn point.
+        # Add the robot's initial spawn world coordinates to get true world pose.
+        init_wx, init_wy = self.spawn_world_offsets.get(robot_id, (0.0, 0.0))
+        x = init_wx + raw_x
+        y = init_wy + raw_y
 
         self.robot_poses[robot_id] = (x, y, yaw)
         col, row = world_to_grid(x, y, GRID_ROWS)
@@ -168,6 +204,9 @@ class FleetSafetyHUD(Node):
                 task_id = data.get("current_task_id") or "NONE"
                 self.robot_states[rid] = action
                 self.robot_tasks[rid] = task_id
+                pos = data.get("position")
+                if pos and isinstance(pos, (list, tuple)) and len(pos) >= 2:
+                    self.robot_cells[rid] = (int(pos[0]), int(pos[1]))
                 if "REPLAN" in action:
                     self.replans_total += 1
         except Exception:
