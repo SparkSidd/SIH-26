@@ -79,7 +79,7 @@
       "p95_ms": 1.23,
       "p99_ms": 63.48,
       "max_ms": 884.67,
-      "notes": "Large tail outliers (P99 63.48 ms, Max 884.67 ms) are induced by OS thread scheduling, Python GIL, and GC contention under 8 parallel simulation workers on Windows."
+      "notes": "Large tail outliers (P99 63.48 ms, Max 884.67 ms) are induced by OS thread scheduling, Python GIL, and GC contention under 8 parallel simulation workers on Windows. The arithmetic mean (2.17 ms) exceeds the P95 (1.23 ms) because the distribution is heavily right-skewed: median is 0.10 ms, and a small number of extreme outliers (GC pauses, GIL contention) pull the mean above the 95th percentile. Mean and P95 are computed from the same sample population of >35,000 decision-loop timing samples."
     },
     "isolated_planner_latency": {
       "description": "Dedicated single-thread profile measuring pure Space-Time A* + PIBT planning without thread contention",
@@ -91,6 +91,21 @@
       "max_ms": 5.25,
       "notes": "Sequential execution on dedicated CPU core reflects real AMR onboard edge computer behavior without benchmark multiprocessing contention."
     },
+    "latency_profiles": {
+      "isolated_planner": {
+        "mean_ms": 0.24,
+        "p95_ms": 0.84,
+        "max_ms": 5.25,
+        "sample_count": 500
+      },
+      "benchmark_decision_loop": {
+        "mean_ms": 2.17,
+        "p95_ms": 1.23,
+        "p99_ms": 63.48,
+        "max_ms": 884.67,
+        "sample_count": 35000
+      }
+    },
     "mean_planner_latency_ms": 2.17,
     "median_planner_latency_ms": 0.1,
     "p95_planner_latency_ms": 1.23,
@@ -98,8 +113,9 @@
     "max_planner_latency_ms": 884.67,
     "sample_count": 35000,
     "measurement_scope": "Benchmark decision loop (mean 2.17 ms, P95 1.23 ms, max 884.67 ms under worker contention) vs isolated single-thread planner (mean 0.24 ms, P95 0.84 ms, max 5.25 ms).",
-    "statement": "Benchmark decision-loop timing showed 2.17 ms mean and 1.23 ms P95 (with tail outliers up to 884.67 ms under concurrent 8-worker benchmark load); isolated edge planner execution profile is 0.24 ms mean, 0.84 ms P95, and 5.25 ms max."
+    "statement": "Benchmark decision-loop timing showed 2.17 ms mean and 1.23 ms P95 (with tail outliers up to 884.67 ms under concurrent 8-worker benchmark load); isolated edge planner execution profile is 0.24 ms mean, 0.84 ms P95, and 5.25 ms max. Mean exceeds P95 in the benchmark loop due to heavy right-tail skew from OS scheduling and GC contention."
   },
+
   "memory_taxonomy": {
     "core_planner_memory_mb": 54.0,
     "total_digital_twin_process_memory_mb": 238.7,

@@ -33,7 +33,7 @@
 
 ### Q5: Why Not Conflict-Based Search (CBS)?
 **Answer**:
-> *"Conflict-Based Search (CBS) is optimal or bounded-suboptimal, but it is NP-hard. In dense warehouse layouts with choke points and symmetric corridors, the CBS conflict tree grows exponentially, frequently triggering multi-second solving timeouts or catastrophic thread exhaustion. In an operational warehouse, an AMR cannot stop for 3 seconds to await a CBS tree resolution. Our combination of Hungarian allocation + PIBT + Space-Time A* yields predictable, deterministic sub-millisecond execution ($0.27\text{ ms}$ mean) with zero observed collisions across 200 benchmark runs."*
+> *"Conflict-Based Search (CBS) is optimal or bounded-suboptimal, but it is NP-hard. In dense warehouse layouts with choke points and symmetric corridors, the CBS conflict tree grows exponentially, frequently triggering multi-second solving timeouts or catastrophic thread exhaustion. In an operational warehouse, an AMR cannot stop for 3 seconds to await a CBS tree resolution. Our combination of Hungarian allocation + PIBT + Space-Time A* yields predictable, deterministic low-latency execution (isolated planner mean **$0.24\text{ ms}$**, P95 $0.84\text{ ms}$; benchmark decision-loop mean $2.17\text{ ms}$ under concurrent simulation load) with 0 proposed inter-robot collisions across all 100 proposed benchmark runs."*
 
 ---
 
@@ -75,7 +75,7 @@
 > 1. Vertex conflicts (two AMRs targeting the same cell at time $t$).
 > 2. Edge-swap conflicts (two AMRs crossing the same aisle in opposing directions between $t$ and $t+1$).
 > 3. Blocked-cell and boundary violations.
-> If any proposed action violates an invariant, the Safety Supervisor vetoes the motor command and enforces a safe in-place hold. Across all 200 benchmark executions, 0 inter-robot collisions occurred."*
+> If any proposed action violates an invariant, the Safety Supervisor vetoes the motor command and enforces a safe in-place hold. Across all 100 proposed benchmark executions, **0 inter-robot collisions** were observed in the proposed fleet. The paired baseline produced **355 collision events** across its 100 executions (encountering dynamic obstacles without rerouting)."*
 
 ---
 
@@ -85,13 +85,16 @@
 > - Baseline Mean Time: **8.80 s** (Stop-and-Wait + Nearest Allocation)
 > - Proposed Mean Time: **6.61 s** (Fleet-Aware + PIBT + Space-Time A*)
 > - Aggregate Time Reduction: **24.89%** (exceeds SIH $\ge 20\%$ target)
-> - Inter-Robot Collisions: **0 in proposed fleet** across all 100 runs (baseline had 355 collisions on dynamic obstacles without rerouting)
-> - Inter-Robot Deadlocks: **0 in proposed fleet** across all 100 runs
-> - Mean Planning Latency: **2.17 ms** (P95: **1.23 ms**, Max: **3.96 ms** across >35,000 real decision loop samples)
+> - Inter-Robot Collisions: **0 in proposed fleet** across all 100 proposed runs (baseline had 355 collisions on dynamic obstacles without rerouting)
+> - Inter-Robot Deadlocks: **0 in proposed fleet** across all 100 proposed runs
+> - Planning Latency:
+>   - *Isolated single-thread planner*: Mean **0.24 ms**, P95 **0.84 ms**, Max **5.25 ms** (500 samples; edge-representative)
+>   - *Benchmark decision-loop* (8-worker concurrent load): Mean **2.17 ms**, P95 **1.23 ms**, Max **884.67 ms** (>35,000 samples; mean exceeds P95 due to heavy right-tail skew from OS/GIL contention)
 > - Core Planner Memory: **54.0 MB** (Total Digital Twin process: **238.7 MB** historical profile)
 > - Test Suite: **121 / 121 tests passing** (100% pass rate).
 > 
 > These values are generated from the reproducible benchmark command and backed by raw execution logs."*
+
 
 ---
 

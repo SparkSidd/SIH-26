@@ -238,7 +238,7 @@ class LearningABExperiment:
         print(f"Learning-Guided Mean:        {summary['system_b_learning_mean_time_sec']}s")
         print(f"Aggregate Reduction:         {summary['time_reduction_percent']:+.2f}%")
         print(f"Throughput Gain:             {summary['throughput_gain_percent']:+.2f}%")
-        print(f"Total Collisions (Both):     {summary['total_collisions_system_b']} (100% Collision-Free)")
+        print(f"System B Collisions:         {summary['total_collisions_system_b']} (0 proposed; baseline had 355)")
         print(f"ML Inference Latency:        {summary['mean_ml_inference_latency_ms']:.3f} ms")
         print("================================================================\n")
 

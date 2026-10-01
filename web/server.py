@@ -175,7 +175,7 @@ class ControlCenterManager:
         points = {
             1: "\"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally in sub-5 ms with zero collisions and zero central server bottleneck.\"",
             2: "\"When high-demand congestion occurs, loaded AMRs carrying heavy payloads maintain right-of-way via dynamic priority, while unloaded AMRs yield without stalling the aisle.\"",
-            3: "\"Watch AMR-01: It immediately detects the unreachable corridor, updates its Local World Model, and computes a multi-agent Space-Time A* detour in under 1.25 ms.\"",
+            3: "\"Watch AMR-01: It immediately detects the unreachable corridor, updates its Local World Model, and computes a multi-agent Space-Time A* detour in under 5 ms (isolated planner mean 0.24 ms; benchmark loop mean 2.17 ms under concurrent load).\"",
             4: "\"When AMR-02 halts, observe how the fleet does not freeze. The decentralized supervisor reclaims the orphaned task and transfers it to AMR-04 with zero human intervention.\"",
             5: "\"Every metric shown is empirically verified across 100 paired experiments (200 total executions): zero collisions in proposed runs (355 in baseline comparator), 24.89% aggregate task time reduction, and 121/121 regression tests passing.\"",
         }
@@ -529,7 +529,7 @@ async def get_self_check():
     checks.append({"name": "Space-Time Reservation Grid", "status": "PASS", "detail": "Space-time (x, y, t) conflict avoidance active"})
     
     # 6. Decentralized planner active
-    checks.append({"name": "Decentralized PIBT Multi-Agent Planner", "status": "PASS", "detail": "Sub-millisecond mean edge decision latency"})
+    checks.append({"name": "Decentralized PIBT Multi-Agent Planner", "status": "PASS", "detail": "Isolated planner mean 0.24 ms; benchmark decision-loop mean 2.17 ms"})
     
     # 7. Task Allocation active
     checks.append({"name": "Hungarian Bipartite Allocator", "status": "PASS", "detail": "Polynomial-time Kuhn-Munkres matching online"})

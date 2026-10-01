@@ -1,3 +1,10 @@
+> [!WARNING]
+> **HISTORICAL CHECKPOINT — PRE-GAZEBO METRICS (SUPERSEDED)**
+> This document was frozen before the canonical 100-paired-experiment benchmark was run.
+> Latency figures here (e.g. 0.27 ms mean, 0.08 ms baseline) and collision figures (0 across "200 runs") are **stale and superseded**.
+> **Canonical authoritative values** are in [`results/CANONICAL_SIH_METRICS.json`](../results/CANONICAL_SIH_METRICS.json) and [`docs/RESULTS.md`](RESULTS.md).
+> Do **NOT** cite numbers from this file in presentations or reports.
+
 # Final Pre-Gazebo Optimization Report (SIH26123)
 
 **Project**: Smart India Hackathon 2026 — PS SIH26123  

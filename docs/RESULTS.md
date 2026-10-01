@@ -20,11 +20,13 @@ Across a validated multi-scenario benchmark comprising **100 paired experiments*
   - Minimum Scenario Reduction ($S_8$): **18.52%**
 - **SIH Performance Target Evaluation ($\ge 20\%$)**:
   - **Overall Status**: **PASS (24.89% Aggregate Reduction Exceeds SIH Goal)**.
-- **Planner Latency Taxonomy (Single-Core Edge Profile)**:
-  - Mean Planner Latency: **2.17 ms**
-  - P95 Planner Latency: **1.23 ms**
-  - Maximum Planner Latency: **3.96 ms**
-  - *Measurement Scope*: Algorithmic decision loop (PIBT step + Space-Time A* reservation query) running on a single CPU thread (<5% core load), measured across >35,000 real decision samples.
+- **Planner Latency Taxonomy**:
+  - *Isolated Single-Thread Profile* (sequential, no GIL/OS contention):
+    - Mean: **0.24 ms** | P95: **0.84 ms** | Max: **5.25 ms** (500 samples)
+  - *Benchmark Decision-Loop* (100 concurrent simulations, 8-worker thread pool):
+    - Mean: **2.17 ms** | P95: **1.23 ms** | P99: **63.48 ms** | Max: **884.67 ms** (>35,000 samples)
+    - *Note*: Mean (2.17 ms) exceeds P95 (1.23 ms) because the distribution is heavily right-skewed; the median is 0.10 ms, and extreme outliers from OS/GIL/GC scheduling under 8 concurrent workers pull the arithmetic mean above the 95th percentile. Both figures are from the same sample population.
+  - *Canonical benchmark scope*: The benchmark decision-loop figures reflect real on-machine timing; isolated figures reflect edge-deployment-representative single-thread behavior.
 - **Process Memory Taxonomy (Historical Profile)**:
   - Core Planner & Coordination Runtime: **54.0 MB** (measured isolated memory footprint)
   - Complete Digital Twin Process: **238.7 MB** (FastAPI backend + WebSocket buffers + in-memory state tracking)
@@ -103,7 +105,7 @@ Evaluated under increasing AMR density on the $30 \times 20$ warehouse topology:
 
 | Fleet Size (AMRs) | Mean Planning Latency (ms) | P95 Planning Latency (ms) | Inter-Robot Collisions | Deadlock Rate | Memory Footprint (MB) |
 |---|---|---|---|---|---|
-| **6 AMRs (Canonical)** | 2.17 ms | 1.23 ms | 0 | 0% | 54.0 MB |
+| **6 AMRs (Canonical)** | 2.17 ms *(benchmark loop; isolated 0.24 ms)* | 1.23 ms *(benchmark loop)* | 0 | 0% | 54.0 MB |
 | **10 AMRs** | 2.85 ms | 2.10 ms | 0 | 0% | 57.2 MB |
 | **20 AMRs** | 4.15 ms | 4.80 ms | 0 | 0% | 66.8 MB |
 | **40 AMRs** | 7.80 ms | 12.40 ms | 0 | 0% | 88.5 MB |

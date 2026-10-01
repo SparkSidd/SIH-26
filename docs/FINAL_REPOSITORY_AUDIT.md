@@ -95,7 +95,7 @@ Every quantitative metric, architectural claim, API endpoint, and documentation 
 
 1. **Empirical vs. Formal Proof**:
    - We do *not* claim a formal mathematical theorem proof of collision freedom.
-   - We claim: **0 inter-robot collisions observed across all 200 benchmark executions** enforced at runtime by the deterministic `SafetySupervisor`.
+   - We claim: **0 inter-robot collisions observed across 100 proposed benchmark executions**; the paired baseline produced **355 collision events** across its 100 paired executions. Enforced at runtime by the deterministic `SafetySupervisor`.
 2. **Space-Time vs. "4D" Terminology**:
    - The planning state space is discrete $(x, y, t)$ with temporal reservations. We strictly use "Space-Time A*".
 3. **Bandwidth Savings**:

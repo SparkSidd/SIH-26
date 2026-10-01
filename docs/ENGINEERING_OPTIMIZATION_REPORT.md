@@ -47,11 +47,12 @@ The system coordinates a fleet of 6 decentralized AMRs navigating complex wareho
 7. **Plan vs. Execution Telemetry**:
    - Built full plan-vs-execution telemetry (`metrics/metrics.py`) separating discrete planned paths ($18.4$ cells planned, $6.12\text{ s}$ makespan) from executed dynamics ($19.8$ cells executed, $6.42\text{ s}$ makespan, $92.9\%$ path efficiency).
 
-8. **Strict Sub-Millisecond Planning Latency**:
-   - Mean planning latency: **$0.27\,\text{ms}$** ($1.25\,\text{ms}$ P95).
+8. **Edge Planning Latency (Dual-Profile Taxonomy)**:
+   - *Isolated single-thread profile* (edge-representative, no contention): Mean **$0.24\,\text{ms}$**, P95 **$0.84\,\text{ms}$**, Max **$5.25\,\text{ms}$** (500 samples).
+   - *Benchmark decision-loop* (8 concurrent workers, OS/GIL contention): Mean **$2.17\,\text{ms}$**, P95 **$1.23\,\text{ms}$**, P99 **$63.48\,\text{ms}$**, Max **$884.67\,\text{ms}$** (>35,000 samples). Mean exceeds P95 due to heavy right-tail skew.
    - Core planner memory footprint: **$54.0\,\text{MB}$** RAM.
    - Complete Digital Twin process: **$238.7\,\text{MB}$** peak RAM.
-   - Single-core CPU load: **$< 5\%$**, fully validating edge deployment on low-power ARM microprocessors.
+   - Single-core CPU load: **$< 5\%$**, validating edge deployment on low-power ARM microprocessors.
 
 ---
 

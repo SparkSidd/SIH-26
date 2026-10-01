@@ -626,7 +626,7 @@
                 <h1 class="hero-title">Decentralized AMR Fleet Coordination</h1>
                 <div class="hero-subtitle">A Safety-First, Edge-Oriented Multi-Robot Coordination System for Smart Warehouses</div>
                 <p class="hero-desc">
-                    Coordinates autonomous mobile robots using bipartite Hungarian task allocation, local peer-to-peer conflict negotiation (PIBT), Space-Time A* reservations, deterministic safety supervision, and adaptive deadlock recovery. Zero single-points-of-failure; sub-millisecond edge decision latency.
+                    Coordinates autonomous mobile robots using bipartite Hungarian task allocation, local peer-to-peer conflict negotiation (PIBT), Space-Time A* reservations, deterministic safety supervision, and adaptive deadlock recovery. Zero single-points-of-failure; low-latency edge planning with isolated and benchmark-loop timing reported separately.
                 </p>
                 <div class="hero-actions">
                     <button class="btn-mode primary" onclick="switchMainView('digital_twin')"><span>🎮</span> Launch Interactive Digital Twin</button>
@@ -1268,7 +1268,7 @@
                                 Married with P2P gossip mesh, local world models, dead-reckoning hold under packet loss, and deterministic safety supervisor veto gate.
                             </td>
                             <td style="color:var(--accent-emerald); font-weight:700;">
-                                0 collisions across 200 runs; sub-0.3ms edge execution.
+                                0 proposed collisions across 100 proposed benchmark executions. Isolated planner mean 0.24 ms.
                             </td>
                         </tr>
                         <tr>
@@ -1379,7 +1379,7 @@
                 <span class="status-pill pass">VERIFIED</span>
             </div>
             <div class="evidence-item" onclick="openProvenanceModal('collisions')">
-                <div class="evidence-item-left"><span class="evidence-check">✓</span> <span>0 Collisions across 200 Runs</span></div>
+                <div class="evidence-item-left"><span class="evidence-check">✓</span> <span>0 Proposed Collisions across 100 Proposed Runs</span></div>
                 <span class="status-pill pass">VERIFIED</span>
             </div>
             <div class="evidence-item" onclick="openProvenanceModal('deadlocks')">
@@ -1429,7 +1429,7 @@
             <div class="judge-card">
                 <div class="judge-card-label">FLEET COLLISIONS</div>
                 <div id="judgeCollisions" class="judge-card-metric" style="color:var(--accent-emerald);">0</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Zero Inter-Robot Collisions Verified across 200 Benchmark Runs (100% Collision-Free)</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">0 Proposed Collisions / 100 Proposed Runs — 355 Baseline Collision Events / 100 Baseline Runs</div>
             </div>
             <div class="judge-card">
                 <div class="judge-card-label">AGGREGATE TASK TIME REDUCTION</div>
@@ -1448,8 +1448,8 @@
             </div>
             <div class="judge-card">
                 <div class="judge-card-label">EDGE PLANNING LATENCY</div>
-                <div id="judgeLatency" class="judge-card-metric">0.27 ms</div>
-                <div style="color:var(--text-secondary); font-size:0.8rem;">Sub-Millisecond Mean Latency (P95: 1.25 ms) on Edge Hardware</div>
+                <div id="judgeLatency" class="judge-card-metric">0.24 ms</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem;">Isolated Planner: 0.24 ms mean / 0.84 ms P95 | Benchmark Loop: 2.17 ms mean / 1.23 ms P95</div>
             </div>
             <div class="judge-card">
                 <div class="judge-card-label">EDGE MEMORY PROFILE</div>
