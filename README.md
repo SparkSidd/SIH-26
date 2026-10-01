@@ -4,9 +4,9 @@
 
 [![SIH 2026](https://img.shields.io/badge/SIH%202026-Problem%20SIH26123-blue.svg?style=for-the-badge&logo=target)](https://sih.gov.in)
 [![Organization](https://img.shields.io/badge/BEL-Bharat%20Electronics%20Limited-orange.svg?style=for-the-badge)](https://bel-india.in)
-[![Tests](https://img.shields.io/badge/Tests-116%2F116%20PASS%20(100%25)-emerald.svg?style=for-the-badge&logo=checkmarx)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-121%2F121%20PASS%20(100%25)-emerald.svg?style=for-the-badge&logo=checkmarx)](results/test_manifest.json)
 [![Safety Invariants](https://img.shields.io/badge/Collisions-0%20(VERIFIED)-brightgreen.svg?style=for-the-badge&logo=shield)](results/CANONICAL_SIH_METRICS.json)
-[![Time Reduction](https://img.shields.io/badge/Task%20Time%20Cut-%2B26.18%25-cyan.svg?style=for-the-badge&logo=speedtest)](results/CANONICAL_SIH_METRICS.json)
+[![Time Reduction](https://img.shields.io/badge/Task%20Time%20Cut-%2B24.89%25-cyan.svg?style=for-the-badge&logo=speedtest)](results/CANONICAL_SIH_METRICS.json)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg?style=for-the-badge)](LICENSE)
 
 **A safety-first, edge-oriented multi-robot coordination system for industrial smart warehouses.**  
@@ -26,12 +26,14 @@ In high-throughput smart warehouses, central dispatchers suffer from catastrophi
 
 ### 🎯 Key Verified Outcomes (Canonical Benchmark)
 
-* **+26.18% Aggregate Task Time Reduction**: Baseline mean $8.70\text{ s}$ reduced to $6.42\text{ s}$ across **100 paired experiments** (**200 total system executions**: $10\text{ scenarios} \times 10\text{ paired seeds} \times 2\text{ systems}$).
-* **0 Inter-Robot Collisions Observed**: Zero vertex overlaps, zero edge swaps, and zero blocked-cell violations observed across all 200 benchmark executions under deterministic runtime safety supervision.
+*Canonical benchmark generated from 100 paired experiments / 200 total executions.* Traceable via: [Raw Runs (`results/canonical/raw_runs.jsonl`)](results/canonical/raw_runs.jsonl) • [Benchmark Manifest (`results/canonical/benchmark_manifest.json`)](results/canonical/benchmark_manifest.json) • [Canonical JSON (`results/CANONICAL_SIH_METRICS.json`)](results/CANONICAL_SIH_METRICS.json) • [Test Manifest (`results/test_manifest.json`)](results/test_manifest.json).
+
+* **+24.89% Aggregate Task Time Reduction**: Baseline mean $8.80\text{ s}$ reduced to $6.61\text{ s}$ across **100 paired experiments** (**200 total system executions**: $10\text{ scenarios} \times 10\text{ paired seeds} \times 2\text{ systems}$).
+* **0 Inter-Robot Collisions Observed**: Zero vertex overlaps, zero edge swaps, and zero blocked-cell violations observed across all 100 proposed runs under deterministic runtime safety supervision. Baseline experienced 355 collisions when encountering dynamic obstacles without rerouting.
 * **0 Deadlocks in Validated Scenarios**: Tarjan-based Wait-For Graph (WFG) cycle detection proactively detours lowest-priority AMRs.
-* **Predictable Edge Execution Latency**: Mean planning latency of **$0.27\text{ ms}$** (P95: **$1.25\text{ ms}$**) on low-power single-core CPU profiles ($<5\%$ core load).
-* **100% Automated Test Suite Pass Rate**: **116 / 116 unit, integration, and safety tests passing**.
-* **Self-Healing Fault Resilience**: Automatic peer task reclamation via versioned assignment epochs when hardware faults occur, and dynamic rerouting under corridor blockages.
+* **Predictable Edge Execution Latency**: Mean algorithmic planning latency of **$2.17\text{ ms}$** (P95: **$1.23\text{ ms}$**) across >35,000 live decision loop samples on single-core CPU execution.
+* **100% Automated Test Suite Pass Rate**: **121 / 121 unit, integration, benchmark integrity, and safety tests passing** (`python -m pytest -q`).
+* **Self-Healing Fault Resilience**: 40/40 (100.0%) recovery rate across hardware stalls, dynamic aisle blockages, and packet-loss disruptions.
 * **Multi-Simulator Verification**: Validated across an interactive Digital Twin and two independent ROS 2-based robotics simulation platforms (Gazebo Harmonic and Webots R2023b).
 
 ---
@@ -42,11 +44,11 @@ All quantitative claims are strictly synchronized with the canonical machine-rea
 
 ### Baseline vs. Proposed Fleet Performance
 
-$$\text{Task Time Reduction} = \left(\frac{T_{\text{baseline}} - T_{\text{proposed}}}{T_{\text{baseline}}}\right) \times 100 = \left(\frac{8.70\text{ s} - 6.42\text{ s}}{8.70\text{ s}}\right) \times 100 = \mathbf{26.18\%}$$
+$$\text{Task Time Reduction} = \left(\frac{T_{\text{baseline}} - T_{\text{proposed}}}{T_{\text{baseline}}}\right) \times 100 = \left(\frac{8.80\text{ s} - 6.61\text{ s}}{8.80\text{ s}}\right) \times 100 = \mathbf{24.89\%}$$
 
 ```text
-Baseline (Stop-and-Wait + Nearest)   ████████████████████  8.70 s Mean
-Proposed (Fleet-Aware + PIBT + A*)   ███████████████        6.42 s Mean (-26.18%)
+Baseline (Stop-and-Wait + Nearest)   ████████████████████  8.80 s Mean
+Proposed (Fleet-Aware + PIBT + A*)   ███████████████        6.61 s Mean (-24.89%)
 ```
 
 ### 10-Scenario Stress & Disturbance Audit Matrix
@@ -55,24 +57,24 @@ Every scenario was evaluated across the identical set of 10 pseudorandom seeds: 
 
 | Scenario ID | Operational Profile / Injected Disturbance | Baseline Time | Proposed Time | Time Cut | Throughput Gain | Collisions | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`S0_NORMAL`** | Nominal Poisson task stream ($\lambda=0.2$) | $9.20\text{ s}$ | **$6.15\text{ s}$** | **$+33.10\%$** | $+21.14\%$ | **0** | Verified |
-| **`S1_HIGH_CONGESTION`**| Choke-point bottleneck layout ($\lambda=0.6$) | $8.47\text{ s}$ | **$6.73\text{ s}$** | **$+20.50\%$** | $+19.74\%$ | **0** | Target Met |
-| **`S2_COMM_LATENCY`** | $250\text{ ms}$ P2P wireless transport delay | $8.55\text{ s}$ | **$6.10\text{ s}$** | **$+28.67\%$** | $+23.88\%$ | **0** | Verified |
-| **`S3_PACKET_LOSS`** | $25\%$ random RF packet loss on mesh | $8.55\text{ s}$ | **$6.10\text{ s}$** | **$+28.67\%$** | $+23.88\%$ | **0** | Verified |
-| **`S4_AISLE_BLOCKAGE`**| Dynamic obstacle at cell $(7, 10)$ at $t=20\text{s}$ | $8.54\text{ s}$ | **$6.13\text{ s}$** | **$+28.21\%$** | $+23.13\%$ | **0** | Verified |
-| **`S5_ROBOT_FAILURE`** | Catastrophic motor stall of AMR R2 at $t=25\text{s}$ | $8.52\text{ s}$ | **$6.12\text{ s}$** | **$+28.12\%$** | $+22.22\%$ | **0** | Peer Reclaimed |
-| **`S6_TASK_SURGE`** | Bursts of 3–5 concurrent urgent orders | $9.66\text{ s}$ | **$7.06\text{ s}$** | **$+26.87\%$** | $+31.93\%$ | **0** | Verified |
-| **`S7_COMM_AND_BLOCKAGE`**| Combined $20\%$ packet drop + aisle blockage | $8.54\text{ s}$ | **$6.13\text{ s}$** | **$+28.21\%$** | $+23.13\%$ | **0** | Verified |
-| **`S8_FAILURE_CONGESTION`**| Choke-point layout + AMR R3 hardware stall | $8.25\text{ s}$ | **$6.99\text{ s}$** | **$+15.31\%$** | -3.40% | **0** | Acyclic |
-| **`S9_FULL_DISTURBANCE`**| Combined latency + loss + blockage + stall | $8.72\text{ s}$ | **$6.70\text{ s}$** | **$+23.19\%$** | $+5.60\%$ | **0** | Verified |
-| **OVERALL AGGREGATE** | **100 Paired Experiments (200 Executions)** | **$8.70\text{ s}$** | **$6.42\text{ s}$** | **$+26.18\%$** | **$+18.12\%$** | **0** | **PASS** |
+| **`S0_NORMAL`** | Nominal Poisson task stream ($\lambda=0.2$) | $9.17\text{ s}$ | **$6.36\text{ s}$** | **$+30.64\%$** | $+20.33\%$ | **0** | Verified |
+| **`S1_HIGH_CONGESTION`**| Choke-point bottleneck layout ($\lambda=0.6$) | $8.27\text{ s}$ | **$6.71\text{ s}$** | **$+18.86\%$** | $+11.24\%$ | **0** | Verified |
+| **`S2_COMM_LATENCY`** | $250\text{ ms}$ P2P wireless transport delay | $8.73\text{ s}$ | **$6.36\text{ s}$** | **$+27.15\%$** | $+25.38\%$ | **0** | Verified |
+| **`S3_PACKET_LOSS`** | $25\%$ random RF packet loss on mesh | $8.88\text{ s}$ | **$6.36\text{ s}$** | **$+28.38\%$** | $+20.87\%$ | **0** | Verified |
+| **`S4_AISLE_BLOCKAGE`**| Dynamic obstacle at cell $(7, 10)$ at $t=20\text{s}$ | $8.50\text{ s}$ | **$6.44\text{ s}$** | **$+24.24\%$** | $+25.38\%$ | **0** | Detour Verified |
+| **`S5_ROBOT_FAILURE`** | Catastrophic motor stall of AMR R2 at $t=25\text{s}$ | $9.04\text{ s}$ | **$6.47\text{ s}$** | **$+28.43\%$** | $+13.70\%$ | **0** | Peer Reclaimed |
+| **`S6_TASK_SURGE`** | Bursts of 3–5 concurrent urgent orders | $9.91\text{ s}$ | **$7.55\text{ s}$** | **$+23.81\%$** | $+27.63\%$ | **0** | Verified |
+| **`S7_COMM_AND_BLOCKAGE`**| Combined $20\%$ packet drop + aisle blockage | $8.72\text{ s}$ | **$6.36\text{ s}$** | **$+27.06\%$** | $+20.01\%$ | **0** | Verified |
+| **`S8_FAILURE_CONGESTION`**| Choke-point layout + AMR R3 hardware stall | $8.10\text{ s}$ | **$6.60\text{ s}$** | **$+18.52\%$** | $+6.34\%$ | **0** | Acyclic |
+| **`S9_FULL_DISTURBANCE`**| Combined latency + loss + blockage + stall | $8.71\text{ s}$ | **$6.88\text{ s}$** | **$+21.01\%$** | $+3.45\%$ | **0** | Resilient |
+| **OVERALL AGGREGATE** | **100 Paired Experiments (200 Executions)** | **$8.80\text{ s}$** | **$6.61\text{ s}$** | **$+24.89\%$** | **$+17.43\%$** | **0** | **PASS** |
 
 ### Plan vs. Execution Telemetry
 
 | Metric Dimension | Planned Model | Actual Executed | Efficiency / Overhead | Explanatory Rationale |
 |---|---|---|---|---|
-| **Mean Path Length** | 18.4 cells | 19.8 cells | **92.9% path efficiency** | 1.4 cell divergence due to dynamic yield steps and local detour nudges |
-| **Mean Makespan** | 6.12 s | 6.42 s | **95.3% temporal efficiency** | 0.30 s overhead from transient deceleration and priority yield states |
+| **Mean Path Length** | 27.3 cells | 29.0 cells | **94.1% path efficiency** | 1.7 cell divergence due to dynamic yield steps and local detour nudges |
+| **Mean Makespan** | 5.52 s | 6.61 s | **83.5% temporal efficiency** | Overhead from transient deceleration, mesh delay, and priority yield states |
 | **Conflict Waiting Steps** | 0.0 steps (nominal) | 1.1 steps | — | Temporary cooperative yield delays while clearing high-priority peers |
 | **Safety Interventions** | 0 | 0 | **100% nominal safety** | Runtime Safety Supervisor verified all reservations; 0 emergency stops needed |
 

@@ -2011,7 +2011,7 @@ function openProvenanceModal(metricKey) {
 
     switch (metricKey) {
         case 'time_reduction':
-            title = "AGGREGATE TASK TIME REDUCTION (+26.18%)";
+            title = "AGGREGATE TASK TIME REDUCTION (+24.89%)";
             content = `
                 <div style="background:rgba(6, 182, 212, 0.08); border:1px solid var(--accent-cyan); border-radius:var(--radius-sm); padding:14px; margin-bottom:14px;">
                     <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); font-weight:700; margin-bottom:4px;">MATHEMATICAL FORMULA & CALCULATION (SECTION 51.3):</div>
@@ -2019,19 +2019,19 @@ function openProvenanceModal(metricKey) {
                         ((Baseline - Proposed) / Baseline) × 100
                     </div>
                     <div style="font-family:var(--font-mono); font-size:0.85rem; color:var(--accent-cyan); margin-top:4px;">
-                        ((8.70 s - 6.42 s) / 8.70 s) × 100 = 26.1839% ≈ <strong>26.18%</strong>
+                        ((8.80 s - 6.61 s) / 8.80 s) × 100 = 24.886% ≈ <strong>24.89%</strong>
                     </div>
                 </div>
                 <table class="rich-table" style="margin-bottom:14px;">
-                    <tr><td style="font-weight:700; width:35%;">Baseline Mean Time:</td><td>8.70 s (Centralized Stop-and-Wait Baseline)</td></tr>
-                    <tr><td style="font-weight:700;">Proposed Mean Time:</td><td style="color:var(--accent-cyan); font-weight:700;">6.42 s (Decentralized PIBT + Hungarian)</td></tr>
+                    <tr><td style="font-weight:700; width:35%;">Baseline Mean Time:</td><td>8.80 s (Stop-and-Wait Baseline)</td></tr>
+                    <tr><td style="font-weight:700;">Proposed Mean Time:</td><td style="color:var(--accent-cyan); font-weight:700;">6.61 s (Decentralized PIBT + Hungarian)</td></tr>
                     <tr><td style="font-weight:700;">Empirical Dataset:</td><td>200 Randomized Benchmark Runs (10 Scenarios S0–S9 × 10 Seeds)</td></tr>
-                    <tr><td style="font-weight:700;">Checkpoint ID:</td><td><code>CHECKPOINT_FINAL_PRE_GAZEBO</code> (Frozen Benchmark)</td></tr>
+                    <tr><td style="font-weight:700;">Checkpoint ID:</td><td><code>CANONICAL_VERIFIED_CHECKPOINT</code> (Reproducible Benchmark)</td></tr>
                     <tr><td style="font-weight:700;">Verification Status:</td><td><span class="status-pill pass">VERIFIED (SIH Target ≥ 20% Exceeded)</span></td></tr>
-                    <tr><td style="font-weight:700;">Source File:</td><td><code>results/benchmarks/latest_summary.json</code></td></tr>
+                    <tr><td style="font-weight:700;">Source File:</td><td><code>results/CANONICAL_SIH_METRICS.json</code></td></tr>
                 </table>
                 <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
-                    The 26.18% reduction is driven primarily by a <strong>93.0% drop in inter-robot conflict waiting time</strong> (1.57s reduced to 0.11s) as lower-priority robots yield laterally under PIBT rather than stopping dead in corridor aisles.
+                    The 24.89% reduction is driven primarily by avoiding corridor deadlock freezes and cooperative spatial yielding under PIBT rather than stopping dead in corridor aisles.
                 </div>
             `;
             break;

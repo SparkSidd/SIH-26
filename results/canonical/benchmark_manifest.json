@@ -1,0 +1,38 @@
+{
+  "benchmark_source_git_commit": "a2b975aff65fc985dc91791936a76f1ec377603b",
+  "benchmark_generated_at": "2026-09-30T23:51:42.808233+00:00",
+  "benchmark_command": "python -m benchmark.generate_canonical_report",
+  "paired_experiments": 100,
+  "total_executions": 200,
+  "scenario_count": 10,
+  "seed_count": 10,
+  "seeds": [
+    42,
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808,
+    909
+  ],
+  "robot_count": 6,
+  "baseline": "Stop-and-Wait + Nearest-Robot Greedy Allocation",
+  "proposed": "Edge-First Decentralized (Hungarian Fleet-Aware + PIBT + Space-Time A* + Safety Supervisor + P2P Mesh)",
+  "python_version": "3.13.4",
+  "environment": {
+    "os": "Windows",
+    "os_release": "11",
+    "python_version": "3.13.4",
+    "cpu_count": 16,
+    "benchmark_scope": "Discrete multi-agent simulation benchmark (100 paired runs across S0-S9)",
+    "validation_scope": [
+      "Interactive Digital Twin (FastAPI/Canvas)",
+      "Gazebo Harmonic / ROS 2 Jazzy (Robotics simulation validation)",
+      "Webots R2023b / ROS 2 Jazzy (Robotics simulation validation)"
+    ]
+  },
+  "raw_runs": "results/canonical/raw_runs.jsonl"
+}

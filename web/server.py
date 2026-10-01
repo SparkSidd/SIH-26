@@ -173,21 +173,21 @@ class ControlCenterManager:
 
     def _get_demo_stage_talking_point(self, stage: int) -> str:
         points = {
-            1: "\"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally in 0.27 ms with zero collisions and zero central server bottleneck.\"",
+            1: "\"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally in sub-5 ms with zero collisions and zero central server bottleneck.\"",
             2: "\"When high-demand congestion occurs, loaded AMRs carrying heavy payloads maintain right-of-way via dynamic priority, while unloaded AMRs yield without stalling the aisle.\"",
             3: "\"Watch AMR-01: It immediately detects the unreachable corridor, updates its Local World Model, and computes a multi-agent Space-Time A* detour in under 1.25 ms.\"",
             4: "\"When AMR-02 halts, observe how the fleet does not freeze. The decentralized supervisor reclaims the orphaned task and transfers it to AMR-04 with zero human intervention.\"",
-            5: "\"Every metric shown is empirically verified across 200 runs (100 paired): zero collisions, 26.18% aggregate task time reduction, and 116/116 regression tests passing.\"",
+            5: "\"Every metric shown is empirically verified across 200 runs (100 paired): zero collisions, 24.89% aggregate task time reduction, and 121/121 regression tests passing.\"",
         }
         return points.get(stage, "Demonstrating decentralized edge-AI fleet coordination.")
 
     def _get_demo_stage_metric(self, stage: int) -> str:
         metrics = {
-            1: "0 Collisions | Mean Latency: 0.27 ms | P2P 1-Hop RF Mesh",
-            2: "Wait Reduction: 93.0% | WFG Cycles: 0 | Mode: NEIGHBOR/CLUSTER",
-            3: "28.21% Time Reduction in S4 | Detour Latency: < 1.3 ms | 0 Deadlocks",
-            4: "28.12% Time Reduction in S5 | Task Recovery: 100% | Reclaim: < 0.5s",
-            5: "200 Executions | 0 Collisions | 116/116 Tests | Sub-5% CPU",
+            1: "0 Collisions | Mean Latency: 2.17 ms | P2P 1-Hop RF Mesh",
+            2: "Wait Reduction: High | WFG Cycles: 0 | Mode: NEIGHBOR/CLUSTER",
+            3: "24.24% Time Reduction in S4 | Detour Latency: < 1.3 ms | 0 Deadlocks",
+            4: "28.43% Time Reduction in S5 | Task Recovery: 100% | Reclaim: < 0.5s",
+            5: "200 Executions | 0 Collisions | 121/121 Tests | Sub-5% CPU",
         }
         return metrics.get(stage, "0 Collisions | 100% Autonomous")
 
@@ -543,7 +543,7 @@ async def get_self_check():
     ed = can.get("experiment_design", {})
     checkpoint_name = can.get("checkpoint", "CANONICAL_VERIFIED_CHECKPOINT")
     total_execs = ed.get("total_simulation_executions", 200)
-    red_pct = hm.get("aggregate_reduction_pct", 26.18)
+    red_pct = hm.get("aggregate_reduction_pct", 24.89)
     checks.append({
         "name": "Verified Benchmark Checkpoint",
         "status": "PASS" if can else "WARN",
@@ -553,8 +553,8 @@ async def get_self_check():
     
     # 10. Test suite validation
     tm = load_test_manifest()
-    passed = tm.get("total_passed", 116)
-    collected = tm.get("total_collected", 116)
+    passed = tm.get("total_passed", 121)
+    collected = tm.get("total_collected", 121)
     checks.append({
         "name": "Regression Test Manifest",
         "status": "PASS",
@@ -597,9 +597,9 @@ async def get_verified_benchmarks():
     lt = can.get("latency_taxonomy", {})
     mt = can.get("memory_taxonomy", {})
 
-    b_mean = hm.get("baseline_mean_sec", 8.70)
-    p_mean = hm.get("proposed_mean_sec", 6.42)
-    red_pct = hm.get("aggregate_reduction_pct", 26.18)
+    b_mean = hm.get("baseline_mean_sec", 8.80)
+    p_mean = hm.get("proposed_mean_sec", 6.61)
+    red_pct = hm.get("aggregate_reduction_pct", 24.89)
 
     scenarios = []
     for sc in can.get("scenarios", []):

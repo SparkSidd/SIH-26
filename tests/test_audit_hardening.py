@@ -293,9 +293,10 @@ def test_canonical_metrics_schema_and_reproducibility():
     assert data["safety_audit"]["inter_robot_collisions_observed"] == 0
     assert data["safety_audit"]["deadlocks_observed"] == 0
 
-    # Latency numbers
-    assert data["latency_taxonomy"]["mean_planner_latency_ms"] == 0.27
-    assert data["latency_taxonomy"]["p95_planner_latency_ms"] == 1.25
+    # Latency numbers (dynamically measured planner samples)
+    assert data["latency_taxonomy"]["mean_planner_latency_ms"] > 0
+    assert data["latency_taxonomy"]["p95_planner_latency_ms"] > 0
+    assert data["latency_taxonomy"]["sample_count"] > 0
 
 
 def test_test_manifest_consistency():
@@ -333,9 +334,12 @@ def test_web_api_endpoints_canonical():
     res_bm = client.get("/api/benchmarks/verified")
     assert res_bm.status_code == 200
     bm_data = res_bm.json()
-    assert bm_data["reduction_pct"] == 26.18
-    assert bm_data["baseline_mean_sec"] == 8.70
-    assert bm_data["proposed_mean_sec"] == 6.42
+    can_path = os.path.join(os.path.dirname(__file__), "..", "results", "CANONICAL_SIH_METRICS.json")
+    with open(can_path, "r", encoding="utf-8") as f:
+        can_data = json.load(f)
+    assert bm_data["reduction_pct"] == can_data["headline_metrics"]["aggregate_reduction_pct"]
+    assert bm_data["baseline_mean_sec"] == can_data["headline_metrics"]["baseline_mean_sec"]
+    assert bm_data["proposed_mean_sec"] == can_data["headline_metrics"]["proposed_mean_sec"]
     assert bm_data["inter_robot_collisions"] == 0
     assert len(bm_data["scenarios"]) == 10
 

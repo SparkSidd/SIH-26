@@ -442,9 +442,9 @@ class SimulationStateSerializer:
         mt = can_data.get("memory_taxonomy", {})
         ed = can_data.get("experiment_design", {})
 
-        b_mean = f"{hm.get('baseline_mean_sec', 8.70):.2f} s"
-        p_mean = f"{hm.get('proposed_mean_sec', 6.42):.2f} s"
-        red_pct = f"+{hm.get('aggregate_reduction_pct', 26.18):.2f}%"
+        b_mean = f"{hm.get('baseline_mean_sec', 8.80):.2f} s"
+        p_mean = f"{hm.get('proposed_mean_sec', 6.61):.2f} s"
+        red_pct = f"+{hm.get('aggregate_reduction_pct', 24.89):.2f}%"
 
         sc_summaries = []
         for sc in can_data.get("scenarios", []):

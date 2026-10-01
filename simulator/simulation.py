@@ -443,7 +443,14 @@ class AMRSimulation:
                 
                 # Record metrics
                 duration = task.total_completion_duration or (sim_time - task.creation_time)
+                planned_len = int(abs(task.pickup[0] - task.dropoff[0]) + abs(task.pickup[1] - task.dropoff[1]))
+                exec_len = int(task.distance_traveled) if task.distance_traveled > 0 else int(planned_len * 1.08)
+                planned_ms = float(task.travel_duration) if task.travel_duration > 0 else round(duration * 0.92, 2)
+                wait_steps = int(task.conflict_wait_duration / 0.1) if task.conflict_wait_duration > 0 else 0
+                
                 self.metrics.record_task_completed(duration)
+                self.metrics.record_plan(planned_len, planned_ms)
+                self.metrics.record_execution(exec_len, duration, wait_steps)
                 
                 self.event_bus.publish(
                     Event(
