@@ -4,9 +4,9 @@
 **Date**: October 2026  
 **Problem Statement ID**: SIH26123  
 **Theme**: Robotics and Drones / Smart Warehouses  
-**Test Suite Verification**: **116 / 116 Pytest Tests Passing** (100% verified, clean pass across unit, integration, and safety suites)  
+**Test Suite Verification**: **121 / 121 Pytest Tests Passing** (100% verified, clean pass across unit, integration, and safety suites)  
 **Benchmark Scope**: **100 Paired Experiments (200 Total Simulation Executions)** (10 Standardized Scenarios $S_0$–$S_9$ $\times$ 10 Paired Seeds)  
-**Safety Invariant**: **0 Inter-Robot Collisions Observed** across all 200 executions (0 vertex conflicts, 0 edge swaps, 0 boundary violations)  
+**Safety Invariant**: **0 Inter-Robot Collisions** in the proposed fleet across all 100 proposed executions; baseline experienced **355 collisions** across conflict scenarios without rerouting  
 **Canonical Source of Truth**: [`results/CANONICAL_SIH_METRICS.json`](file:///c:/Users/thega/PROJECTS/SIH'26/results/CANONICAL_SIH_METRICS.json)
 
 ---
@@ -85,10 +85,11 @@ The benchmark was executed across **10 standardized scenarios ($S_0$–$S_9$)** 
   - Aggregate Time Reduction: **$+24.89\%$** (SIH target: $\ge 20\%$)
   - Mean Per-Seed Reduction: **$+23.39\%$** (Median: **$+22.99\%$**)
   - Peak Scenario Reduction: **$+30.64\%$** ($S_0$ Nominal)
-* **Edge Planning Latency**:
+* **Planning Latency** (Benchmark Decision-Loop, >35,000 samples):
   - Mean Latency: **$2.17\,\text{ms}$**
   - P95 Latency: **$1.23\,\text{ms}$**
-  - Maximum Latency: **$3.96\,\text{ms}$**
+  - P99 Latency: **$63.48\,\text{ms}$**
+  - Maximum Latency: **$884.67\,\text{ms}$** *(OS thread scheduling / GC contention under 8-worker parallel load; isolated single-thread planner: mean $0.24\,\text{ms}$, max $5.25\,\text{ms}$)*
 * **Memory Footprint (Historical Profile)**:
   - Core Planner Memory: **$54.0\,\text{MB}$**
   - Total Digital Twin Process: **$238.7\,\text{MB}$**
@@ -131,9 +132,9 @@ The P2P communication mesh was evaluated across a parametric sweep of packet dro
 To ensure total credibility and academic defensibility during judge evaluation, the following presentation guidelines must be strictly adhered to:
 
 ### What TO Claim (Backed by Empirical Evidence)
-* **Zero Inter-Robot Collisions Observed**: Verified over 200 executions across all 10 standard benchmark scenarios with 0 collisions under deterministic safety supervision in the proposed system.
+* **Zero Inter-Robot Collisions in Proposed Fleet**: 0 collisions across all 100 proposed executions enforced by the deterministic Safety Supervisor. The uncoordinated baseline experienced 355 collisions in dynamic-obstacle scenarios without rerouting.
 * **24.89% Aggregate Task Time Reduction**: Achieved across 100 paired runs (200 executions), exceeding the SIH 20% performance threshold.
-* **Sub-5-Millisecond Edge Latency**: Mean planning time of **$2.17\,\text{ms}$** (P95: **$1.23\,\text{ms}$**), running on single-core edge CPUs.
+* **Sub-5-Millisecond Isolated Edge Latency**: Isolated single-thread planner mean: **$0.24\,\text{ms}$** (P95: **$0.84\,\text{ms}$**, max: **$5.25\,\text{ms}$**). Benchmark decision-loop mean: **$2.17\,\text{ms}$** (P95: **$1.23\,\text{ms}$**), running under concurrent worker load.
 * **100% Autonomous Fault Recovery**: Instantaneous dynamic detour routing via Space-Time A* and automated task reclamation upon AMR hardware stall across all 40 tested disturbance scenarios.
 * **Decentralized Local World Model**: No single point of failure; AMRs coordinate peer-to-peer using localized 1-hop RF broadcasts.
 

@@ -2,8 +2,8 @@
   "schema_version": "1.0.0",
   "benchmark_name": "SIH26123 Canonical Fleet Benchmark",
   "checkpoint": "CANONICAL_VERIFIED_CHECKPOINT",
-  "benchmark_generated_at": "2026-09-30T23:51:42.808233+00:00",
-  "benchmark_source_git_commit": "a2b975aff65fc985dc91791936a76f1ec377603b",
+  "benchmark_generated_at": "2026-10-01T00:13:56.937668+00:00",
+  "benchmark_source_git_commit": "e2eacbe70e61a9865b563d1779bac45b13dab677",
   "environment": {
     "os": "Windows",
     "os_release": "11",
@@ -53,6 +53,13 @@
     "status": "PASS (Target >= 20% Exceeded)"
   },
   "safety_audit": {
+    "total_benchmark_executions": 200,
+    "proposed_executions": 100,
+    "baseline_executions": 100,
+    "proposed_collisions": 0,
+    "baseline_collisions": 355,
+    "proposed_deadlocks": 0,
+    "baseline_deadlocks": 0,
     "total_executions": 200,
     "inter_robot_collisions_observed": 0,
     "baseline_collisions_observed": 355,
@@ -60,18 +67,38 @@
     "edge_swap_conflicts": 0,
     "swept_volume_conflicts": 0,
     "deadlocks_observed": 0,
-    "baseline_deadlocks_observed": 0,
     "safety_supervision": "Deterministic runtime gating (actuator veto if invariant violated)",
-    "verified_statement": "0 inter-robot collisions observed across 100 proposed benchmark executions under deterministic safety supervision (355 collisions observed in uncoordinated baseline)."
+    "verified_statement": "0 inter-robot collisions observed across 100 proposed benchmark executions under deterministic safety supervision; the paired baseline produced 355 collision events in the same benchmark."
   },
   "latency_taxonomy": {
+    "benchmark_decision_loop_latency": {
+      "description": "Decision loop timing recorded across 100 concurrent benchmark simulations under 8-worker thread pool contention",
+      "sample_count": 35000,
+      "mean_ms": 2.17,
+      "median_ms": 0.1,
+      "p95_ms": 1.23,
+      "p99_ms": 63.48,
+      "max_ms": 884.67,
+      "notes": "Large tail outliers (P99 63.48 ms, Max 884.67 ms) are induced by OS thread scheduling, Python GIL, and GC contention under 8 parallel simulation workers on Windows."
+    },
+    "isolated_planner_latency": {
+      "description": "Dedicated single-thread profile measuring pure Space-Time A* + PIBT planning without thread contention",
+      "sample_count": 500,
+      "mean_ms": 0.24,
+      "median_ms": 0.09,
+      "p95_ms": 0.84,
+      "p99_ms": 1.49,
+      "max_ms": 5.25,
+      "notes": "Sequential execution on dedicated CPU core reflects real AMR onboard edge computer behavior without benchmark multiprocessing contention."
+    },
     "mean_planner_latency_ms": 2.17,
+    "median_planner_latency_ms": 0.1,
     "p95_planner_latency_ms": 1.23,
     "p99_planner_latency_ms": 63.48,
     "max_planner_latency_ms": 884.67,
     "sample_count": 35000,
-    "measurement_scope": "Pure algorithmic decision loop (PIBT + Space-Time A*) on single-core CPU",
-    "statement": "Mean planning latency: 2.17 ms; P95: 1.23 ms on edge single-core CPU (<5% utilization)."
+    "measurement_scope": "Benchmark decision loop (mean 2.17 ms, P95 1.23 ms, max 884.67 ms under worker contention) vs isolated single-thread planner (mean 0.24 ms, P95 0.84 ms, max 5.25 ms).",
+    "statement": "Benchmark decision-loop timing showed 2.17 ms mean and 1.23 ms P95 (with tail outliers up to 884.67 ms under concurrent 8-worker benchmark load); isolated edge planner execution profile is 0.24 ms mean, 0.84 ms P95, and 5.25 ms max."
   },
   "memory_taxonomy": {
     "core_planner_memory_mb": 54.0,
@@ -85,7 +112,8 @@
     "baseline_mean_bytes_per_sec": 18515.0,
     "proposed_mean_bytes_per_sec": 18618.0,
     "measured_bandwidth_difference_pct": -0.56,
-    "historical_93_pct_clarification": "The legacy '93% bandwidth reduction' was an unmeasured architectural back-of-the-envelope comparison to continuous central server telemetry streaming. Real simulated mesh bandwidth difference is 0.01% with 0 server dependency."
+    "summary": "Simulated P2P mesh communication volume showed no material bandwidth advantage: proposed transfer volume was approximately 0.56% higher than baseline (18,618 B/s vs 18,515 B/s). The system's communication advantage is architectural: decentralized operation avoids dependence on a central coordination server.",
+    "historical_93_pct_clarification": "The legacy '93% bandwidth reduction' was an unmeasured architectural back-of-the-envelope comparison to continuous central server telemetry streaming. Measured simulated P2P mesh transfer volume showed no material reduction (-0.56% delta), with the primary benefit being zero single point of failure."
   },
   "fault_recovery_audit": {
     "scenarios_evaluated": [

@@ -1,6 +1,6 @@
 {
-  "benchmark_source_git_commit": "a2b975aff65fc985dc91791936a76f1ec377603b",
-  "benchmark_generated_at": "2026-09-30T23:51:42.808233+00:00",
+  "benchmark_source_git_commit": "e2eacbe70e61a9865b563d1779bac45b13dab677",
+  "benchmark_generated_at": "2026-10-01T00:13:56.937668+00:00",
   "benchmark_command": "python -m benchmark.generate_canonical_report",
   "paired_experiments": 100,
   "total_executions": 200,

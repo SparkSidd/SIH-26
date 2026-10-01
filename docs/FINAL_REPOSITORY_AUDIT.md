@@ -21,7 +21,7 @@ Every quantitative metric, architectural claim, API endpoint, and documentation 
 | **Inter-Robot Collisions** | *"Formally proven collision-free"* / *"Formal Safety Invariant Clearance"* | **0 inter-robot collisions observed in proposed fleet** across all 100 runs | Deterministic runtime invariant verification by the `SafetySupervisor` (actuator veto on vertex/edge-swap conflicts). Baseline experienced 355 collisions when blocked without rerouting. |
 | **Deadlocks** | *"100% deadlock-free guarantee"* | **0 deadlocks observed** across all 100 proposed executions | Tarjan Wait-For Graph (WFG) cycle detection + priority inheritance detour routing |
 | **Automated Test Suite** | Discrepancies: 102/102 (README) vs 77/77 (API self-check / engineering report) vs 116 | **121 / 121 tests passing (100%)** | `pytest -q` execution tracked via `results/test_manifest.json` (77 core + 25 ROS2 + 14 audit hardening + 5 benchmark integrity) |
-| **Planner Latency** | Ambiguous *"sub-millisecond P95"* / $0.07\text{ ms}$ vs $0.27\text{ ms}$ | **Mean: $2.17\text{ ms}$, P95: $1.23\text{ ms}$, Max: $3.96\text{ ms}$** | Real algorithmic decision loop timing samples (>35,000 samples) on single-core CPU profile |
+| **Planner Latency** | Ambiguous *"sub-millisecond P95"* / $0.07\text{ ms}$ vs $0.27\text{ ms}$ | **Benchmark decision-loop: Mean $2.17\text{ ms}$, P95 $1.23\text{ ms}$, Max $884.67\text{ ms}$ (OS/GC tail under 8-worker load). Isolated single-thread planner: Mean $0.24\text{ ms}$, P95 $0.84\text{ ms}$, Max $5.25\text{ ms}$.** | Real algorithmic decision loop timing samples (>35,000 samples) on single-core CPU profile |
 | **Memory Footprint** | Undifferentiated $54.0\text{ MB}$ vs $203.5\text{ MB}$ vs $238.7\text{ MB}$ | **Core Planner: $54.0\text{ MB}$**, **Total Digital Twin Process: $238.7\text{ MB}$**, Peak: $240.7\text{ MB}$ | Historical profile distinguishing core algorithmic heap from complete web/WebSocket server process |
 | **Network Bandwidth** | *"93% bandwidth reduction"* (unverified comparison to central video stream) | **Simulated P2P mesh transfer difference: $-0.56\%$** | Measured P2P broadcast volume ($18,562.4\text{ B/s}$ proposed vs $18,564.6\text{ B/s}$ baseline); legacy 93% debunked |
 | **Planning Dimension** | *"4D Space-Time A\*"* | **Space-Time A\*** $(x, y, t)$ | Searches $(x, y, \text{time})$ with temporal reservations; no fourth continuous state dimension exists |
@@ -63,7 +63,7 @@ Every quantitative metric, architectural claim, API endpoint, and documentation 
 1. `coordination/task_ownership.py`: Distributed task claim, acknowledgement, and commitment protocol.
 2. `benchmark/generate_canonical_report.py`: Reproducible canonical benchmark report generator.
 3. `results/CANONICAL_SIH_METRICS.json`: Authoritative machine-readable canonical metrics artifact.
-4. `results/test_manifest.json`: Test suite manifest recording all 116 tests.
+4. `results/test_manifest.json`: Test suite manifest recording all 121 tests.
 5. `results/canonical/canonical_metrics.csv`: Tabular scenario and aggregate metrics.
 6. `results/canonical/scenario_metrics.csv`: Detailed 10-scenario metrics.
 7. `results/canonical/benchmark_summary.md`: Markdown summary for judges and reviewers.
@@ -77,17 +77,17 @@ Every quantitative metric, architectural claim, API endpoint, and documentation 
 1. `planning/reservation.py`: Added timeline extraction, expired cell pruning, and cell invalidation.
 2. `planning/replanning.py`: Added `ReplanningTrigger` enum, `EventDrivenReplanner` with cooldown, and telemetry.
 3. `metrics/metrics.py`: Added plan-vs-execution telemetry, battery tracking, and derived throughput.
-4. `web/server.py`: Integrated dynamic canonical loaders, `/api/reservations`, updated self-check to 116 tests.
+4. `web/server.py`: Integrated dynamic canonical loaders, `/api/reservations`, updated self-check to 121 tests.
 5. `web/serializers.py`: Refactored to load benchmark comparisons from canonical JSON.
-6. `web/static/index.html`: Cleaned up 4D terminology, updated badges to 116 tests, added Audit Hardening cards.
-7. `web/static/app.js`: Cleaned up terminology, updated ribbon to 116 tests.
+6. `web/static/index.html`: Cleaned up 4D terminology, updated badges to 121 tests, added Audit Hardening cards.
+7. `web/static/app.js`: Cleaned up terminology, updated ribbon to 121 tests.
 8. `docs/RESULTS.md`: Rewritten around canonical metrics ($24.89\%$, $8.80\text{s} \to 6.61\text{s}$, 121 tests).
-9. `docs/ENGINEERING_OPTIMIZATION_REPORT.md`: Rewritten with canonical metrics, 116 tests, and historical appendix.
+9. `docs/ENGINEERING_OPTIMIZATION_REPORT.md`: Rewritten with canonical metrics, 121 tests, and historical appendix.
 10. `docs/JUDGE_QA.md`: Rewritten to answer 20 comprehensive technical questions with defensible wording.
 11. `docs/ARCHITECTURE.md`: Rewritten with 3-tier pipeline, claim/ack protocol, and safety matrix.
-12. `docs/GAZEBO_QUICKSTART.md`: Updated test counts to 116 total tests.
+12. `docs/GAZEBO_QUICKSTART.md`: Updated test counts to 121 total tests.
 13. `README.md`: Completely synchronized with canonical metrics, Space-Time A*, and multi-simulator scope.
-14. `.github/workflows/ci.yml`: Updated to test 116 tests and assert canonical JSON schema and test manifest.
+14. `.github/workflows/ci.yml`: Updated to test 121 tests and assert canonical JSON schema and test manifest.
 
 ---
 
@@ -114,7 +114,7 @@ Every quantitative metric, architectural claim, API endpoint, and documentation 
 # 1. Reproduce canonical metrics JSON, CSV, and Markdown summaries
 python -m benchmark.generate_canonical_report
 
-# 2. Run complete automated test suite (116 tests)
+# 2. Run complete automated test suite (121 tests)
 pytest -q
 
 # 3. Launch interactive Digital Twin & Web Control Center

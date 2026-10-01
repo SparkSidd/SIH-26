@@ -1,9 +1,9 @@
 Metric,Baseline,Proposed,Delta / Reduction,Unit,Verification Status
 Task Completion Time,8.8,6.61,-24.89%,seconds,VERIFIED
-Inter-Robot Collisions,355,0,-355 (100% prevented),collisions,VERIFIED
+Inter-Robot Collisions,355,0,-355 (0 in proposed),collisions,VERIFIED
 Inter-Robot Deadlocks,0,0,0 (0 deadlocks),deadlocks,VERIFIED
-Mean Planning Latency,-,2.17,-,ms,VERIFIED
-P95 Planning Latency,-,1.23,-,ms,VERIFIED
+Mean Planning Latency (Benchmark Loop),-,"2.17 (P95: 1.23, Max: 884.67)",-,ms,VERIFIED
+Isolated Edge Planner Latency,-,"0.24 (P95: 0.84, Max: 5.25)",-,ms,VERIFIED
 Core Memory Footprint,-,54.0,-,MB,VERIFIED
-P2P Mesh Byte Rate,18515.0,18618.0,-0.56%,bytes/s,VERIFIED
+P2P Mesh Byte Rate,18515.0,18618.0,-0.56% (no material reduction; P2P mesh),bytes/s,VERIFIED
 Regression Tests,-,121,121/121,tests,PASS

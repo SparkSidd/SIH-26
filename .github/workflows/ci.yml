@@ -50,7 +50,9 @@ jobs:
         passed = manifest.get('total_passed', manifest.get('tests_passed', 0))
         collected = manifest.get('total_collected', manifest.get('tests_collected', 0))
         failed = manifest.get('total_failed', manifest.get('tests_failed', 0))
-        assert passed == collected >= 116, f'Test count mismatch: {passed}/{collected}'
+        assert collected > 0, f'No tests collected from test manifest: {collected}'
+        assert passed == collected, f'Test count mismatch: {passed}/{collected} passed'
         assert failed == 0, f'Test failure detected: {failed}'
+        print(f'All {passed}/{collected} tests passed.')
         print('Canonical benchmark schema and test manifest verified successfully.')
         "

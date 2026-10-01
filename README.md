@@ -203,7 +203,7 @@ python -m uvicorn web.server:app --host 0.0.0.0 --port 8080
 ```
 Open your browser at: **`http://localhost:8080/`**
 
-### 3. Run the Automated Test Suite (116 Tests)
+### 3. Run the Automated Test Suite (121 Tests)
 ```bash
 python -m pytest tests/ -q
 ```
@@ -244,12 +244,12 @@ SIH'26/
 ├── resilience/                    # Fault detection, dynamic rerouting, peer task reclaim
 ├── results/                       # Canonical benchmark artifacts
 │   ├── CANONICAL_SIH_METRICS.json # Single canonical source of numerical truth
-│   ├── test_manifest.json         # Automated test suite manifest (116 tests)
+│   ├── test_manifest.json         # Automated test suite manifest (121 tests)
 │   └── canonical/                 # CSV, JSON, and Markdown summaries
 ├── ros2_integration/              # ROS 2 nodes, SDF models, and Gazebo launch files
 ├── safety/                        # Deterministic safety supervisor and invariant assertions
 ├── simulator/                     # 16-step synchronous simulation loop and world state
-├── tests/                         # 116 automated regression, unit, and scenario tests
+├── tests/                         # 121 automated regression, unit, and scenario tests
 │   └── test_audit_hardening.py    # Unit & integration tests for audit features
 ├── web/                           # FastAPI REST endpoints, WebSocket streaming, serializers
 │   ├── static/                    # Cybernetic Industrial UI: Canvas renderer, modals, tabs

@@ -35,7 +35,7 @@
 
         <!-- 4 Topline Executive KPI Badges (Clickable Data Provenance / Verification) -->
         <div class="header-kpi-group">
-            <div class="exec-kpi-pill emerald" onclick="openProvenanceModal('collisions')" style="cursor:pointer;" title="Click to view verified safety evidence: 0 Inter-Robot Collisions across 200 Runs">
+            <div class="exec-kpi-pill emerald" onclick="openProvenanceModal('collisions')" style="cursor:pointer;" title="Click to view verified safety evidence: 0 Inter-Robot Collisions across 100 Proposed Runs (Baseline Comparator: 355 Collisions)">
                 <span class="kpi-icon">🛡️</span>
                 <span class="kpi-val" id="headerCollisionsVal">0</span>
                 <span class="kpi-lbl">COLLISIONS (VERIFIED)</span>
@@ -50,9 +50,9 @@
                 <span class="kpi-val">6/6</span>
                 <span class="kpi-lbl">AMRS ACTIVE</span>
             </div>
-            <div class="exec-kpi-pill" onclick="openProvenanceModal('latency')" style="cursor:pointer;" title="Click to view edge hardware benchmarks: 0.27ms mean planning latency on edge CPU">
+            <div class="exec-kpi-pill" onclick="openProvenanceModal('latency')" style="cursor:pointer;" title="Click to view edge hardware benchmarks: Sub-5ms edge latency (0.24ms isolated profile, 2.17ms concurrent loop)">
                 <span class="kpi-icon">⏱️</span>
-                <span class="kpi-val">0.27 ms</span>
+                <span class="kpi-val">0.24 ms</span>
                 <span class="kpi-lbl">EDGE LATENCY</span>
             </div>
         </div>
@@ -113,10 +113,10 @@
             <span class="vbr-ps">SIH26123 · EDGE-AI DISTRIBUTED AMR FLEET MANAGEMENT</span>
         </div>
         <div class="vbr-center">
-            <span class="vbr-chip green">🛡️ ZERO COLLISIONS OBSERVED</span>
+            <span class="vbr-chip green">🛡️ ZERO PROPOSED COLLISIONS</span>
             <span class="vbr-chip cyan">⚡ +24.89% AGGREGATE TIME CUT</span>
             <span class="vbr-chip purple">🤖 6-AMR P2P GOSSIP MESH</span>
-            <span class="vbr-chip amber">⏱️ 0.27ms MEAN EDGE DECISION</span>
+            <span class="vbr-chip amber">⏱️ SUB-5MS EDGE DECISION</span>
         </div>
         <div class="vbr-right">
             <span class="vbr-sync-tag">● GAZEBO 3D + WEBOTS + DIGITAL TWIN</span>
@@ -144,7 +144,7 @@
                 <span>⚙️</span> ALGORITHMS
             </button>
             <button id="navTab_validation" class="app-nav-tab" data-view="validation" onclick="switchMainView('validation')">
-                <span>🛡️</span> VALIDATION (116/116)
+                <span>🛡️</span> VALIDATION (121/121)
             </button>
             <button id="navTab_references" class="app-nav-tab" data-view="references" onclick="switchMainView('references')">
                 <span>📚</span> NOVELTY & CITATIONS
@@ -317,15 +317,15 @@
                 <div class="demo-stage-body">
                     <div class="demo-insight-col">
                         <div class="demo-col-label">WHAT YOU ARE OBSERVING</div>
-                        <div class="demo-col-desc" id="demoStageDesc">6 AMRs coordinating in real-time under decentralized P2P mesh. Each robot resolves spatial conflicts via PIBT in under 0.1ms with zero central server dependency.</div>
+                        <div class="demo-col-desc" id="demoStageDesc">6 AMRs coordinating in real-time under decentralized P2P mesh. Each robot resolves spatial conflicts via PIBT on edge hardware with zero central server dependency.</div>
                     </div>
                     <div class="demo-insight-col judge-talk-col">
                         <div class="demo-col-label">JUDGE PRESENTATION TALKING POINT</div>
-                        <div class="demo-col-quote" id="demoStageTalkingPoint">"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally in 0.07 ms with zero collisions."</div>
+                        <div class="demo-col-quote" id="demoStageTalkingPoint">"Notice that all 6 AMRs operate completely decentralized. Each AMR plans right-of-way locally on edge hardware with zero inter-robot collisions."</div>
                     </div>
                     <div class="demo-insight-col metric-col">
                         <div class="demo-col-label">EMPIRICALLY VERIFIED METRIC</div>
-                        <div class="demo-metric-val" id="demoStageMetric">0 Collisions | Mean Latency: 0.07 ms | P2P 1-Hop RF Mesh</div>
+                        <div class="demo-metric-val" id="demoStageMetric">0 Proposed Collisions | Mean Latency: 2.17 ms (P95: 1.23 ms) | P2P 1-Hop RF Mesh</div>
                     </div>
                 </div>
             </div>
@@ -436,10 +436,10 @@
                         <div id="kpiInterventionsVal" class="kpi-card-value" style="color:var(--accent-cyan);">0</div>
                         <div id="kpiInterventionsSub" class="kpi-card-sub">0 Vertex / 0 Edge Yields</div>
                     </div>
-                    <div class="kpi-card">
+                    <div class="kpi-card" onclick="openProvenanceModal('latency')" style="cursor:pointer;" title="Click to view edge hardware benchmarks">
                         <div class="kpi-card-label">Planning Latency</div>
-                        <div id="kpiPlanningLatency" class="kpi-card-value">0.27 ms</div>
-                        <div class="kpi-card-sub">Decentralized PIBT (Edge)</div>
+                        <div id="kpiPlanningLatency" class="kpi-card-value">2.17 ms</div>
+                        <div class="kpi-card-sub">P95: 1.23ms (0.24ms Isolated)</div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-card-label">P2P Mesh Health</div>
@@ -641,13 +641,13 @@
                 <div class="kpi-showcase-card" onclick="openProvenanceModal('time_reduction')">
                     <div class="kpi-sc-tag">Aggregate Task Time Reduction</div>
                     <div class="kpi-sc-val cyan">+24.89%</div>
-                    <div class="kpi-sc-sub">Baseline 8.80s → Proposed 6.61s (SIH Target ≥ 20% Passed across 200 Runs)</div>
+                    <div class="kpi-sc-sub">Baseline 8.80s → Proposed 6.61s (SIH Target ≥ 20% Passed across 100 Paired Experiments / 200 Total Executions)</div>
                     <div class="kpi-sc-source"><span>🔍</span> Source: Verified Benchmark S0–S9</div>
                 </div>
                 <div class="kpi-showcase-card" onclick="openProvenanceModal('collisions')">
                     <div class="kpi-sc-tag">Safety Invariant Clearance</div>
                     <div class="kpi-sc-val green">0 Collisions</div>
-                    <div class="kpi-sc-sub">Zero Vertex, Edge-Swap, or Swept-Volume Conflicts in 200 Empirical Runs</div>
+                    <div class="kpi-sc-sub">0 Conflicts in 100 Proposed Runs (Baseline Comparator: 355 Collision Events)</div>
                     <div class="kpi-sc-source"><span>🔍</span> Source: Deterministic Safety Supervisor</div>
                 </div>
                 <div class="kpi-showcase-card" onclick="openProvenanceModal('fleet')">
@@ -1100,7 +1100,7 @@
     </section>
 
     <!-- ======================================================================
-         VIEW 6: VALIDATION (116/116 REGRESSION TESTS & RUNTIME SAFETY INVARIANTS)
+         VIEW 6: VALIDATION (AUTOMATED REGRESSION TESTS & RUNTIME SAFETY INVARIANTS)
          ====================================================================== -->
     <section id="viewValidation" class="app-view">
         <div class="overview-container">
@@ -1108,13 +1108,13 @@
                 <div class="hero-badge">SCIENTIFIC RIGOR & TEST SUITE INTEGRITY</div>
                 <h2 style="font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:8px;">System Test Manifest & Safety Invariants</h2>
                 <div style="display:flex; gap:16px; align-items:center; margin-top:8px;">
-                    <span class="status-pill pass" style="font-size:0.8rem; padding:4px 12px;">116 / 116 TESTS PASSED (100%)</span>
+                    <span id="validationHeaderBadge" class="status-pill pass" style="font-size:0.8rem; padding:4px 12px;">121 / 121 TESTS PASSED (100%)</span>
                     <span style="font-size:0.8rem; color:var(--text-secondary); font-family:var(--font-mono);">Zero Regressions Verified across All Subsystems</span>
                 </div>
             </div>
 
             <!-- Test Categories Breakdown -->
-            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:24px;">
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">Task Allocation</div>
                     <div class="kpi-sc-val green">8 / 8 PASS</div>
@@ -1143,7 +1143,7 @@
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">End-to-End Scenarios</div>
                     <div class="kpi-sc-val green">11 / 11 PASS</div>
-                    <div class="kpi-sc-sub">200-run benchmark audit across S0 to S9 under multi-seed validation</div>
+                    <div class="kpi-sc-sub">100-pair benchmark audit across S0 to S9 under multi-seed validation</div>
                 </div>
                 <div class="kpi-showcase-card">
                     <div class="kpi-sc-tag">ROS 2 & Bridges</div>
@@ -1154,6 +1154,11 @@
                     <div class="kpi-sc-tag">Audit Hardening & Ownership</div>
                     <div class="kpi-sc-val green">14 / 14 PASS</div>
                     <div class="kpi-sc-sub">Distributed Claim/ACK/Commit, reservation timeline, event triggers, canonical schema</div>
+                </div>
+                <div class="kpi-showcase-card">
+                    <div class="kpi-sc-tag">Benchmark Integrity Verification</div>
+                    <div class="kpi-sc-val green">5 / 5 PASS</div>
+                    <div class="kpi-sc-sub">Strict pairing (100 pairs / 200 runs), mathematical reduction, and zero proposed collision invariant</div>
                 </div>
             </div>
 
